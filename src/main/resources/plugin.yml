@@ -1,21 +1,14 @@
-name: blocks
+name: CustomContent
 version: '${project.version}'
 author: btarg
 main: io.github.btarg.PluginMain
 api-version: '1.20'
+description: The ultimate custom content plugin for Spigot and Paper servers.
 
 commands:
-  givecustom:
-    description: Give a custom block or item
-    usage: /givecustom <player> <custom block or item id>
-    permission: blocks.givecustomblock
-
-  reloadcustom:
-    description: Reload and re-register custom items
-    usage: /reloadcustom [blocks | items]
-    permission: blocks.reload
-
-  dblist:
-    description: List blocks in the custom block database
-    usage: /dblist <world>
-    permission: blocks.dblist
+  customcontent:
+    aliases:
+      - cc
+    description: Give a custom block or item, reload custom blocks and items or list custom blocks currently in the world
+    usage: /cc [give | reload | listblocks]
+    permission: blocks.commands

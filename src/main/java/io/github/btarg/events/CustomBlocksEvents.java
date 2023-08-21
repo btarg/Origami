@@ -3,33 +3,55 @@ package io.github.btarg.events;
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
-import de.tr7zw.changeme.nbtapi.NBTItem;
 import io.github.btarg.PluginMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
-import io.github.btarg.util.ToolLevelHelper;
-import org.bukkit.*;
+import io.github.btarg.rendering.BrokenBlock;
+import io.github.btarg.rendering.BrokenBlocksService;
+import io.github.btarg.util.items.ItemTagHelper;
+import io.github.btarg.util.items.ToolLevelHelper;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExpEvent;
+import org.bukkit.event.block.BlockDamageAbortEvent;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.Collection;
-import java.util.Random;
+import java.util.*;
 
 public class CustomBlocksEvents implements Listener {
+
+    private final Set<Material> transparentBlocks;
+
+    private final BrokenBlocksService brokenBlocksService;
+
+    public CustomBlocksEvents() {
+        brokenBlocksService = PluginMain.brokenBlocksService; // Get the BrokenBlocksService instance
+        transparentBlocks = new HashSet<>();
+        transparentBlocks.add(Material.WATER);
+        transparentBlocks.add(Material.LAVA);
+        transparentBlocks.add(Material.AIR);
+    }
 
     @EventHandler
     public void ItemFramePlace(HangingPlaceEvent event) {
@@ -62,7 +84,7 @@ public class CustomBlocksEvents implements Listener {
                 String block_uuid = entity.getUniqueId().toString();
 
                 //TODO: replace with baseblock of choice
-                world.setBlockData(entity.getLocation(), Material.SPAWNER.createBlockData());
+                world.setBlockData(entity.getLocation(), Material.GLASS.createBlockData());
 
                 // Add the block to the database
                 Location placedLocation = entity.getLocation();
@@ -89,11 +111,9 @@ public class CustomBlocksEvents implements Listener {
                     return;
                 }
 
-
-                NBTEntity nbtEntity = new NBTEntity(linkedItemFrame);
-                NBTCompound compound = nbtEntity.getCompound("Item").getCompound("tag");
-                if (compound.getBoolean("interactable")) {
-                    OnCustomBlockClicked(e, compound.getString(PluginMain.customBlockIDKey));
+                NBTCompound tagFromItemFrame = ItemTagHelper.getItemTagFromItemFrame(linkedItemFrame);
+                if (tagFromItemFrame.getBoolean("hasRightClickFunction")) {
+                    OnCustomBlockClicked(e, tagFromItemFrame.getString(PluginMain.customBlockIDKey));
                 }
             }
         }
@@ -105,79 +125,124 @@ public class CustomBlocksEvents implements Listener {
             for (ItemStack itemStack : event.getInventory().getMatrix()) {
                 if (itemStack != null) {
 
-                    NBTItem nbtItem = new NBTItem(itemStack);
-                    if (nbtItem.getCompound("tag") == null) {
-                        return;
-                    }
-
-                    if (nbtItem.getCompound("tag").getString(PluginMain.customBlockIDKey) == null) {
+                    if (ItemTagHelper.isCustomItem(itemStack)) {
                         event.setResult(Event.Result.DENY);
                         event.setCurrentItem(null);
                     }
-
 
                 }
             }
         }
     }
 
-    void DropBlockItems(String blockId, Block blockBroken) {
+    private void DropBlockItems(String blockId, Block blockBroken, Boolean silkTouch) {
+
         World world = blockBroken.getWorld();
         CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
 
         LootContext.Builder builder = new LootContext.Builder(blockBroken.getLocation());
         LootContext context = builder.build();
 
-        Collection<ItemStack> stacks = definition.breakLootTable.populateLoot(new Random(), context);
-        for (ItemStack stack : stacks) {
-            world.dropItemNaturally(blockBroken.getLocation(), stack);
+        if (silkTouch || definition.dropBlock) {
+            ItemStack blockItem = CustomBlockRegistry.CreateCustomBlockItemStack(definition, 1);
+            world.dropItemNaturally(blockBroken.getLocation(), blockItem);
+        } else {
+            if (definition.breakLootTable == null) {
+                return;
+            }
+            Collection<ItemStack> stacks = definition.breakLootTable.populateLoot(new Random(), context);
+            for (ItemStack stack : stacks) {
+                world.dropItemNaturally(blockBroken.getLocation(), stack);
+            }
         }
 
+    }
 
+    @EventHandler
+    public void onPlayerAnimation(PlayerAnimationEvent event) {
+        Player player = event.getPlayer();
+
+        if (player.getGameMode().equals(GameMode.CREATIVE)) return;
+
+        Block block = player.getTargetBlock(transparentBlocks, 5);
+        Location blockPosition = block.getLocation();
+
+        if (!brokenBlocksService.isBrokenBlock(blockPosition)) return;
+
+        double distanceX = blockPosition.getX() - player.getLocation().getBlockX();
+        double distanceY = blockPosition.getY() - player.getLocation().getBlockY();
+        double distanceZ = blockPosition.getZ() - player.getLocation().getBlockZ();
+
+        if (distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ >= 1024.0D) return;
+
+        BrokenBlock brokenBlock = brokenBlocksService.getBrokenBlock(blockPosition);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 10, -1, false, false));
+
+        brokenBlock.incrementDamage(player, ToolLevelHelper.getToolLevel(player.getItemInHand(), true));
+    }
+
+    @EventHandler
+    public void onBlockDamage(BlockDamageEvent event) {
+        Block block = event.getBlock();
+
+        if (!CustomBlockDatabase.blockIsInDatabase(block.getLocation())) return;
+        String uuid = CustomBlockDatabase.getBlockUUIDFromDatabase(block.getLocation());
+        Entity linkedFrame = GetLinkedItemFrame(block);
+        if (linkedFrame == null) return;
+        if (!linkedFrame.getUniqueId().toString().equals(uuid)) return;
+
+        NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
+        if (nbtCompound == null) return;
+        String blockId = nbtCompound.getString(PluginMain.customBlockIDKey);
+        CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
+
+        brokenBlocksService.createBrokenBlock(block, definition.timeToBreak);
+
+    }
+
+    @EventHandler
+    public void onBlockDamageStop(BlockDamageAbortEvent event) {
+        brokenBlocksService.removeBrokenBlock(event.getBlock().getLocation());
     }
 
     @EventHandler
     public void onBlockBroken(BlockBreakEvent e) {
 
         Entity linkedFrame = GetLinkedItemFrame(e.getBlock());
-        if (linkedFrame != null) {
+        if (linkedFrame == null) return;
 
-            NBTEntity nbtEntity = new NBTEntity(linkedFrame);
-            String blockId = nbtEntity.getCompound("Item").getCompound("tag").getString(PluginMain.customBlockIDKey);
-            CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
+        NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
+        if (nbtCompound == null) return;
 
-            if (ToolLevelHelper.GetToolLevel(e.getPlayer().getItemInUse()) >= definition.toolLevelRequired) {
-
-                if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
-                    OnCustomBlockMined(e, blockId);
-                    DropBlockItems(blockId, e.getBlock());
-                }
-            }
-
-
-        } else {
-            Bukkit.getLogger().warning("Could not get linked frame!");
-        }
-    }
-
-    @EventHandler
-    public void onBlockXP(BlockExpEvent e) {
-
-        Entity linkedFrame = GetLinkedItemFrame(e.getBlock());
-        if (linkedFrame == null) {
-            return;
-        }
-        NBTEntity nbtEntity = new NBTEntity(linkedFrame);
-        String blockId = nbtEntity.getCompound("Item").getCompound("tag").getString(PluginMain.customBlockIDKey);
+        String blockId = nbtCompound.getString(PluginMain.customBlockIDKey);
         CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
 
-        e.setExpToDrop(definition.dropExperience);
+        e.setDropItems(false);
 
-        // Generic
+        ItemStack itemUsed = e.getPlayer().getInventory().getItemInMainHand();
+
+        if (ToolLevelHelper.getToolLevel(itemUsed, false) >= definition.toolLevelRequired && ToolLevelHelper.checkItemTypeByString(itemUsed, definition.canBeMinedWith)) {
+
+            if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+
+                boolean silkTouch = false;
+                if (itemUsed.hasItemMeta())
+                    silkTouch = Objects.requireNonNull(itemUsed.getItemMeta()).hasEnchant(Enchantment.SILK_TOUCH);
+
+                if (!silkTouch)
+                    e.setExpToDrop(definition.dropExperience);
+
+                OnCustomBlockMined(e, blockId, silkTouch);
+                DropBlockItems(blockId, e.getBlock(), silkTouch);
+            }
+        }
+
+        // Remove item frame and remove block from database
         OnCustomBlockBroken(e.getBlock().getLocation());
         linkedFrame.remove();
 
     }
+
 
     @EventHandler
     public void onFrameBroken(HangingBreakEvent e) {
@@ -217,8 +282,8 @@ public class CustomBlocksEvents implements Listener {
             Block baseBlock = world.getBlockAt(e.getLocation());
 
             // break base block
-            baseBlock.breakNaturally(new ItemStack(Material.DIAMOND_PICKAXE));
-            DropBlockItems(blockId, baseBlock);
+            baseBlock.breakNaturally();
+            DropBlockItems(blockId, baseBlock, false);
 
             // continue generic break events
             OnCustomBlockBroken(baseBlock.getLocation());
@@ -227,7 +292,7 @@ public class CustomBlocksEvents implements Listener {
         }
     }
 
-    void OnCustomBlockBroken(Location location) {
+    private void OnCustomBlockBroken(Location location) {
         CustomBlockDatabase.removeBlockFromDatabase(location, true);
     }
 
@@ -248,7 +313,7 @@ public class CustomBlocksEvents implements Listener {
         event.getPlayer().sendMessage("Clicked: " + blockName);
     }
 
-    public void OnCustomBlockMined(BlockBreakEvent event, String blockName) {
+    public void OnCustomBlockMined(BlockBreakEvent event, String blockName, Boolean silkTouch) {
         //event.getPlayer().sendMessage("Mined: " + blockName);
     }
 

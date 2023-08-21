@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
@@ -54,6 +55,10 @@ public class CustomBlockRegistry {
         ItemMeta meta = frame.getItemMeta();
         meta.setDisplayName(customBlockDefinition.getDisplayName().toLegacyText());
         meta.setLore(customBlockDefinition.lore);
+
+        // add custom block id to the item so that we can tell it's a custom item
+        meta.getPersistentDataContainer().set(PluginMain.customItemTag, PersistentDataType.STRING, customBlockDefinition.id);
+
         frame.setItemMeta(meta);
 
         // start editing nbt
@@ -75,11 +80,11 @@ public class CustomBlockRegistry {
         itemTag.setString("id", "minecraft:item_frame");
         itemTag.setInteger("Count", 1);
         NBTCompound itemTag2 = itemTag.addCompound("tag");
-        itemTag2.setInteger("CustomModelData", customBlockDefinition.modelDataWhenInFrame);
+        itemTag2.setInteger("CustomModelData", customBlockDefinition.blockItemModelData);
 
         itemTag2.setString(PluginMain.customBlockIDKey, customBlockDefinition.id);
-        itemTag2.setBoolean("interactable", customBlockDefinition.interactable);
-
+        itemTag2.setBoolean("hasRightClickFunction", customBlockDefinition.hasRightClickFunction);
+        
         return nbtItem.getItem();
     }
 }

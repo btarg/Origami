@@ -3,6 +3,7 @@ package io.github.btarg.blockdata;
 import io.github.btarg.PluginMain;
 import io.github.btarg.util.VectorHelper;
 import org.apache.commons.io.FileUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
@@ -160,21 +161,22 @@ public class CustomBlockDatabase {
     }
 
 
-    public static boolean saveData(World world) {
-        if (blocksListHashMap == null) return false;
+    public static void saveData(World world) {
 
-        try {
-            // create file if not exists
-            FileOutputStream stream = FileUtils.openOutputStream(new File(filePath(world)));
-            BukkitObjectOutputStream out = new BukkitObjectOutputStream(new GZIPOutputStream(stream));
+        if (blocksListHashMap == null) return;
 
-            out.writeObject(blocksListHashMap.get(world.getEnvironment()));
-            out.close();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(PluginMain.getPlugin(PluginMain.class), () -> {
+
+            try {
+                FileOutputStream stream = FileUtils.openOutputStream(new File(filePath(world)));
+                BukkitObjectOutputStream out = new BukkitObjectOutputStream(new GZIPOutputStream(stream));
+
+                out.writeObject(blocksListHashMap.get(world.getEnvironment()));
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        });
     }
-
 }

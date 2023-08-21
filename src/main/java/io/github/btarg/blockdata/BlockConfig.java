@@ -2,9 +2,11 @@ package io.github.btarg.blockdata;
 
 import io.github.btarg.PluginMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.definitions.DefaultDefinitions;
 import io.github.btarg.registry.CustomBlockRegistry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -16,7 +18,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
 
 public class BlockConfig {
 
@@ -66,7 +70,14 @@ public class BlockConfig {
     }
 
     public void loadAndRegisterBlocks(CommandSender sender) {
-        try (Stream<Path> paths = Files.walk(Paths.get(getBlockConfigDirectory(PluginMain.getPlugin(PluginMain.class))))) {
+        Path blocksDirectory = Paths.get(getBlockConfigDirectory(PluginMain.getPlugin(PluginMain.class)));
+
+        if (!blocksDirectory.toFile().exists()) {
+            blocksDirectory.toFile().mkdirs();
+        }
+
+        try (Stream<Path> paths = Files.walk(blocksDirectory)) {
+            AtomicInteger fileCount = new AtomicInteger();
             paths
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().endsWith(".yml"))
@@ -80,9 +91,21 @@ public class BlockConfig {
                             if (sender != null) {
                                 sender.sendMessage("Registered block: " + loadedDefinition.id);
                             }
+                            fileCount.getAndIncrement();
 
                         }
                     });
+            if (fileCount.get() == 0) {
+                Bukkit.getLogger().warning("No block definitions found! Creating a new example block definition.");
+
+                CustomBlockDefinition definition = DefaultDefinitions.getDefaultBlockDefinition();
+
+                // save to file
+                saveBlockDefinitionToFile(definition);
+                CustomBlockRegistry.RegisterBlock(definition);
+
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,8 +128,9 @@ public class BlockConfig {
     private void SaveConfig(FileConfiguration conf, File file) {
         try {
             conf.save(file);
+            Bukkit.getLogger().info("Saved block definition: " + file.getPath());
         } catch (IOException e) {
-            plugin.getLogger().warning("Unable to save " + file.getPath()); // shouldn't really happen, but save throws the exception
+            Bukkit.getLogger().warning("Unable to save " + file.getPath()); // shouldn't really happen, but save throws the exception
         }
     }
 
