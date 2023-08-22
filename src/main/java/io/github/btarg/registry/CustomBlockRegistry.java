@@ -4,6 +4,7 @@ import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import io.github.btarg.PluginMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -53,8 +54,12 @@ public class CustomBlockRegistry {
 
         // new item meta (name and lore)
         ItemMeta meta = frame.getItemMeta();
-        meta.setDisplayName(customBlockDefinition.getDisplayName().toLegacyText());
-        meta.setLore(customBlockDefinition.lore);
+
+
+        Component name = customBlockDefinition.getDisplayName();
+        meta.displayName(name);
+
+        meta.lore(customBlockDefinition.getLore());
 
         // add custom block id to the item so that we can tell it's a custom item
         meta.getPersistentDataContainer().set(PluginMain.customItemTag, PersistentDataType.STRING, customBlockDefinition.id);
@@ -84,7 +89,7 @@ public class CustomBlockRegistry {
 
         itemTag2.setString(PluginMain.customBlockIDKey, customBlockDefinition.id);
         itemTag2.setBoolean("hasRightClickFunction", customBlockDefinition.hasRightClickFunction);
-        
+
         return nbtItem.getItem();
     }
 }

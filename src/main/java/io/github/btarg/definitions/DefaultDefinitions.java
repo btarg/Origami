@@ -1,5 +1,8 @@
 package io.github.btarg.definitions;
 
+import org.bukkit.Material;
+import org.bukkit.Sound;
+
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -9,6 +12,7 @@ public class DefaultDefinitions {
         // save example object if there are no files
         CustomBlockDefinition definition = new CustomBlockDefinition(new HashMap<>());
         definition.id = "rainbow_block";
+        definition.baseBlock = Material.GLASS;
         definition.blockModelData = 4;
         definition.blockItemModelData = 3;
         definition.hasRightClickFunction = false;
@@ -18,6 +22,8 @@ public class DefaultDefinitions {
         definition.toolLevelRequired = 3;
         definition.canBeMinedWith = Collections.singletonList("pickaxes");
         definition.timeToBreak = 20d;
+        definition.breakSound = Sound.BLOCK_AMETHYST_BLOCK_BREAK.toString();
+        definition.placeSound = Sound.BLOCK_AMETHYST_BLOCK_PLACE.toString();
         return definition;
     }
 

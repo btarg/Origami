@@ -2,19 +2,16 @@ package io.github.btarg.events;
 
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
-import de.tr7zw.changeme.nbtapi.NBTEntity;
 import io.github.btarg.PluginMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.rendering.BrokenBlock;
 import io.github.btarg.rendering.BrokenBlocksService;
+import io.github.btarg.util.CustomBlockUtils;
 import io.github.btarg.util.items.ItemTagHelper;
 import io.github.btarg.util.items.ToolLevelHelper;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -27,6 +24,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
@@ -37,7 +35,9 @@ import org.bukkit.loot.LootContext;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class CustomBlocksEvents implements Listener {
 
@@ -57,38 +57,41 @@ public class CustomBlocksEvents implements Listener {
     public void ItemFramePlace(HangingPlaceEvent event) {
         Entity entity = event.getEntity();
 
-
         if (entity.getType() == EntityType.ITEM_FRAME || entity.getType() == EntityType.GLOW_ITEM_FRAME) {
 
-            NBTEntity nbtEntity = new NBTEntity(entity);
-            String blockName = null;
-            try {
-                blockName = nbtEntity.getCompound("Item").getCompound("tag").getString(PluginMain.customBlockIDKey);
-            } catch (NullPointerException e) {
+            NBTCompound compound = ItemTagHelper.getItemTagFromItemFrame(entity);
+            if (compound == null) return;
+            String blockName = compound.getString(PluginMain.customBlockIDKey);
+
+            if (blockName == null) return;
+
+            Block block = event.getBlock();
+            World world = block.getWorld();
+
+            CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
+            if (definition == null) return;
+
+            java.util.Collection<Entity> entities = world.getNearbyEntities(entity.getLocation(), 0.5, 0.5, 0.5);
+            if (!entities.isEmpty()) {
+                event.setCancelled(true);
                 return;
             }
 
-            // detect custom block placed
-            if (blockName != null) {
+            // set the item frame uuid to the same as the base block
+            String block_uuid = entity.getUniqueId().toString();
 
-                Block block = event.getBlock();
-                World world = block.getWorld();
+            if (!definition.baseBlock.isBlock()) {
+                Bukkit.getLogger().warning(blockName + " does not have a valid base block set! Defaulting to a spawner.");
+                definition.baseBlock = Material.SPAWNER;
+            }
+            world.setBlockData(entity.getLocation(), definition.baseBlock.createBlockData());
 
-                java.util.Collection<Entity> entities = world.getNearbyEntities(entity.getLocation(), 0.5, 0.5, 0.5);
-                if (!entities.isEmpty()) {
-                    event.setCancelled(true);
-                    return;
-                }
+            // Add the block to the database
+            Location placedLocation = entity.getLocation();
+            CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
 
-                // set the item frame uuid to the same as the base block
-                String block_uuid = entity.getUniqueId().toString();
-
-                //TODO: replace with baseblock of choice
-                world.setBlockData(entity.getLocation(), Material.GLASS.createBlockData());
-
-                // Add the block to the database
-                Location placedLocation = entity.getLocation();
-                CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
+            if (definition.placeSound != null) {
+                world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
             }
         }
     }
@@ -102,7 +105,7 @@ public class CustomBlocksEvents implements Listener {
                 return;
             }
 
-            Entity linkedItemFrame = GetLinkedItemFrame(block);
+            Entity linkedItemFrame = CustomBlockUtils.GetLinkedItemFrame(block);
 
             if (linkedItemFrame != null) {
 
@@ -147,13 +150,13 @@ public class CustomBlocksEvents implements Listener {
             ItemStack blockItem = CustomBlockRegistry.CreateCustomBlockItemStack(definition, 1);
             world.dropItemNaturally(blockBroken.getLocation(), blockItem);
         } else {
-            if (definition.breakLootTable == null) {
-                return;
-            }
-            Collection<ItemStack> stacks = definition.breakLootTable.populateLoot(new Random(), context);
-            for (ItemStack stack : stacks) {
-                world.dropItemNaturally(blockBroken.getLocation(), stack);
-            }
+//            if (definition.breakLootTable == null) {
+//                return;
+//            }
+//            Collection<ItemStack> stacks = definition.breakLootTable.populateLoot(new Random(), context);
+//            for (ItemStack stack : stacks) {
+//                world.dropItemNaturally(blockBroken.getLocation(), stack);
+//            }
         }
 
     }
@@ -176,26 +179,28 @@ public class CustomBlocksEvents implements Listener {
         if (distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ >= 1024.0D) return;
 
         BrokenBlock brokenBlock = brokenBlocksService.getBrokenBlock(blockPosition);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 10, -1, false, false));
+        if (brokenBlock == null) return;
 
-        brokenBlock.incrementDamage(player, ToolLevelHelper.getToolLevel(player.getItemInHand(), true));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 4, -1, false, false));
+        ItemStack playerHand = player.getInventory().getItemInMainHand();
+
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
+        if (definition == null) return;
+
+        if (ToolLevelHelper.checkItemTypeByString(playerHand, definition.canBeMinedWith)) {
+            brokenBlock.incrementDamage(player, ToolLevelHelper.getToolLevel(playerHand, true));
+        } else {
+            brokenBlock.incrementDamage(player, 0.5);
+        }
+
+
     }
 
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event) {
         Block block = event.getBlock();
-
-        if (!CustomBlockDatabase.blockIsInDatabase(block.getLocation())) return;
-        String uuid = CustomBlockDatabase.getBlockUUIDFromDatabase(block.getLocation());
-        Entity linkedFrame = GetLinkedItemFrame(block);
-        if (linkedFrame == null) return;
-        if (!linkedFrame.getUniqueId().toString().equals(uuid)) return;
-
-        NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
-        if (nbtCompound == null) return;
-        String blockId = nbtCompound.getString(PluginMain.customBlockIDKey);
-        CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
-
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
+        if (definition == null) return;
         brokenBlocksService.createBrokenBlock(block, definition.timeToBreak);
 
     }
@@ -208,7 +213,7 @@ public class CustomBlocksEvents implements Listener {
     @EventHandler
     public void onBlockBroken(BlockBreakEvent e) {
 
-        Entity linkedFrame = GetLinkedItemFrame(e.getBlock());
+        Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(e.getBlock());
         if (linkedFrame == null) return;
 
         NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
@@ -238,75 +243,50 @@ public class CustomBlocksEvents implements Listener {
         }
 
         // Remove item frame and remove block from database
-        OnCustomBlockBroken(e.getBlock().getLocation());
+        OnCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
         linkedFrame.remove();
 
     }
 
+    @EventHandler
+    public void onExplode(EntityExplodeEvent e) {
+
+        for (Block block : e.blockList()) {
+            if (CustomBlockDatabase.blockIsInDatabase(block.getLocation())) {
+
+                Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block);
+                if (linkedFrame == null) return;
+
+                NBTCompound frameCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
+                if (frameCompound == null) return;
+
+                String blockId = frameCompound.getString(PluginMain.customBlockIDKey);
+                if (blockId == null) return;
+
+                CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
+                if (definition == null) return;
+                DropBlockItems(blockId, block, false);
+
+                linkedFrame.remove();
+                OnCustomBlockBroken(block.getLocation(), definition.breakSound);
+
+            }
+        }
+
+    }
 
     @EventHandler
     public void onFrameBroken(HangingBreakEvent e) {
-
-        // only allow destroying the frame rather than the base block if we explode it
-        if (e.getCause().equals(HangingBreakEvent.RemoveCause.EXPLOSION)) {
-            OnFrameRemovedGeneric(e.getEntity());
-        } else {
-            e.setCancelled(CustomBlockDatabase.blockIsInDatabase(e.getEntity().getLocation()));
-        }
-
-
+        e.setCancelled(CustomBlockDatabase.blockIsInDatabase(e.getEntity().getLocation()));
     }
 
-
-    void OnFrameRemovedGeneric(Entity e) {
-
-        if (e.getType() == EntityType.ITEM_FRAME || e.getType() == EntityType.GLOW_ITEM_FRAME) {
-
-            // drop items
-            NBTEntity nbtEntity = new NBTEntity(e);
-
-            String blockId;
-            try {
-                blockId = nbtEntity.getCompound("Item").getCompound("tag").getString(PluginMain.customBlockIDKey);
-
-            } catch (NullPointerException nullPointerException) {
-                nullPointerException.printStackTrace();
-                return;
-            }
-
-            if (blockId == null) {
-                return;
-            }
-
-            World world = e.getWorld();
-            Block baseBlock = world.getBlockAt(e.getLocation());
-
-            // break base block
-            baseBlock.breakNaturally();
-            DropBlockItems(blockId, baseBlock, false);
-
-            // continue generic break events
-            OnCustomBlockBroken(baseBlock.getLocation());
-
-
-        }
-    }
-
-    private void OnCustomBlockBroken(Location location) {
+    private void OnCustomBlockBroken(Location location, String breakSound) {
         CustomBlockDatabase.removeBlockFromDatabase(location, true);
-    }
 
-    public Entity GetLinkedItemFrame(Block block) {
-        String check_uuid = CustomBlockDatabase.getBlockUUIDFromDatabase(block.getLocation());
-        if (check_uuid != null && !check_uuid.isEmpty()) {
+        //location.getWorld().stopSound(SoundStop.named(Sound.BLOCK_GLASS_BREAK));
 
-            for (Entity ent : block.getWorld().getNearbyEntities(block.getLocation(), 1.0, 1.0, 1.0)) {
-                if (ent.getUniqueId().toString().equals(check_uuid)) {
-                    return ent;
-                }
-            }
-        }
-        return null;
+        if (breakSound != null)
+            location.getWorld().playSound(location, Sound.valueOf(breakSound), 1, 1);
     }
 
     public void OnCustomBlockClicked(PlayerInteractEvent event, String blockName) {

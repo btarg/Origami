@@ -18,6 +18,7 @@ public class BrokenBlock {
     }
 
     public void incrementDamage(Player player, double multiplier) {
+
         if (isBroken() || multiplier == 0) return;
 
         damage += multiplier;
@@ -48,7 +49,6 @@ public class BrokenBlock {
 
     public void breakBlock(Player breaker) {
         if (breaker == null) return;
-        //SoundPlayerUtils.playBlockSound(block);
         breaker.breakBlock(block);
     }
 

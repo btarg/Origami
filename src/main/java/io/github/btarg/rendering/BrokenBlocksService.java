@@ -12,13 +12,8 @@ public class BrokenBlocksService {
 
     private static final Map<Location, BrokenBlock> brokenBlocks = new HashMap<>();
 
-    public void createBrokenBlock(Block block) {
-        createBrokenBlock(block, -1);
-    }
-
     public void createBrokenBlock(Block block, double time) {
         if (isBrokenBlock(block.getLocation())) return;
-        if (time == -1) return;
 
         BrokenBlock brokenBlock = new BrokenBlock(block, time);
         brokenBlocks.put(block.getLocation(), brokenBlock);
@@ -30,7 +25,7 @@ public class BrokenBlocksService {
     }
 
     public BrokenBlock getBrokenBlock(Location location) {
-        createBrokenBlock(location.getBlock());
+        if (!isBrokenBlock(location)) return null;
         return brokenBlocks.get(location);
     }
 

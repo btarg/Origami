@@ -14,18 +14,28 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class CustomBlockDatabase {
 
+    private static final List<World> worldsInitialised = new ArrayList<>();
     private static HashMap<World.Environment, BlocksList> blocksListHashMap;
-
 
     private static String filePath(World world) {
         return PluginMain.getPlugin(PluginMain.class).getDataFolder().getPath() + File.separator + "_data" + File.separator + world.getName() + "-" + world.getEnvironment().name();
+    }
+
+    public static void initWorld(World world) {
+        if (!worldsInitialised.contains(world)) {
+            Bukkit.getLogger().info("Loading custom block database for world: " + world.getName());
+            worldsInitialised.add(world);
+            loadData(world);
+        }
     }
 
     public static void loadData(World world) {
@@ -97,8 +107,6 @@ public class CustomBlockDatabase {
     // When adding blocks to DB, use the hashmap - then we serialize the current environment's value to the correct file
     public static void addBlockToDatabase(Location location, String UUIDstring, Boolean save) {
 
-        loadData(location.getWorld());
-
         if (blocksListHashMap == null) return;
 
         World.Environment environment = location.getWorld().getEnvironment();
@@ -133,7 +141,6 @@ public class CustomBlockDatabase {
 
 
     public static void removeBlockFromDatabase(Location location, Boolean save) {
-        loadData(location.getWorld());
 
         if (blocksListHashMap == null) return;
         if (!blocksListHashMap.containsKey(location.getWorld().getEnvironment())) return;
