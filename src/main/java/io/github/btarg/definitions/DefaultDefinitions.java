@@ -15,7 +15,6 @@ public class DefaultDefinitions {
         definition.baseBlock = Material.GLASS;
         definition.blockModelData = 4;
         definition.blockItemModelData = 3;
-        definition.hasRightClickFunction = false;
         definition.displayName = "§cR§6a§ei§an§9b§bo§5w §6B§el§ao§9c§bk";
         definition.lore = Collections.singletonList("It shimmers beautifully in the sunlight.");
         definition.dropExperience = 0;

@@ -7,6 +7,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
+@SuppressWarnings("deprecation")
 public class ComponentHelper {
 
     public static Component deserializeGenericComponent(String input) {

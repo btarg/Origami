@@ -6,6 +6,7 @@ import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.util.items.ItemTagHelper;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 
@@ -13,7 +14,7 @@ public class CustomBlockUtils {
 
     public static CustomBlockDefinition getDefinitionFromBlock(Block block) {
         if (!CustomBlockDatabase.blockIsInDatabase(block.getLocation())) return null;
-        Entity linkedFrame = GetLinkedItemFrame(block);
+        Entity linkedFrame = GetLinkedItemFrame(block.getLocation());
         if (linkedFrame == null) return null;
         NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
         if (nbtCompound == null) return null;
@@ -21,11 +22,12 @@ public class CustomBlockUtils {
         return CustomBlockRegistry.GetRegisteredBlock(blockId);
     }
 
-    public static Entity GetLinkedItemFrame(Block block) {
-        String check_uuid = CustomBlockDatabase.getBlockUUIDFromDatabase(block.getLocation());
+
+    public static Entity GetLinkedItemFrame(Location location) {
+        String check_uuid = CustomBlockDatabase.getBlockUUIDFromDatabase(location);
         if (check_uuid != null && !check_uuid.isEmpty()) {
 
-            for (Entity ent : block.getWorld().getNearbyEntities(block.getLocation(), 1.0, 1.0, 1.0)) {
+            for (Entity ent : location.getWorld().getNearbyEntities(location, 1.0, 1.0, 1.0)) {
                 if (ent.getUniqueId().toString().equals(check_uuid)) {
                     return ent;
                 }

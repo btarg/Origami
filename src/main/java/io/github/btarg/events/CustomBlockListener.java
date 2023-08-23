@@ -31,7 +31,6 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.loot.LootContext;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -39,13 +38,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class CustomBlocksEvents implements Listener {
+public class CustomBlockListener implements Listener {
 
     private final Set<Material> transparentBlocks;
-
     private final BrokenBlocksService brokenBlocksService;
 
-    public CustomBlocksEvents() {
+    public CustomBlockListener() {
         brokenBlocksService = PluginMain.brokenBlocksService; // Get the BrokenBlocksService instance
         transparentBlocks = new HashSet<>();
         transparentBlocks.add(Material.WATER);
@@ -80,10 +78,6 @@ public class CustomBlocksEvents implements Listener {
             // set the item frame uuid to the same as the base block
             String block_uuid = entity.getUniqueId().toString();
 
-            if (!definition.baseBlock.isBlock()) {
-                Bukkit.getLogger().warning(blockName + " does not have a valid base block set! Defaulting to a spawner.");
-                definition.baseBlock = Material.SPAWNER;
-            }
             world.setBlockData(entity.getLocation(), definition.baseBlock.createBlockData());
 
             // Add the block to the database
@@ -96,35 +90,33 @@ public class CustomBlocksEvents implements Listener {
         }
     }
 
-
     @EventHandler
     public void onBlockInteract(PlayerInteractEvent e) {
+
         Block block = e.getClickedBlock();
-        if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (e.getItem().getType() != null && e.getItem().getType() == Material.ITEM_FRAME) {
+
+        if (block != null && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (e.getItem() != null && e.getItem().getType() == Material.ITEM_FRAME) {
                 return;
             }
 
-            Entity linkedItemFrame = CustomBlockUtils.GetLinkedItemFrame(block);
+            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
+            if (definition == null) return;
 
-            if (linkedItemFrame != null) {
+            if (block.getType() == Material.SPAWNER && e.getPlayer().getInventory().getItemInMainHand().getType().name().endsWith("SPAWN_EGG")) {
+                e.setCancelled(true);
+                return;
+            }
 
-                if (block.getType() == Material.SPAWNER && e.getPlayer().getInventory().getItemInMainHand().getType().name().endsWith("SPAWN_EGG")) {
-                    e.setCancelled(true);
-                    return;
-                }
-
-                NBTCompound tagFromItemFrame = ItemTagHelper.getItemTagFromItemFrame(linkedItemFrame);
-                if (tagFromItemFrame.getBoolean("hasRightClickFunction")) {
-                    OnCustomBlockClicked(e, tagFromItemFrame.getString(PluginMain.customBlockIDKey));
-                }
+            if (!definition.rightClickCommands.isEmpty()) {
+                CustomBlockFunctions.OnCustomBlockClicked(e, definition);
             }
         }
     }
 
     @EventHandler
     public void onCraftItemFrame(CraftItemEvent event) {
-        if (event.getCurrentItem().getType() == Material.GLOW_ITEM_FRAME) {
+        if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.GLOW_ITEM_FRAME) {
             for (ItemStack itemStack : event.getInventory().getMatrix()) {
                 if (itemStack != null) {
 
@@ -136,29 +128,6 @@ public class CustomBlocksEvents implements Listener {
                 }
             }
         }
-    }
-
-    private void DropBlockItems(String blockId, Block blockBroken, Boolean silkTouch) {
-
-        World world = blockBroken.getWorld();
-        CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
-
-        LootContext.Builder builder = new LootContext.Builder(blockBroken.getLocation());
-        LootContext context = builder.build();
-
-        if (silkTouch || definition.dropBlock) {
-            ItemStack blockItem = CustomBlockRegistry.CreateCustomBlockItemStack(definition, 1);
-            world.dropItemNaturally(blockBroken.getLocation(), blockItem);
-        } else {
-//            if (definition.breakLootTable == null) {
-//                return;
-//            }
-//            Collection<ItemStack> stacks = definition.breakLootTable.populateLoot(new Random(), context);
-//            for (ItemStack stack : stacks) {
-//                world.dropItemNaturally(blockBroken.getLocation(), stack);
-//            }
-        }
-
     }
 
     @EventHandler
@@ -213,15 +182,8 @@ public class CustomBlocksEvents implements Listener {
     @EventHandler
     public void onBlockBroken(BlockBreakEvent e) {
 
-        Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(e.getBlock());
-        if (linkedFrame == null) return;
-
-        NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
-        if (nbtCompound == null) return;
-
-        String blockId = nbtCompound.getString(PluginMain.customBlockIDKey);
-        CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
-
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(e.getBlock());
+        if (definition == null) return;
         e.setDropItems(false);
 
         ItemStack itemUsed = e.getPlayer().getInventory().getItemInMainHand();
@@ -237,14 +199,14 @@ public class CustomBlocksEvents implements Listener {
                 if (!silkTouch)
                     e.setExpToDrop(definition.dropExperience);
 
-                OnCustomBlockMined(e, blockId, silkTouch);
-                DropBlockItems(blockId, e.getBlock(), silkTouch);
+                CustomBlockFunctions.OnCustomBlockMined(e, definition, silkTouch);
+                CustomBlockFunctions.DropBlockItems(definition, e.getBlock(), silkTouch);
             }
         }
 
         // Remove item frame and remove block from database
-        OnCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
-        linkedFrame.remove();
+        CustomBlockFunctions.OnCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
+
 
     }
 
@@ -254,21 +216,11 @@ public class CustomBlocksEvents implements Listener {
         for (Block block : e.blockList()) {
             if (CustomBlockDatabase.blockIsInDatabase(block.getLocation())) {
 
-                Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block);
-                if (linkedFrame == null) return;
-
-                NBTCompound frameCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
-                if (frameCompound == null) return;
-
-                String blockId = frameCompound.getString(PluginMain.customBlockIDKey);
-                if (blockId == null) return;
-
-                CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
+                CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
                 if (definition == null) return;
-                DropBlockItems(blockId, block, false);
 
-                linkedFrame.remove();
-                OnCustomBlockBroken(block.getLocation(), definition.breakSound);
+                CustomBlockFunctions.DropBlockItems(definition, block, false);
+                CustomBlockFunctions.OnCustomBlockBroken(block.getLocation(), definition.breakSound);
 
             }
         }
@@ -278,23 +230,6 @@ public class CustomBlocksEvents implements Listener {
     @EventHandler
     public void onFrameBroken(HangingBreakEvent e) {
         e.setCancelled(CustomBlockDatabase.blockIsInDatabase(e.getEntity().getLocation()));
-    }
-
-    private void OnCustomBlockBroken(Location location, String breakSound) {
-        CustomBlockDatabase.removeBlockFromDatabase(location, true);
-
-        //location.getWorld().stopSound(SoundStop.named(Sound.BLOCK_GLASS_BREAK));
-
-        if (breakSound != null)
-            location.getWorld().playSound(location, Sound.valueOf(breakSound), 1, 1);
-    }
-
-    public void OnCustomBlockClicked(PlayerInteractEvent event, String blockName) {
-        event.getPlayer().sendMessage("Clicked: " + blockName);
-    }
-
-    public void OnCustomBlockMined(BlockBreakEvent event, String blockName, Boolean silkTouch) {
-        //event.getPlayer().sendMessage("Mined: " + blockName);
     }
 
 }

@@ -16,7 +16,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
     public Integer blockItemModelData;
     public String displayName;
     public Boolean dropBlock;
-    public Boolean hasRightClickFunction;
+    public List<String> rightClickCommands;
     public List<String> lore;
     public Integer dropExperience;
     public Integer toolLevelRequired;
@@ -27,12 +27,16 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
 
     public CustomBlockDefinition(Map<String, Object> map) {
         this.id = null;
-        this.baseBlock = Objects.requireNonNullElse(Material.valueOf((String) map.get("baseBlock")), Material.SPAWNER);
+        this.baseBlock = Objects.requireNonNullElse(Material.valueOf((String) map.get("baseBlock")), Material.GLASS);
+        if (!this.baseBlock.isBlock()) {
+            this.baseBlock = Material.GLASS;
+        }
+
         this.blockModelData = Objects.requireNonNullElse((Integer) map.get("blockModelData"), 0);
         this.blockItemModelData = Objects.requireNonNullElse((Integer) map.get("blockItemModelData"), 0);
         this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Block");
         this.dropBlock = Objects.requireNonNullElse((Boolean) map.get("dropBlock"), true);
-        this.hasRightClickFunction = Objects.requireNonNullElse((Boolean) map.get("hasRightClickFunction"), false);
+        this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
         this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
         this.dropExperience = Objects.requireNonNullElse((Integer) map.get("dropExperience"), 0);
         this.toolLevelRequired = Objects.requireNonNullElse((Integer) map.get("toolLevelRequired"), 0);
@@ -68,7 +72,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         map.put("blockItemModelData", this.blockItemModelData);
         map.put("displayName", this.displayName);
         map.put("dropBlock", this.dropBlock);
-        map.put("hasRightClickFunction", this.hasRightClickFunction);
+        map.put("rightClickCommands", this.rightClickCommands);
         map.put("lore", this.lore);
         map.put("dropExperience", this.dropExperience);
         map.put("toolLevelRequired", this.toolLevelRequired);

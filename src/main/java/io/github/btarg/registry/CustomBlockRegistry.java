@@ -88,7 +88,6 @@ public class CustomBlockRegistry {
         itemTag2.setInteger("CustomModelData", customBlockDefinition.blockItemModelData);
 
         itemTag2.setString(PluginMain.customBlockIDKey, customBlockDefinition.id);
-        itemTag2.setBoolean("hasRightClickFunction", customBlockDefinition.hasRightClickFunction);
 
         return nbtItem.getItem();
     }
