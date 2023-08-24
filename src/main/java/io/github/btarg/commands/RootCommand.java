@@ -1,11 +1,11 @@
 package io.github.btarg.commands;
 
-import io.github.btarg.PluginMain;
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.TranslatableComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -17,6 +17,7 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 
+@SuppressWarnings("deprecation")
 public class RootCommand implements TabExecutor {
 
     @Override
@@ -36,28 +37,32 @@ public class RootCommand implements TabExecutor {
                 if (definition != null && target != null) {
                     target.getInventory().addItem(CustomBlockRegistry.CreateCustomBlockItemStack(definition, count));
 
-                    Component giveComponent = Component.text()
-                            .append(Component.translatable("commands.give.success.single").append(Component.text(" world"))
-                            ).build();
+                    TranslatableComponent giveMessage = new TranslatableComponent("commands.give.success.single");
+                    giveMessage.addWith(String.valueOf(count));
 
-                    sender.sendMessage(giveComponent);
 
+                    giveMessage.addWith(definition.displayName);
+
+                    TextComponent username = new TextComponent(target.getDisplayName());
+                    giveMessage.addWith(username);
+
+                    sender.spigot().sendMessage(giveMessage);
                 }
 
             } else {
-                sender.sendMessage(NamedTextColor.RED + "Incorrect arguments. Usage:\n" + command.getUsage());
+                sender.sendMessage(ChatColor.RED + "Incorrect arguments. Usage:\n" + command.getUsage());
             }
         } else if (Objects.equals(args[0], "reload")) {
 
             if (Objects.equals(args[1], "blocks")) {
                 sender.sendMessage("Reloading custom blocks...");
                 CustomBlockRegistry.ClearBlockRegistry();
-                PluginMain.blockConfig.loadAndRegisterBlocks(sender);
+                OrigamiMain.blockConfig.loadAndRegisterBlocks(sender);
             } else if (Objects.equals(args[1], "items")) {
                 sender.sendMessage("coming soon");
 
             } else {
-                sender.sendMessage(NamedTextColor.RED + "Please specify which registry you want to reload.");
+                sender.sendMessage(ChatColor.RED + "Please specify which registry you want to reload.");
             }
         } else if (Objects.equals(args[0], "listblocks")) {
 
@@ -69,7 +74,7 @@ public class RootCommand implements TabExecutor {
                 world = sender.getServer().getWorld(args[1]);
             }
             if (world == null) {
-                sender.sendMessage(NamedTextColor.RED + "Could not get world. Usage:\n" + command.getUsage());
+                sender.sendMessage(ChatColor.RED + "Could not get world. Usage:\n" + command.getUsage());
                 return true;
             }
 
@@ -81,7 +86,7 @@ public class RootCommand implements TabExecutor {
             if (!currentDB.isEmpty()) {
                 int count = 0;
                 for (Map.Entry<Vector, String> blockEntry : currentDB.entrySet()) {
-                    finalString.append(String.format("§r  * %s %s[%s]\n", blockEntry.getValue(), NamedTextColor.GREEN, blockEntry.getKey().toString()));
+                    finalString.append(String.format("§r  * %s %s[%s]\n", blockEntry.getValue(), ChatColor.GREEN, blockEntry.getKey().toString()));
                     count++;
                 }
                 sender.sendMessage(String.valueOf(count) + finalString);
@@ -115,9 +120,9 @@ public class RootCommand implements TabExecutor {
                     tabComplete.add(player.getName());
                 }
 
-            } else if (args.length == 3) {
+            } else if (args.length == 3 && !args[2].isEmpty()) {
                 tabComplete = CustomBlockRegistry.GetBlockIDs();
-            } else if (args.length == 4) {
+            } else if (args.length == 4 && !args[3].isEmpty()) {
                 tabComplete = Collections.singletonList("64");
             }
 

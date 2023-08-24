@@ -2,7 +2,7 @@ package io.github.btarg.events;
 
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
-import io.github.btarg.PluginMain;
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
@@ -44,7 +44,7 @@ public class CustomBlockListener implements Listener {
     private final BrokenBlocksService brokenBlocksService;
 
     public CustomBlockListener() {
-        brokenBlocksService = PluginMain.brokenBlocksService; // Get the BrokenBlocksService instance
+        brokenBlocksService = OrigamiMain.brokenBlocksService; // Get the BrokenBlocksService instance
         transparentBlocks = new HashSet<>();
         transparentBlocks.add(Material.WATER);
         transparentBlocks.add(Material.LAVA);
@@ -59,7 +59,7 @@ public class CustomBlockListener implements Listener {
 
             NBTCompound compound = ItemTagHelper.getItemTagFromItemFrame(entity);
             if (compound == null) return;
-            String blockName = compound.getString(PluginMain.customBlockIDKey);
+            String blockName = compound.getString(OrigamiMain.customBlockIDKey);
 
             if (blockName == null) return;
 
@@ -182,7 +182,9 @@ public class CustomBlockListener implements Listener {
     @EventHandler
     public void onBlockBroken(BlockBreakEvent e) {
 
-        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(e.getBlock());
+        Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(e.getBlock().getLocation());
+        if (linkedFrame == null) return;
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
         if (definition == null) return;
         e.setDropItems(false);
 
@@ -206,7 +208,7 @@ public class CustomBlockListener implements Listener {
 
         // Remove item frame and remove block from database
         CustomBlockFunctions.OnCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
-
+        linkedFrame.remove();
 
     }
 
@@ -216,11 +218,15 @@ public class CustomBlockListener implements Listener {
         for (Block block : e.blockList()) {
             if (CustomBlockDatabase.blockIsInDatabase(block.getLocation())) {
 
-                CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
+                Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block.getLocation());
+                if (linkedFrame == null) return;
+                CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
                 if (definition == null) return;
 
                 CustomBlockFunctions.DropBlockItems(definition, block, false);
                 CustomBlockFunctions.OnCustomBlockBroken(block.getLocation(), definition.breakSound);
+
+                linkedFrame.remove();
 
             }
         }

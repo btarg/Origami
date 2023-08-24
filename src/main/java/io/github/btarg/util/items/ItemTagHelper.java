@@ -2,7 +2,7 @@ package io.github.btarg.util.items;
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
-import io.github.btarg.PluginMain;
+import io.github.btarg.OrigamiMain;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +16,7 @@ public class ItemTagHelper {
     public static boolean isCustomItem(ItemStack itemStack) {
         if (itemStack.hasItemMeta()) {
             PersistentDataContainer container = Objects.requireNonNull(itemStack.getItemMeta()).getPersistentDataContainer();
-            return !container.isEmpty() && container.has(PluginMain.customItemTag, PersistentDataType.STRING);
+            return !container.isEmpty() && container.has(OrigamiMain.customItemTag, PersistentDataType.STRING);
         }
         return false;
     }

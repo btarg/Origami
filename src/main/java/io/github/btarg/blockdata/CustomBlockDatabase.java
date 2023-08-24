@@ -1,6 +1,6 @@
 package io.github.btarg.blockdata;
 
-import io.github.btarg.PluginMain;
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.util.VectorHelper;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
@@ -27,7 +27,7 @@ public class CustomBlockDatabase {
     private static HashMap<World.Environment, BlocksList> blocksListHashMap;
 
     private static String filePath(World world) {
-        return PluginMain.getPlugin(PluginMain.class).getDataFolder().getPath() + File.separator + "_data" + File.separator + world.getName() + "-" + world.getEnvironment().name();
+        return OrigamiMain.getPlugin(OrigamiMain.class).getDataFolder().getPath() + File.separator + "_data" + File.separator + world.getName() + "-" + world.getEnvironment().name();
     }
 
     public static void initWorld(World world) {
@@ -172,7 +172,7 @@ public class CustomBlockDatabase {
 
         if (blocksListHashMap == null) return;
 
-        Bukkit.getScheduler().runTaskAsynchronously(PluginMain.getPlugin(PluginMain.class), () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(OrigamiMain.getPlugin(OrigamiMain.class), () -> {
 
             try {
                 FileOutputStream stream = FileUtils.openOutputStream(new File(filePath(world)));

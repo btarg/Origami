@@ -1,7 +1,7 @@
 package io.github.btarg.util;
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
-import io.github.btarg.PluginMain;
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
@@ -16,9 +16,13 @@ public class CustomBlockUtils {
         if (!CustomBlockDatabase.blockIsInDatabase(block.getLocation())) return null;
         Entity linkedFrame = GetLinkedItemFrame(block.getLocation());
         if (linkedFrame == null) return null;
-        NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(linkedFrame);
+        return getDefinitionFromItemFrame(linkedFrame);
+    }
+
+    public static CustomBlockDefinition getDefinitionFromItemFrame(Entity itemFrame) {
+        NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(itemFrame);
         if (nbtCompound == null) return null;
-        String blockId = nbtCompound.getString(PluginMain.customBlockIDKey);
+        String blockId = nbtCompound.getString(OrigamiMain.customBlockIDKey);
         return CustomBlockRegistry.GetRegisteredBlock(blockId);
     }
 

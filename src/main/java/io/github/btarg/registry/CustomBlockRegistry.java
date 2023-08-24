@@ -2,7 +2,7 @@ package io.github.btarg.registry;
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTItem;
-import io.github.btarg.PluginMain;
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -62,7 +62,7 @@ public class CustomBlockRegistry {
         meta.lore(customBlockDefinition.getLore());
 
         // add custom block id to the item so that we can tell it's a custom item
-        meta.getPersistentDataContainer().set(PluginMain.customItemTag, PersistentDataType.STRING, customBlockDefinition.id);
+        meta.getPersistentDataContainer().set(OrigamiMain.customItemTag, PersistentDataType.STRING, customBlockDefinition.id);
 
         frame.setItemMeta(meta);
 
@@ -87,7 +87,7 @@ public class CustomBlockRegistry {
         NBTCompound itemTag2 = itemTag.addCompound("tag");
         itemTag2.setInteger("CustomModelData", customBlockDefinition.blockItemModelData);
 
-        itemTag2.setString(PluginMain.customBlockIDKey, customBlockDefinition.id);
+        itemTag2.setString(OrigamiMain.customBlockIDKey, customBlockDefinition.id);
 
         return nbtItem.getItem();
     }

@@ -33,7 +33,7 @@ dependencies {
 
 group = "io.github"
 version = "1.0-SNAPSHOT"
-description = "CustomContent"
+description = "Origami"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 tasks {

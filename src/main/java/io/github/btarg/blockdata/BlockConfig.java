@@ -1,6 +1,6 @@
 package io.github.btarg.blockdata;
 
-import io.github.btarg.PluginMain;
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.DefaultDefinitions;
 import io.github.btarg.registry.CustomBlockRegistry;
@@ -70,7 +70,7 @@ public class BlockConfig {
     }
 
     public void loadAndRegisterBlocks(CommandSender sender) {
-        Path blocksDirectory = Paths.get(getBlockConfigDirectory(PluginMain.getPlugin(PluginMain.class)));
+        Path blocksDirectory = Paths.get(getBlockConfigDirectory(OrigamiMain.getPlugin(OrigamiMain.class)));
 
         if (!blocksDirectory.toFile().exists()) {
             blocksDirectory.toFile().mkdirs();
