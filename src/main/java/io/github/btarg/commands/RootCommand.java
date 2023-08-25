@@ -39,8 +39,6 @@ public class RootCommand implements TabExecutor {
 
                     TranslatableComponent giveMessage = new TranslatableComponent("commands.give.success.single");
                     giveMessage.addWith(String.valueOf(count));
-
-
                     giveMessage.addWith(definition.displayName);
 
                     TextComponent username = new TextComponent(target.getDisplayName());

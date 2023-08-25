@@ -105,21 +105,20 @@ public class CustomBlockDatabase {
 
 
     // When adding blocks to DB, use the hashmap - then we serialize the current environment's value to the correct file
-    public static void addBlockToDatabase(Location location, String UUIDstring, Boolean save) {
+    public static boolean addBlockToDatabase(Location location, String UUIDstring, Boolean save) {
 
-        if (blocksListHashMap == null) return;
+        if (blocksListHashMap == null) return false;
+        if (blockIsInDatabase(location)) return false;
 
         World.Environment environment = location.getWorld().getEnvironment();
 
         // save only whole numbers into vector
         Vector locationVector = VectorHelper.ToBlockVectorWhole(location.toVector());
 
-
-        // initialise with an empty blockslist which we can edit later
+        // initialise with an empty blocks list which we can edit later
         if (!blocksListHashMap.containsKey(environment)) {
             blocksListHashMap.put(environment, new BlocksList());
         }
-
 
         // if the list is null then we create a new one
         if (!blocksListHashMap.get(environment).blocksInDatabase.containsKey(locationVector)) {
@@ -128,42 +127,36 @@ public class CustomBlockDatabase {
             blocksListHashMap.get(environment).blocksInDatabase.replace(locationVector, UUIDstring);
         }
 
-
         // save after adding
-        if (save)
-            saveData(location.getWorld());
+        if (save) saveData(location.getWorld());
+        return true;
 
     }
 
-    public static void addBlockToDatabase(Location location, String UUIDstring) {
-        addBlockToDatabase(location, UUIDstring, true);
+    public static boolean addBlockToDatabase(Location location, String UUIDstring) {
+        return addBlockToDatabase(location, UUIDstring, true);
     }
 
 
     public static void removeBlockFromDatabase(Location location, Boolean save) {
 
         if (blocksListHashMap == null) return;
-        if (!blocksListHashMap.containsKey(location.getWorld().getEnvironment())) return;
-        if (blocksListHashMap.get(location.getWorld().getEnvironment()).blocksInDatabase == null) return;
+        World.Environment environment = location.getWorld().getEnvironment();
+        if (!blocksListHashMap.containsKey(environment)) return;
+        if (blocksListHashMap.get(environment).blocksInDatabase == null) return;
 
         Vector locationToRemove = null;
 
-        for (Vector loc : blocksListHashMap.get(location.getWorld().getEnvironment()).blocksInDatabase.keySet()) {
-
+        for (Vector loc : blocksListHashMap.get(environment).blocksInDatabase.keySet()) {
             if (VectorHelper.CompareVectors(loc.toBlockVector(), location.toVector().toBlockVector())) {
                 locationToRemove = loc;
                 break;
             }
-
         }
 
         if (locationToRemove != null) {
-
             blocksListHashMap.get(location.getWorld().getEnvironment()).blocksInDatabase.remove(locationToRemove);
-
-            if (save)
-                saveData(location.getWorld());
-
+            if (save) saveData(location.getWorld());
         }
     }
 

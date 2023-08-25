@@ -59,15 +59,21 @@ public class CustomBlockListener implements Listener {
 
             NBTCompound compound = ItemTagHelper.getItemTagFromItemFrame(entity);
             if (compound == null) return;
-            String blockName = compound.getString(OrigamiMain.customBlockIDKey);
 
+            String blockName = compound.getString(OrigamiMain.customBlockIDKey);
             if (blockName == null) return;
+
+            CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
+            if (definition == null) return;
 
             Block block = event.getBlock();
             World world = block.getWorld();
 
-            CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
-            if (definition == null) return;
+            // if this is supposed to be a glow item frame, then we set it here
+            if (definition.glowing) {
+                event.getEntity().remove();
+                entity = world.spawnEntity(event.getBlock().getLocation(), EntityType.GLOW_ITEM_FRAME);
+            }
 
             java.util.Collection<Entity> entities = world.getNearbyEntities(entity.getLocation(), 0.5, 0.5, 0.5);
             if (!entities.isEmpty()) {
@@ -78,11 +84,16 @@ public class CustomBlockListener implements Listener {
             // set the item frame uuid to the same as the base block
             String block_uuid = entity.getUniqueId().toString();
 
-            world.setBlockData(entity.getLocation(), definition.baseBlock.createBlockData());
-
             // Add the block to the database
             Location placedLocation = entity.getLocation();
-            CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
+
+            // if we failed to add a block because there is one already there, then we should cancel the item frame place event
+            boolean added = CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
+            if (!added) {
+                event.setCancelled(true);
+                return;
+            }
+            world.setBlockData(entity.getLocation(), definition.baseBlock.createBlockData());
 
             if (definition.placeSound != null) {
                 world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);

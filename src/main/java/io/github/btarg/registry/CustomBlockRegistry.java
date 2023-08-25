@@ -33,16 +33,10 @@ public class CustomBlockRegistry {
                 foundBlock = blockDefinitions.get(bid);
             }
         }
-//        if (foundBlock != null)
-//            Bukkit.getLogger().info("Found block: " + foundBlock.id);
 
         return foundBlock;
     }
 
-    public static ItemStack CreateCustomBlockItemStack(String blockID, int count) {
-        CustomBlockDefinition definition = GetRegisteredBlock(blockID);
-        return CreateCustomBlockItemStack(definition, count);
-    }
 
     public static void ClearBlockRegistry() {
         blockDefinitions.clear();
@@ -51,10 +45,9 @@ public class CustomBlockRegistry {
     public static ItemStack CreateCustomBlockItemStack(CustomBlockDefinition customBlockDefinition, int count) {
 
         ItemStack frame = new ItemStack(Material.ITEM_FRAME, count);
-
+      
         // new item meta (name and lore)
         ItemMeta meta = frame.getItemMeta();
-
 
         Component name = customBlockDefinition.getDisplayName();
         meta.displayName(name);
@@ -69,7 +62,7 @@ public class CustomBlockRegistry {
         // start editing nbt
         NBTItem nbtItem = new NBTItem(frame);
 
-        nbtItem.setInteger("CustomModelData", customBlockDefinition.blockModelData);
+        nbtItem.setInteger("CustomModelData", customBlockDefinition.blockItemModelData);
         NBTCompound entityTag = nbtItem.addCompound("EntityTag");
 
         // item frame properties
@@ -80,14 +73,14 @@ public class CustomBlockRegistry {
         entityTag.setBoolean("Silent", true);
         entityTag.setBoolean("Fixed", true);
 
-        // item within frame - shows block
+        // item frame within first frame - has block model
         NBTCompound itemTag = entityTag.addCompound("Item");
         itemTag.setString("id", "minecraft:item_frame");
         itemTag.setInteger("Count", 1);
-        NBTCompound itemTag2 = itemTag.addCompound("tag");
-        itemTag2.setInteger("CustomModelData", customBlockDefinition.blockItemModelData);
+        NBTCompound modelItemTag = itemTag.addCompound("tag");
+        modelItemTag.setInteger("CustomModelData", customBlockDefinition.blockModelData);
 
-        itemTag2.setString(OrigamiMain.customBlockIDKey, customBlockDefinition.id);
+        modelItemTag.setString(OrigamiMain.customBlockIDKey, customBlockDefinition.id);
 
         return nbtItem.getItem();
     }
