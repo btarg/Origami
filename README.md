@@ -1,4 +1,4 @@
-<a href="https://thenounproject.com/browse/icons/term/origami-crane/"><img title="Origami Crane by Kelig Le Luron from The Noun Project" src="https://raw.githubusercontent.com/iCrazyBlaze/CustomItemsPlugin/master/origami-logo.png?token=GHSAT0AAAAAACDX2HMBVYWRHUKRBW5YVIMIZHH7CKA" align="center" style="max-width: 600px"></a>
+<a href="https://github.com/iCrazyBlaze/CustomItemsPlugin/blob/master/origami-logo.png?raw=true" align="center" style="max-width: 600px"></a>
 
 A Minecraft server plugin for [Paper](https://papermc.io) which allows a server admin to easily add configurable custom
 blocks and
