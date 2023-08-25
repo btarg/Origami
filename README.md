@@ -1,4 +1,4 @@
-<a href="https://github.com/iCrazyBlaze/CustomItemsPlugin/blob/master/origami-logo.png?raw=true" align="center" style="max-width: 600px"></a>
+<a href="origami-logo.png" align="center" style="max-width: 600px"></a>
 
 A Minecraft server plugin for [Paper](https://papermc.io) which allows a server admin to easily add configurable custom
 blocks and
