@@ -6,19 +6,24 @@ import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.events.CustomBlockListener;
 import io.github.btarg.rendering.BrokenBlocksService;
-import io.github.btarg.util.http.ResourcePackServer;
+import io.github.btarg.resourcepack.ResourcePackServer;
+import io.github.btarg.util.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
+@SuppressWarnings("deprecation")
 public final class OrigamiMain extends JavaPlugin implements Listener {
 
     public static final String customBlockIDKey = "custom_block";
@@ -49,7 +54,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         // resource pack config
         config = getConfig();
-        config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true)", "You can set the local path to the resource pack which will be hosted below.", "Set the appropriate SHA-1 and URL (http://localhost:[PORT]) in server.properties"));
+        config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true),", "you can set the local path to the resource pack which will be hosted below.", "Remember to set your server's IP address in server.properties"));
         config.addDefault("enable-http-server", false);
         config.addDefault("http-port", 8008);
         config.addDefault("local-resource-pack-path", this.getDataFolder() + File.separator + "pack.zip");
@@ -63,18 +68,41 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
             Integer port = (Integer) config.get("http-port");
             if (port == null) return;
 
-            try {
-                ResourcePackServer.startServer(port);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+
+                        try {
+                            ResourcePackServer.startServer(port);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
+        }
+    }
+
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+
+        // init world here to make sure we have fully loaded plugin
+        CustomBlockDatabase.initWorld(event.getPlayer().getWorld());
+
+        String ipAddress = StringUtils.defaultIfEmpty(getServer().getIp(), "localhost");
+
+        Integer port = Objects.requireNonNullElse((Integer) config.get("http-port"), 8008);
+
+        try {
+            String sha1 = FileUtils.currentSHA1();
+            if (sha1.isEmpty()) {
+                getLogger().warning("No hash generated!");
+                event.getPlayer().setResourcePack("http://" + ipAddress + "/pack.zip");
+            } else {
+                getLogger().info("Resource pack hash: " + sha1);
+                event.getPlayer().setResourcePack("http://" + ipAddress + ":" + port + "/pack.zip", sha1);
             }
+        } catch (Exception e) {
+            getLogger().severe(e.getMessage());
         }
 
     }
-
-    @EventHandler
-    public void onWorldLoaded(WorldLoadEvent event) {
-        CustomBlockDatabase.initWorld(event.getWorld());
-    }
-
 }

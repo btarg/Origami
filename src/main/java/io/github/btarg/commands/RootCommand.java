@@ -118,9 +118,9 @@ public class RootCommand implements TabExecutor {
                     tabComplete.add(player.getName());
                 }
 
-            } else if (args.length == 3 && !args[2].isEmpty()) {
+            } else if (args.length == 3 && !args[1].isEmpty()) {
                 tabComplete = CustomBlockRegistry.GetBlockIDs();
-            } else if (args.length == 4 && !args[3].isEmpty()) {
+            } else if (args.length == 4 && !args[2].isEmpty()) {
                 tabComplete = Collections.singletonList("64");
             }
 

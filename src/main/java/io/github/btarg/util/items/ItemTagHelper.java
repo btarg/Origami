@@ -25,7 +25,8 @@ public class ItemTagHelper {
 
         if (entity.getType().equals(EntityType.ITEM_FRAME) || entity.getType().equals(EntityType.GLOW_ITEM_FRAME)) {
             NBTEntity nbtEntity = new NBTEntity(entity);
-            return nbtEntity.getCompound("Item").getCompound("tag");
+            if (nbtEntity.getCompound("Item") != null)
+                return nbtEntity.getCompound("Item").getCompound("tag");
         }
         return null;
 

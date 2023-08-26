@@ -1,4 +1,4 @@
-package io.github.btarg.util.http;
+package io.github.btarg.resourcepack;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;

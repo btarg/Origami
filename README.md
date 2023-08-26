@@ -48,12 +48,14 @@ block:
   block
   goes beneath the custom model displayed via an item frame. Only
   transparent blocks
-  work when the item frame is not a glowing item frame (`glowing: false`)
+  work when the item frame is not a glowing item frame (`glowing: false`). `GLASS` typically works the best, but
+  using `SPAWNER` works too.
 
 
 - **(Boolean)** `glowing` - determines if the item frame with custom model data (custom block item) placed by the player
   should be
-  replaced with a glowing item frame once it has been spawned in.
+  replaced with a glowing item frame once it has been spawned in. When a block uses a glowing item frame, it appears
+  without lighting applied, so it is recommended that your `baseBlock` is a block that emits light when `glowing: true`.
 
 
 - **(Integer)** `dropExperience` is how much XP should be dropped when the block is mined. XP can only be gained from a
@@ -92,5 +94,5 @@ block:
 - **(Integer)** `blockItemModelData` - the model data number for the item version of the block. When the player places
   this model in an item frame manually, it is the size of any other normal block.
 
-> In this example we set `blockModelData` to `4`, and `blockItemModelData` to `3`.
+> In this example we set `blockModelData` to `3`, and `blockItemModelData` to `4`.
 

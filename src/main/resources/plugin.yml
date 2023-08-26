@@ -1,14 +1,22 @@
 name: Origami
 version: '${project.version}'
 author: btarg
-main: io.github.btarg.PluginMain
+main: io.github.btarg.OrigamiMain
 api-version: '1.20'
-description: The ultimate custom content plugin for Spigot and Paper servers.
+description: The ultimate custom content plugin for Paper servers.
 
 commands:
   origami:
     aliases:
       - oc
+      - cc
     description: Give a custom block or item, reload custom blocks and items or list custom blocks currently in the world
     usage: /oc [give | reload | listblocks]
     permission: origami.commands
+
+permissions:
+  origami.commands:
+    description: "Use Origami commands"
+    default: op
+    children:
+      permission.node.child: true

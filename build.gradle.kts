@@ -26,7 +26,7 @@ repositories {
 dependencies {
     api("commons-io:commons-io:2.13.0")
     implementation("de.tr7zw:item-nbt-api:2.11.3")
-    api("org.projectlombok:lombok:1.18.28")
+    compileOnly("org.projectlombok:lombok:1.18.28")
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 
 }
@@ -38,7 +38,6 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 tasks {
     named<ShadowJar>("shadowJar") {
-
         relocate("de.tr7zw.changeme", "thirdparty")
     }
 }
@@ -48,7 +47,7 @@ tasks {
         dependsOn(shadowJar)
         doLast {
             val outputDir = "E:/MINECRAFT TEST SERVER/plugins"
-            val outputJarName = "${project.name}-${project.version}-shaded.jar"
+            val outputJarName = "${project.description}-${project.version}.jar"
 
             val outputJarFile = File(outputDir, outputJarName)
             val shadowJarFile = shadowJar.get().archiveFile.get().asFile
