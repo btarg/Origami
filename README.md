@@ -35,7 +35,10 @@ block:
   canBeMinedWith:
     - pickaxes
   displayName: §cR§6a§ei§an§9b§bo§5w §6B§el§ao§9c§bk
-  dropBlock: true
+  drops:
+    - ==: org.bukkit.inventory.ItemStack
+    v: 3465
+    type: DIAMOND
   blockModelData: 4
   toolLevelRequired: 2
   blockItemModelData: 3
@@ -83,8 +86,8 @@ block:
   a language string, and set the item's name in your resource pack's lang file instead - formatting included.
 
 
-- **(Boolean)** `dropBlock` - set this to `true` if the block should always drop one of itself when broken with the
-  right tool, as if Silk Touch is always being used. Otherwise, you can use a custom loot definition
+- **(Boolean)** `drops` - if empty, the block will drop itself, otherwise the ItemStacks listed here will be dropped (
+  this is subject to change)
 
 ## Model data
 
