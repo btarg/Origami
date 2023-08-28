@@ -24,14 +24,14 @@ If this directory is empty, then Origami will generate the following example def
 
 ```yml
 block:
-  ==: io.github.btarg.definitions.CustomBlockDefinition
+  ==: CustomBlockDefinition
   baseBlock: GLASS
   glowing: false
   dropExperience: 0
   lore:
     - <rainbow>It shimmers beautifully in the sunlight.</rainbow>
   rightClickCommands:
-    - tellraw @s {"text":"The block reverberates magestically.","italic":true,"color":"gray"}
+    - tellraw @s {"text":"The block reverberates majestically.","italic":true,"color":"gray"}
   canBeMinedWith:
     - pickaxes
   displayName: §cR§6a§ei§an§9b§bo§5w §6B§el§ao§9c§bk

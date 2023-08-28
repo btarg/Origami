@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
     `java-library`
     `maven-publish`
@@ -17,15 +15,10 @@ repositories {
         url = uri("https://oss.sonatype.org/content/groups/public/")
     }
 
-    maven {
-        url = uri("https://repo.codemc.org/repository/maven-public/")
-    }
-
 }
 
 dependencies {
     api("commons-io:commons-io:2.13.0")
-    implementation("de.tr7zw:item-nbt-api:2.11.3")
     compileOnly("org.projectlombok:lombok:1.18.28")
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 
@@ -36,11 +29,6 @@ version = "1.0-SNAPSHOT"
 description = "Origami"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-tasks {
-    named<ShadowJar>("shadowJar") {
-        relocate("de.tr7zw.changeme", "thirdparty")
-    }
-}
 
 tasks {
     register("copyJar") {

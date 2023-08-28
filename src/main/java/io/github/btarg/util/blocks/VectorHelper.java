@@ -1,4 +1,4 @@
-package io.github.btarg.util;
+package io.github.btarg.util.blocks;
 
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;

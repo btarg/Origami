@@ -1,7 +1,7 @@
 package io.github.btarg.blockdata;
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.util.VectorHelper;
+import io.github.btarg.util.blocks.VectorHelper;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

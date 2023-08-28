@@ -6,8 +6,8 @@ import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.events.CustomBlockListener;
 import io.github.btarg.rendering.BrokenBlocksService;
+import io.github.btarg.resourcepack.FileUtils;
 import io.github.btarg.resourcepack.ResourcePackServer;
-import io.github.btarg.util.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -51,7 +51,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         // load blocks from files
         blockConfig.loadAndRegisterBlocks();
 
-
         // resource pack config
         config = getConfig();
         config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true),", "you can set the local path to the resource pack which will be hosted below.", "Remember to set your server's IP address in server.properties"));
@@ -61,7 +60,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         config.options().copyDefaults(true);
         saveConfig();
-
 
         // Start resource pack host server
         if (config.getBoolean("enable-http-server")) {

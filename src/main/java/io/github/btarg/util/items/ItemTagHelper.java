@@ -1,10 +1,6 @@
 package io.github.btarg.util.items;
 
-import de.tr7zw.changeme.nbtapi.NBTCompound;
-import de.tr7zw.changeme.nbtapi.NBTEntity;
 import io.github.btarg.OrigamiMain;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -21,14 +17,4 @@ public class ItemTagHelper {
         return false;
     }
 
-    public static NBTCompound getItemTagFromItemFrame(Entity entity) {
-
-        if (entity.getType().equals(EntityType.ITEM_FRAME) || entity.getType().equals(EntityType.GLOW_ITEM_FRAME)) {
-            NBTEntity nbtEntity = new NBTEntity(entity);
-            if (nbtEntity.getCompound("Item") != null)
-                return nbtEntity.getCompound("Item").getCompound("tag");
-        }
-        return null;
-
-    }
 }

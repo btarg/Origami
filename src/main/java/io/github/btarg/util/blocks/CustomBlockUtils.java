@@ -1,14 +1,15 @@
-package io.github.btarg.util;
+package io.github.btarg.util.blocks;
 
-import de.tr7zw.changeme.nbtapi.NBTCompound;
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
-import io.github.btarg.util.items.ItemTagHelper;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
 public class CustomBlockUtils {
 
@@ -19,11 +20,14 @@ public class CustomBlockUtils {
         return getDefinitionFromItemFrame(linkedFrame);
     }
 
-    public static CustomBlockDefinition getDefinitionFromItemFrame(Entity itemFrame) {
-        NBTCompound nbtCompound = ItemTagHelper.getItemTagFromItemFrame(itemFrame);
-        if (nbtCompound == null) return null;
-        String blockId = nbtCompound.getString(OrigamiMain.customBlockIDKey);
-        return CustomBlockRegistry.GetRegisteredBlock(blockId);
+    public static CustomBlockDefinition getDefinitionFromItemFrame(Entity itemFrameEntity) {
+        ItemStack item = ((ItemFrame) itemFrameEntity).getItem();
+
+        String blockId = item.getItemMeta().getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
+        if (blockId != null)
+            return CustomBlockRegistry.GetRegisteredBlock(blockId);
+
+        return null;
     }
 
 

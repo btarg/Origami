@@ -1,4 +1,4 @@
-package io.github.btarg.util;
+package io.github.btarg.resourcepack;
 
 import io.github.btarg.OrigamiMain;
 import org.bukkit.Bukkit;

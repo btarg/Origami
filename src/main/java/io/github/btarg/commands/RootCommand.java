@@ -4,6 +4,7 @@ import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
+import io.github.btarg.registry.RegistryHelper;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import org.bukkit.Bukkit;
@@ -35,7 +36,7 @@ public class RootCommand implements TabExecutor {
                 CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
 
                 if (definition != null && target != null) {
-                    target.getInventory().addItem(CustomBlockRegistry.CreateCustomBlockItemStack(definition, count));
+                    target.getInventory().addItem(RegistryHelper.CreateCustomBlockItemStack(definition, count));
 
                     TranslatableComponent giveMessage = new TranslatableComponent("commands.give.success.single");
                     giveMessage.addWith(String.valueOf(count));

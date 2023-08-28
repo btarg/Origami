@@ -1,21 +1,22 @@
 package io.github.btarg.events;
 
 
-import de.tr7zw.changeme.nbtapi.NBTCompound;
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.rendering.BrokenBlock;
 import io.github.btarg.rendering.BrokenBlocksService;
-import io.github.btarg.util.CustomBlockUtils;
+import io.github.btarg.util.blocks.CustomBlockUtils;
 import io.github.btarg.util.items.ItemTagHelper;
 import io.github.btarg.util.items.ToolLevelHelper;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -24,6 +25,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageAbortEvent;
 import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
@@ -31,6 +33,8 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -55,13 +59,12 @@ public class CustomBlockListener implements Listener {
     public void ItemFramePlace(HangingPlaceEvent event) {
         Entity entity = event.getEntity();
 
-        if (entity.getType() == EntityType.ITEM_FRAME || entity.getType() == EntityType.GLOW_ITEM_FRAME) {
+        if (entity.getType() == EntityType.ITEM_FRAME) {
 
-            NBTCompound compound = ItemTagHelper.getItemTagFromItemFrame(entity);
-            if (compound == null) return;
+            ItemMeta meta = event.getItemStack().getItemMeta();
+            if (meta == null) return;
 
-            String blockName = compound.getString(OrigamiMain.customBlockIDKey);
-            if (blockName == null) return;
+            String blockName = meta.getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
 
             CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
             if (definition == null) return;
@@ -69,15 +72,39 @@ public class CustomBlockListener implements Listener {
             Block block = event.getBlock();
             World world = block.getWorld();
 
-            // if this is supposed to be a glow item frame, then we set it here
+            // set the item frame's item to be an item frame with a custom model
+            ItemStack modelItem = new ItemStack(Material.ITEM_FRAME, 1);
+            ItemMeta modelMeta = modelItem.getItemMeta();
+            modelMeta.setCustomModelData(definition.blockModelData);
+            modelMeta.getPersistentDataContainer().set(OrigamiMain.customItemTag, PersistentDataType.STRING, definition.id);
+            modelItem.setItemMeta(modelMeta);
+
+            // if this is supposed to be a glow item frame, then we create a new entity
             if (definition.glowing) {
-                event.getEntity().remove();
-                entity = world.spawnEntity(event.getBlock().getLocation(), EntityType.GLOW_ITEM_FRAME);
+
+                Location exLocation = entity.getLocation();
+                entity.remove();
+                entity = SpawnGlowItemFrame(exLocation);
+
             }
 
+            ItemFrame frame = (ItemFrame) entity;
+            frame.setFacingDirection(BlockFace.UP);
+            frame.setVisible(false);
+            frame.setInvulnerable(true);
+            frame.setFixed(true);
+            frame.setSilent(true);
+            frame.setCustomNameVisible(false);
+            frame.setItem(modelItem, false);
+
+
+            // check for entities (other than item frames) that are too close
             java.util.Collection<Entity> entities = world.getNearbyEntities(entity.getLocation(), 0.5, 0.5, 0.5);
+            entities.removeIf(ent -> ent instanceof ItemFrame);
+
             if (!entities.isEmpty()) {
                 event.setCancelled(true);
+                entity.remove();
                 return;
             }
 
@@ -91,6 +118,7 @@ public class CustomBlockListener implements Listener {
             boolean added = CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
             if (!added) {
                 event.setCancelled(true);
+                entity.remove();
                 return;
             }
             world.setBlockData(entity.getLocation(), definition.baseBlock.createBlockData());
@@ -99,6 +127,10 @@ public class CustomBlockListener implements Listener {
                 world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
             }
         }
+    }
+
+    private Entity SpawnGlowItemFrame(Location location) {
+        return location.getWorld().spawnEntity(location, EntityType.GLOW_ITEM_FRAME, CreatureSpawnEvent.SpawnReason.COMMAND);
     }
 
     @EventHandler
@@ -181,7 +213,7 @@ public class CustomBlockListener implements Listener {
         Block block = event.getBlock();
         CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
         if (definition == null) return;
-        brokenBlocksService.createBrokenBlock(block, definition.timeToBreak);
+        brokenBlocksService.createBrokenBlock(block, (double) definition.timeToBreak);
 
     }
 
@@ -212,8 +244,8 @@ public class CustomBlockListener implements Listener {
                 if (!silkTouch)
                     e.setExpToDrop(definition.dropExperience);
 
-                CustomBlockFunctions.OnCustomBlockMined(e, definition, silkTouch);
-                CustomBlockFunctions.DropBlockItems(definition, e.getBlock(), silkTouch);
+                CustomBlockFunctions.OnCustomBlockMined(e, definition);
+                CustomBlockFunctions.DropBlockItems(e.getPlayer().getInventory().getItemInMainHand(), definition, e.getBlock());
             }
         }
 
@@ -234,7 +266,7 @@ public class CustomBlockListener implements Listener {
                 CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
                 if (definition == null) return;
 
-                CustomBlockFunctions.DropBlockItems(definition, block, false);
+                CustomBlockFunctions.DropBlockItems(null, definition, block);
                 CustomBlockFunctions.OnCustomBlockBroken(block.getLocation(), definition.breakSound);
 
                 linkedFrame.remove();
