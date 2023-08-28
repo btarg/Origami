@@ -11,6 +11,7 @@ import io.github.btarg.resourcepack.ResourcePackServer;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.EventHandler;
@@ -53,10 +54,14 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         // resource pack config
         config = getConfig();
+
         config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true),", "you can set the local path to the resource pack which will be hosted below.", "Remember to set your server's IP address in server.properties"));
         config.addDefault("enable-http-server", false);
         config.addDefault("http-port", 8008);
         config.addDefault("local-resource-pack-path", this.getDataFolder() + File.separator + "pack.zip");
+
+        ConfigurationSection blockSection = config.createSection("custom-blocks");
+        blockSection.addDefault("save-cooldown-seconds", 3);
 
         config.options().copyDefaults(true);
         saveConfig();
@@ -102,5 +107,10 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
             getLogger().severe(e.getMessage());
         }
 
+    }
+
+    @Override
+    public void onDisable() {
+        CustomBlockDatabase.saveAll();
     }
 }

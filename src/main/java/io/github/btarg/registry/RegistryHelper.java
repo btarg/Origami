@@ -8,6 +8,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.Objects;
+
 public class RegistryHelper {
 
 
@@ -27,5 +29,9 @@ public class RegistryHelper {
         frame.setItemMeta(meta);
 
         return frame;
+    }
+
+    public static String getRegistryPrefix() {
+        return Objects.requireNonNullElse(OrigamiMain.config.get("prefix"), "origami") + ":";
     }
 }

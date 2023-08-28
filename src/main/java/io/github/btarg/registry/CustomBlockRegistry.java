@@ -14,21 +14,21 @@ public class CustomBlockRegistry {
     }
 
     public static void RegisterBlock(CustomBlockDefinition blockDefinition) {
-        blockDefinitions.put(blockDefinition.id, blockDefinition);
+        blockDefinitions.put(RegistryHelper.getRegistryPrefix() + blockDefinition.id, blockDefinition);
         Bukkit.getLogger().info("Registered new block: " + blockDefinition.id);
     }
 
     public static CustomBlockDefinition GetRegisteredBlock(String blockId) {
         CustomBlockDefinition foundBlock = null;
         for (String bid : blockDefinitions.keySet()) {
-            if (Objects.equals(bid, blockId)) {
+            String withPrefix = RegistryHelper.getRegistryPrefix() + bid;
+            if (Objects.equals(withPrefix, blockId)) {
                 foundBlock = blockDefinitions.get(bid);
             }
         }
 
         return foundBlock;
     }
-
 
     public static void ClearBlockRegistry() {
         blockDefinitions.clear();
