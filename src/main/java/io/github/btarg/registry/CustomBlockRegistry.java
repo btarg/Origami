@@ -19,11 +19,14 @@ public class CustomBlockRegistry {
     }
 
     public static CustomBlockDefinition GetRegisteredBlock(String blockId) {
+        if (!blockId.startsWith(RegistryHelper.getRegistryPrefix())) {
+            blockId = RegistryHelper.getRegistryPrefix() + blockId;
+        }
+
         CustomBlockDefinition foundBlock = null;
-        for (String bid : blockDefinitions.keySet()) {
-            String withPrefix = RegistryHelper.getRegistryPrefix() + bid;
-            if (Objects.equals(withPrefix, blockId)) {
-                foundBlock = blockDefinitions.get(bid);
+        for (String registered : blockDefinitions.keySet()) {
+            if (Objects.equals(registered, blockId)) {
+                foundBlock = blockDefinitions.get(registered);
             }
         }
 

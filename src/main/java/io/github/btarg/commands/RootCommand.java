@@ -59,7 +59,9 @@ public class RootCommand implements TabExecutor {
                 OrigamiMain.blockConfig.loadAndRegisterBlocks(sender);
             } else if (Objects.equals(args[1], "items")) {
                 sender.sendMessage("coming soon");
-
+            } else if (Objects.equals(args[1], "database")) {
+                sender.sendMessage("Reloading block database...");
+                CustomBlockDatabase.loadAll();
             } else {
                 sender.sendMessage(ChatColor.RED + "Please specify which registry you want to reload.");
             }
@@ -126,7 +128,7 @@ public class RootCommand implements TabExecutor {
             }
 
         } else if (Objects.equals(args[0], "reload")) {
-            tabComplete = Arrays.asList("blocks", "items");
+            tabComplete = Arrays.asList("blocks", "items", "database");
         } else if (Objects.equals(args[0], "listblocks")) {
             List<String> worldNames = new ArrayList<>();
             Bukkit.getWorlds().forEach(world -> {

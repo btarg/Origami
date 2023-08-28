@@ -49,9 +49,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         this.getCommand("origami").setExecutor(new RootCommand());
 
-        // load blocks from files
-        blockConfig.loadAndRegisterBlocks();
-
         // resource pack config
         config = getConfig();
 
@@ -65,6 +62,10 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         config.options().copyDefaults(true);
         saveConfig();
+
+
+        // load blocks from files (requires config loaded)
+        blockConfig.loadAndRegisterBlocks();
 
         // Start resource pack host server
         if (config.getBoolean("enable-http-server")) {
@@ -111,6 +112,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        CustomBlockDatabase.saveAll();
+        CustomBlockDatabase.onDisable();
     }
 }

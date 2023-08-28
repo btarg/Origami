@@ -23,6 +23,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
     public String displayName;
     public List<ItemStack> drops;
     public Boolean isAffectedByFortune;
+    public Boolean canBePushed;
     public List<String> rightClickCommands;
     public List<String> lore;
     public Integer dropExperience;
@@ -48,6 +49,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
 
         this.drops = Objects.requireNonNullElse((List<ItemStack>) map.get("drops"), new ArrayList<>());
         this.isAffectedByFortune = Objects.requireNonNullElse((Boolean) map.get("isAffectedByFortune"), false);
+        this.canBePushed = Objects.requireNonNullElse((Boolean) map.get("canBePushed"), true);
 
         this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
         this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
@@ -122,6 +124,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         map.put("displayName", this.displayName);
         map.put("drops", this.drops);
         map.put("isAffectedByFortune", this.isAffectedByFortune);
+        map.put("canBePushed", this.isAffectedByFortune);
         map.put("rightClickCommands", this.rightClickCommands);
         map.put("lore", this.lore);
         map.put("dropExperience", this.dropExperience);
@@ -130,7 +133,6 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         map.put("timeToBreak", this.timeToBreak);
         map.put("breakSound", this.breakSound);
         map.put("placeSound", this.placeSound);
-
 
         return map;
     }

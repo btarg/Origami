@@ -4,6 +4,7 @@ import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
+import io.github.btarg.registry.RegistryHelper;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -24,8 +25,14 @@ public class CustomBlockUtils {
         ItemStack item = ((ItemFrame) itemFrameEntity).getItem();
 
         String blockId = item.getItemMeta().getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
-        if (blockId != null)
+
+        if (blockId != null) {
+            if (!blockId.startsWith(RegistryHelper.getRegistryPrefix())) {
+                blockId = RegistryHelper.getRegistryPrefix() + blockId;
+            }
             return CustomBlockRegistry.GetRegisteredBlock(blockId);
+        }
+
 
         return null;
     }

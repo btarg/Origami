@@ -24,7 +24,6 @@ import java.util.zip.GZIPOutputStream;
 
 public class CustomBlockDatabase {
     private static final List<World> worldsInitialised = new ArrayList<>();
-    private static int cooldownSeconds = 3;
     private static long lastUpdatedMillis = 0;
     private static HashMap<World.Environment, BlocksList> blocksListHashMap;
 
@@ -36,6 +35,12 @@ public class CustomBlockDatabase {
         if (!worldsInitialised.contains(world)) {
             Bukkit.getLogger().info("Loading custom block database for world: " + world.getName());
             worldsInitialised.add(world);
+            loadData(world);
+        }
+    }
+
+    public static void loadAll() {
+        for (World world : worldsInitialised) {
             loadData(world);
         }
     }
@@ -82,7 +87,7 @@ public class CustomBlockDatabase {
 
     public static HashMap<Vector, String> getBlocksInDatabase(World world) {
         HashMap<Vector, String> blocksInDatabase = new HashMap<>();
-        loadData(world);
+        //loadData(world);
         if (blocksListHashMap != null && blocksListHashMap.containsKey(world.getEnvironment())) {
             blocksInDatabase = blocksListHashMap.get(world.getEnvironment()).blocksInDatabase;
         }
@@ -158,11 +163,15 @@ public class CustomBlockDatabase {
 
         if (locationToRemove != null) {
             blocksListHashMap.get(location.getWorld().getEnvironment()).blocksInDatabase.remove(locationToRemove);
-            if (save) saveData(location.getWorld(), true);
+            if (save) saveData(location.getWorld(), false);
         }
     }
 
-    public static void saveAll() {
+    public static void onDisable() {
+        saveAllNow();
+    }
+
+    public static void saveAllNow() {
         for (World world : worldsInitialised) {
             saveData(world, false);
         }
@@ -171,19 +180,16 @@ public class CustomBlockDatabase {
     public static void saveData(World world, boolean cooldown) {
 
         if (blocksListHashMap == null) return;
-        cooldownSeconds = OrigamiMain.config.getInt("custom-blocks.save-cooldown-seconds");
+        int cooldownSeconds = OrigamiMain.config.getInt("custom-blocks.save-cooldown-seconds");
 
         if (cooldown) {
 
-            if (cooldownSeconds != 0) {
+            if (cooldownSeconds > 0) {
                 long difference = System.currentTimeMillis() - lastUpdatedMillis;
                 int differenceInSeconds = (int) Math.ceil(difference / 1000d);
                 if (differenceInSeconds < cooldownSeconds) {
                     return;
                 }
-            } else {
-                Bukkit.getLogger().warning("Cooldown was set too short! Setting to 3 seconds");
-                cooldownSeconds = 3;
             }
         }
         lastUpdatedMillis = System.currentTimeMillis();

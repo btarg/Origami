@@ -21,10 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDamageAbortEvent;
-import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
@@ -37,8 +34,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -267,12 +266,16 @@ public class CustomBlockListener implements Listener {
                 if (definition == null) return;
 
                 CustomBlockFunctions.DropBlockItems(null, definition, block);
-                CustomBlockFunctions.OnCustomBlockBroken(block.getLocation(), definition.breakSound);
+                //CustomBlockFunctions.OnCustomBlockBroken(block.getLocation(), definition.breakSound);
+
+                // remove without saving for better performance
+                CustomBlockDatabase.removeBlockFromDatabase(block.getLocation(), false);
 
                 linkedFrame.remove();
 
             }
         }
+        CustomBlockDatabase.saveData(e.getLocation().getWorld(), false);
 
     }
 
@@ -281,4 +284,45 @@ public class CustomBlockListener implements Listener {
         e.setCancelled(CustomBlockDatabase.blockIsInDatabase(e.getEntity().getLocation()));
     }
 
+    @EventHandler
+    public void onPistonExtend(BlockPistonExtendEvent e) {
+        onPistonMove(e, e.getBlocks());
+    }
+
+    @EventHandler
+    public void onPistonRetract(BlockPistonRetractEvent e) {
+        // move with sticky piston
+        if (e.isSticky())
+            onPistonMove(e, e.getBlocks());
+
+    }
+
+    private void onPistonMove(BlockPistonEvent e, List<Block> blocks) {
+
+        for (Block block : blocks) {
+            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
+            if (definition == null) return;
+            if (!definition.canBePushed) {
+                e.setCancelled(true);
+                return;
+            }
+
+            Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block.getLocation());
+            if (linkedFrame == null) return;
+
+            // get relative direction from original block of the moved block
+            Vector direction = e.getDirection().getDirection();
+            Location newLoc = linkedFrame.getLocation().add(direction).toBlockLocation();
+
+            // remove the old database entry and add the new one
+            CustomBlockDatabase.removeBlockFromDatabase(block.getLocation(), false);
+            CustomBlockDatabase.addBlockToDatabase(newLoc, linkedFrame.getUniqueId().toString(), true);
+
+
+            // move the item frame to new location
+            linkedFrame.teleport(newLoc);
+        }
+
+
+    }
 }
