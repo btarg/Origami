@@ -19,7 +19,7 @@ public class CustomBlockRegistry {
     }
 
     public static CustomBlockDefinition GetRegisteredBlock(String blockId) {
-        if (!blockId.startsWith(RegistryHelper.getRegistryPrefix())) {
+        if (blockId != null && !blockId.startsWith(RegistryHelper.getRegistryPrefix())) {
             blockId = RegistryHelper.getRegistryPrefix() + blockId;
         }
 

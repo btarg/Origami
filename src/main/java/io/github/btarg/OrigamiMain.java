@@ -112,6 +112,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        CustomBlockDatabase.onDisable();
+        CustomBlockDatabase.saveAllNow();
     }
 }

@@ -144,6 +144,13 @@ public class CustomBlockDatabase {
         return addBlockToDatabase(location, UUIDstring, true);
     }
 
+    public static void moveBlockInDatabase(Location origin, Location moveTo, boolean save) {
+        String uuid = getBlockUUIDFromDatabase(origin);
+        removeBlockFromDatabase(origin, false);
+        addBlockToDatabase(moveTo, uuid, false);
+        if (save)
+            saveData(origin.getWorld(), false);
+    }
 
     public static void removeBlockFromDatabase(Location location, Boolean save) {
 
@@ -167,13 +174,9 @@ public class CustomBlockDatabase {
         }
     }
 
-    public static void onDisable() {
-        saveAllNow();
-    }
-
     public static void saveAllNow() {
         for (World world : worldsInitialised) {
-            saveData(world, false);
+            saveDataSync(world);
         }
     }
 
@@ -194,18 +197,18 @@ public class CustomBlockDatabase {
         }
         lastUpdatedMillis = System.currentTimeMillis();
 
-        Bukkit.getScheduler().runTaskAsynchronously(OrigamiMain.getPlugin(OrigamiMain.class), () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(OrigamiMain.getPlugin(OrigamiMain.class), () -> saveDataSync(world));
+    }
 
-            try {
-                FileOutputStream stream = FileUtils.openOutputStream(new File(filePath(world)));
-                BukkitObjectOutputStream out = new BukkitObjectOutputStream(new GZIPOutputStream(stream));
+    public static void saveDataSync(World world) {
+        try {
+            FileOutputStream stream = FileUtils.openOutputStream(new File(filePath(world)));
+            BukkitObjectOutputStream out = new BukkitObjectOutputStream(new GZIPOutputStream(stream));
 
-                out.writeObject(blocksListHashMap.get(world.getEnvironment()));
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        });
+            out.writeObject(blocksListHashMap.get(world.getEnvironment()));
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

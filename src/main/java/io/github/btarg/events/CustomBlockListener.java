@@ -34,7 +34,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.List;
@@ -292,37 +291,36 @@ public class CustomBlockListener implements Listener {
     @EventHandler
     public void onPistonRetract(BlockPistonRetractEvent e) {
         // move with sticky piston
-        if (e.isSticky())
-            onPistonMove(e, e.getBlocks());
-
+        if (e.isSticky()) onPistonMove(e, e.getBlocks());
     }
+
 
     private void onPistonMove(BlockPistonEvent e, List<Block> blocks) {
 
-        for (Block block : blocks) {
-            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
+        for (int i = blocks.size(); i-- > 0; ) {
+            Block block = blocks.get(i);
+
+            Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block.getLocation());
+            if (linkedFrame == null) return;
+
+            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
             if (definition == null) return;
             if (!definition.canBePushed) {
                 e.setCancelled(true);
                 return;
             }
 
-            Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block.getLocation());
-            if (linkedFrame == null) return;
-
             // get relative direction from original block of the moved block
-            Vector direction = e.getDirection().getDirection();
-            Location newLoc = linkedFrame.getLocation().add(direction).toBlockLocation();
+            Location newLoc = block.getLocation().add(e.getDirection().getDirection()).toBlockLocation();
 
             // remove the old database entry and add the new one
-            CustomBlockDatabase.removeBlockFromDatabase(block.getLocation(), false);
-            CustomBlockDatabase.addBlockToDatabase(newLoc, linkedFrame.getUniqueId().toString(), true);
-
+            CustomBlockDatabase.moveBlockInDatabase(block.getLocation(), newLoc, false);
 
             // move the item frame to new location
             linkedFrame.teleport(newLoc);
+
         }
 
-
+        CustomBlockDatabase.saveData(e.getBlock().getWorld(), false);
     }
 }
