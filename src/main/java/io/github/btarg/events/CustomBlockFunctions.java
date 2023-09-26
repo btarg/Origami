@@ -53,7 +53,7 @@ public class CustomBlockFunctions {
             ItemStack blockItem = RegistryHelper.CreateCustomBlockItemStack(definition, 1);
             world.dropItemNaturally(blockBroken.getLocation(), blockItem);
         } else {
-            // TODO: drop loot
+            
             for (ItemStack stack : definition.getDrops(minedWith)) {
                 world.dropItemNaturally(blockBroken.getLocation(), stack);
             }

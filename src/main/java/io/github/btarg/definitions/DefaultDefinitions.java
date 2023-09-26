@@ -1,6 +1,8 @@
 package io.github.btarg.definitions;
 
+import io.github.btarg.OrigamiMain;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
@@ -29,6 +31,18 @@ public class DefaultDefinitions {
         definition.timeToBreak = 40;
         definition.breakSound = Sound.BLOCK_AMETHYST_BLOCK_BREAK.toString();
         definition.placeSound = Sound.BLOCK_AMETHYST_BLOCK_PLACE.toString();
+        return definition;
+    }
+
+    public static CustomRecipeDefinition getDefaultRecipeDefinition() {
+
+        CustomRecipeDefinition definition = new CustomRecipeDefinition(new HashMap<>());
+        definition.namespacedKey = new NamespacedKey(OrigamiMain.Instance, "rainbow_block_recipe");
+        definition.ingredients = List.of("d;DIAMOND", "r;origami:rainbow_block");
+        definition.isShaped = true;
+        definition.shape = List.of("ddd", "drd", "ddd");
+        definition.result = "ACACIA_BOAT(1)";
+
         return definition;
     }
 

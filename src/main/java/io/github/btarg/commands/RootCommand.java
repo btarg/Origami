@@ -4,6 +4,7 @@ import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
+import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
@@ -59,6 +60,10 @@ public class RootCommand implements TabExecutor {
                 OrigamiMain.blockConfig.loadAndRegisterBlocks(sender);
             } else if (Objects.equals(args[1], "items")) {
                 sender.sendMessage("coming soon");
+            } else if (Objects.equals(args[1], "recipes")) {
+                sender.sendMessage("Reloading recipes...");
+                CustomRecipeRegistry.ClearRecipeRegistry();
+                OrigamiMain.recipeConfig.loadAndRegisterRecipes(sender);
             } else if (Objects.equals(args[1], "database")) {
                 sender.sendMessage("Reloading block database...");
                 CustomBlockDatabase.loadAll();

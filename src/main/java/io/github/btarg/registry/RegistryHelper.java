@@ -15,6 +15,8 @@ public class RegistryHelper {
 
     public static ItemStack CreateCustomBlockItemStack(CustomBlockDefinition customBlockDefinition, int count) {
 
+        if (customBlockDefinition == null) return null;
+
         ItemStack frame = new ItemStack(Material.ITEM_FRAME, count);
 
         // new item meta (name and lore)
@@ -33,5 +35,10 @@ public class RegistryHelper {
 
     public static String getRegistryPrefix() {
         return Objects.requireNonNullElse(OrigamiMain.config.get("custom-items.prefix"), "origami") + ":";
+    }
+
+    public static boolean isInRegistry(String check) {
+        // TODO: also check item registry
+        return CustomBlockRegistry.GetRegisteredBlock(check) != null;
     }
 }

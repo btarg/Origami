@@ -15,11 +15,13 @@ public class CustomBlockRegistry {
 
     public static void RegisterBlock(CustomBlockDefinition blockDefinition) {
         blockDefinitions.put(RegistryHelper.getRegistryPrefix() + blockDefinition.id, blockDefinition);
-        Bukkit.getLogger().info("Registered new block: " + blockDefinition.id);
+        Bukkit.getLogger().info("Registered block: " + blockDefinition.id);
     }
 
     public static CustomBlockDefinition GetRegisteredBlock(String blockId) {
-        if (blockId != null && !blockId.startsWith(RegistryHelper.getRegistryPrefix())) {
+        if (blockId == null) return null;
+
+        if (!blockId.startsWith(RegistryHelper.getRegistryPrefix())) {
             blockId = RegistryHelper.getRegistryPrefix() + blockId;
         }
 

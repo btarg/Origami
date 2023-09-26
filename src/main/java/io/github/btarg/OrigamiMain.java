@@ -1,20 +1,19 @@
 package io.github.btarg;
 
-import io.github.btarg.blockdata.BlockConfig;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.events.CustomBlockListener;
-import io.github.btarg.registry.CustomBlockRegistry;
-import io.github.btarg.registry.RegistryHelper;
 import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.resourcepack.FileUtils;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.resourcepack.ResourcePackServer;
+import io.github.btarg.serialization.BlockConfig;
+import io.github.btarg.serialization.RecipeConfig;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,9 +23,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.RecipeChoice;
-import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -38,17 +34,27 @@ import java.util.Objects;
 public final class OrigamiMain extends JavaPlugin implements Listener {
 
     public static BlockConfig blockConfig;
+    public static RecipeConfig recipeConfig;
+
+
     public static BrokenBlocksService brokenBlocksService;
     public static NamespacedKey customItemTag = null;
     public static FileConfiguration config;
 
+    public static OrigamiMain Instance;
+
     @Override
     public void onEnable() {
+
+        Instance = this;
 
         customItemTag = new NamespacedKey(this, "custom-item");
 
         ConfigurationSerialization.registerClass(CustomBlockDefinition.class);
-        blockConfig = new BlockConfig(this);
+        ConfigurationSerialization.registerClass(CustomRecipeDefinition.class);
+        blockConfig = new BlockConfig();
+        recipeConfig = new RecipeConfig();
+
 
         brokenBlocksService = new BrokenBlocksService();
 
@@ -81,6 +87,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         // load blocks from files (requires config loaded)
         blockConfig.loadAndRegisterBlocks();
+        recipeConfig.loadAndRegisterRecipes();
 
 
         // Generate resource pack
@@ -91,8 +98,8 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
     private void serveResourcePack() {
         // Start resource pack host server
-        if (config.getBoolean("enable-http-server")) {
-            Integer port = (Integer) config.get("http-port");
+        if (config.getBoolean("resource-packs.enable-http-server")) {
+            Integer port = (Integer) config.get("resource-packs.http-port");
             if (port == null) return;
 
             Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
@@ -130,20 +137,16 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         }
 
 
-        // TEST RECIPE
-        ItemStack blockStack = RegistryHelper.CreateCustomBlockItemStack(CustomBlockRegistry.GetRegisteredBlock("rainbow_block"), 1);
-        ShapedRecipe testRecipe = new ShapedRecipe(new NamespacedKey(OrigamiMain.getPlugin(OrigamiMain.class), "test_recipe"), new ItemStack(Material.DANDELION, 1));
-        testRecipe.shape("ddd", "drd", "ddd");
-        testRecipe.setIngredient('d', Material.DIAMOND);
-        testRecipe.setIngredient('r', new RecipeChoice.ExactChoice(blockStack));
-        Bukkit.addRecipe(testRecipe);
-
     }
 
     @EventHandler
     public void playerResourcePack(PlayerResourcePackStatusEvent e) {
 
-        if (!ResourcePackGenerator.isReady()) {
+        if (!config.getBoolean("resource-packs.enable-http-server")) {
+            return;
+        }
+
+        if (!ResourcePackGenerator.isReady() && config.getBoolean("resource-packs.generate-resource-pack")) {
             e.getPlayer().kick(Component.text("The server hasn't finished loading yet!\nTry again in a few seconds."), PlayerKickEvent.Cause.PLUGIN);
             return;
         }
