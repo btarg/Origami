@@ -23,7 +23,7 @@ public class ResourcePackServer {
         @Override
         public void handle(HttpExchange t) throws IOException {
 
-            String pathFromConfig = (String) OrigamiMain.config.get("local-resource-pack-path");
+            String pathFromConfig = (String) OrigamiMain.config.get("zipped-resource-pack-path");
             if (pathFromConfig == null || pathFromConfig.isEmpty()) {
                 String response = "File not found " + pathFromConfig;
                 t.sendResponseHeaders(404, response.length());

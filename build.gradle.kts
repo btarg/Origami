@@ -20,6 +20,7 @@ repositories {
 dependencies {
     api("commons-io:commons-io:2.13.0")
     compileOnly("org.projectlombok:lombok:1.18.28")
+    annotationProcessor("org.projectlombok:lombok:1.18.28")
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 
 }
