@@ -21,10 +21,10 @@ public class ResourcePackGenerator {
             if (pathFromConfig.toFile().exists()) {
                 pathFromConfig.toFile().delete();
             }
-            String packDir = (String) OrigamiMain.config.get("unzipped-resource-pack-path");
+            String packDir = (String) OrigamiMain.config.get("resource-packs.unzipped-resource-pack-path");
             if (packDir == null || !Path.of(packDir).toFile().isDirectory()) return;
 
-            String finalPath = (String) OrigamiMain.config.get("zipped-resource-pack-path");
+            String finalPath = (String) OrigamiMain.config.get("resource-packs.zipped-resource-pack-path");
             if (finalPath == null) return;
 
             try {

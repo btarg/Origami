@@ -62,10 +62,16 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         config = getConfig();
 
         config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true),", "you can set the local path to the resource pack which will be hosted below.", "If you enable resource pack generation, the unzipped directory specified below will be zipped and combined with any existing resource pack, otherwise the zipped resource pack path is where you should place your pack.", "Remember to set your server's IP address in server.properties"));
-        config.addDefault("enable-http-server", false);
-        config.addDefault("http-port", 8008);
-        config.addDefault("zipped-resource-pack-path", this.getDataFolder() + File.separator + "pack.zip");
 
+        ConfigurationSection resourcePackSection = config.createSection("resource-packs");
+        resourcePackSection.addDefault("enable-http-server", true);
+        resourcePackSection.addDefault("http-port", 8008);
+        resourcePackSection.addDefault("generate-resource-pack", true);
+        resourcePackSection.addDefault("zipped-resource-pack-path", this.getDataFolder() + File.separator + "pack.zip");
+        resourcePackSection.addDefault("unzipped-resource-pack-path", this.getDataFolder() + File.separator + "resources");
+
+        ConfigurationSection itemSection = config.createSection("custom-items");
+        itemSection.addDefault("prefix", "origami");
         ConfigurationSection blockSection = config.createSection("custom-blocks");
         blockSection.addDefault("save-cooldown-seconds", 3);
 

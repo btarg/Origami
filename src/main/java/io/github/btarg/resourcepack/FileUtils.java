@@ -41,7 +41,7 @@ public class FileUtils {
     }
 
     public static Path getPackFile() {
-        String pathString = (String) OrigamiMain.config.get("zipped-resource-pack-path");
+        String pathString = (String) OrigamiMain.config.get("resource-packs.zipped-resource-pack-path");
         if (pathString != null && !pathString.isEmpty())
             return Path.of(pathString);
         return null;

@@ -32,6 +32,6 @@ public class RegistryHelper {
     }
 
     public static String getRegistryPrefix() {
-        return Objects.requireNonNullElse(OrigamiMain.config.get("prefix"), "origami") + ":";
+        return Objects.requireNonNullElse(OrigamiMain.config.get("custom-items.prefix"), "origami") + ":";
     }
 }
