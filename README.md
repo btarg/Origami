@@ -36,9 +36,7 @@ block:
     - pickaxes
   displayName: §cR§6a§ei§an§9b§bo§5w §6B§el§ao§9c§bk
   drops:
-    - ==: org.bukkit.inventory.ItemStack
-    v: 3465
-    type: DIAMOND
+    - DIAMOND(1)
   blockModelData: 4
   toolLevelRequired: 2
   blockItemModelData: 3
@@ -84,6 +82,11 @@ block:
 - **(Formatted string)** `displayName` - like with lore, this can use MiniMessage or legacy format codes. You can also
   use
   a language string, and set the item's name in your resource pack's lang file instead - formatting included.
+
+
+- **(List of special Material strings)** `drops` - a material or custom item id, optionally followed by a count in
+  brackets. `DIAMOND(5)` is 5 diamonds, `origami:rainbow_block(3)` is 3 "rainbow blocks" (the custom block shown above,
+  in item form.)
 
 
 - **(Boolean)** `drops` - if empty, the block will drop itself, otherwise the ItemStacks listed here will be dropped (
