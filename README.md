@@ -13,7 +13,8 @@ resource packs and custom model data to allow **vanilla** clients to connect and
 
 # Block Database
 
-The positions and IDs of custom blocks are stored one file per world, under the `_data` folder. **DO NOT** delete files
+The positions and UUIDs of custom blocks are stored in one file per world, under the `_data` folder. **DO NOT** delete
+files
 in this folder or custom blocks placed in your world will not function correctly!
 > ***NOTE:*** *when renaming worlds, be sure to rename the corresponding file.*
 
@@ -24,25 +25,27 @@ If this directory is empty, then Origami will generate the following example def
 
 ```yml
 block:
-  ==: CustomBlockDefinition
+  ==: CustomBlock
   baseBlock: GLASS
-  glowing: false
-  dropExperience: 0
-  lore:
-    - <rainbow>It shimmers beautifully in the sunlight.</rainbow>
   rightClickCommands:
     - tellraw @s {"text":"The block reverberates majestically.","italic":true,"color":"gray"}
-  canBeMinedWith:
-    - pickaxes
-  displayName: §cR§6a§ei§an§9b§bo§5w §6B§el§ao§9c§bk
+  lore:
+    - <rainbow>It shimmers beautifully in the sunlight.</rainbow>
+  displayName: '&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk'
+  blockModelData: 3
+  blockItemModelData: 4
+  timeToBreak: 40
+  dropExperience: 0
   drops:
     - DIAMOND(1)
-  blockModelData: 4
+  placeSound: BLOCK_AMETHYST_BLOCK_PLACE
+  glowing: true
+  canBePushed: true
+  canBeMinedWith:
+    - pickaxes
+  isAffectedByFortune: true
+  breakSound: BLOCK_AMETHYST_BLOCK_BREAK
   toolLevelRequired: 2
-  blockItemModelData: 3
-  timeToBreak: 40
-  breakSound: "BLOCK_AMETHYST_BLOCK_BREAK"
-  placeSound: "BLOCK_AMETHYST_BLOCK_PLACE"
 ```
 
 - **([Material](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html))** `baseBlock` - determines what
@@ -84,13 +87,13 @@ block:
   a language string, and set the item's name in your resource pack's lang file instead - formatting included.
 
 
-- **(List of special Material strings)** `drops` - a material or custom item id, optionally followed by a count in
-  brackets. `DIAMOND(5)` is 5 diamonds, `origami:rainbow_block(3)` is 3 "rainbow blocks" (the custom block shown above,
-  in item form.)
+- **(List of special Material strings)** `drops` - a material or the ID of a custom item/block, optionally followed by a
+  count in
+  brackets. `DIAMOND` is one diamond, `origami:rainbow_block(3)` is 3 "rainbow blocks" (the custom block shown above,
+  in item form.) If this list is `null`, the block will drop itself.
 
 
-- **(Boolean)** `drops` - if empty, the block will drop itself, otherwise the ItemStacks listed here will be dropped (
-  this is subject to change)
+- **(Boolean)** `canBePushed` - if true, the block can be moved by Pistons and Sticky Pistons.
 
 ## Model data
 
