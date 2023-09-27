@@ -141,11 +141,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
     @EventHandler
     public void playerResourcePack(PlayerResourcePackStatusEvent e) {
-
-        if (!config.getBoolean("resource-packs.enable-http-server")) {
-            return;
-        }
-
+        
         if (!ResourcePackGenerator.isReady() && config.getBoolean("resource-packs.generate-resource-pack")) {
             e.getPlayer().kick(Component.text("The server hasn't finished loading yet!\nTry again in a few seconds."), PlayerKickEvent.Cause.PLUGIN);
             return;

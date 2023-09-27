@@ -4,7 +4,6 @@ import io.github.btarg.OrigamiMain;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ public class DefaultDefinitions {
         definition.displayName = "&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk";
         definition.rightClickCommands = Collections.singletonList("tellraw @s {\"text\":\"The block reverberates majestically.\",\"italic\":true,\"color\":\"gray\"}");
         definition.lore = Collections.singletonList("<rainbow>It shimmers beautifully in the sunlight.</rainbow>");
-        definition.drops = List.of(new ItemStack(Material.DIAMOND, 1));
+        definition.drops = List.of("DIAMOND(1)");
         definition.isAffectedByFortune = true;
         definition.dropExperience = 0;
         definition.toolLevelRequired = 2;
