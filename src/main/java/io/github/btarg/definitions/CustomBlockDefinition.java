@@ -74,7 +74,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
     }
 
     public boolean dropBlock() {
-        return dropLootTable.isEmpty();
+        return (dropLootTable == null || dropLootTable.isEmpty()) && (drops == null || drops.isEmpty());
     }
 
     public Component getDisplayName() {
