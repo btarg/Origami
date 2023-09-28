@@ -18,6 +18,7 @@ public class CustomRecipeRegistry {
 
     public static void RegisterRecipe(CustomRecipeDefinition recipeDefinition) {
         recipeDefinitions.put(RegistryHelper.getRegistryPrefix() + recipeDefinition.namespacedKey.value(), recipeDefinition);
+
         boolean isShaped = !(recipeDefinition.shape == null || recipeDefinition.shape.isEmpty());
 
         try {
@@ -41,14 +42,14 @@ public class CustomRecipeRegistry {
                     stack = ItemParser.parseItemStack(entry.getValue());
 
                     if (isShaped) {
-                        shapedRecipe.setIngredient(entry.getKey(), new RecipeChoice.ExactChoice(stack));
+                        shapedRecipe.setIngredient(entry.getKey().charAt(0), new RecipeChoice.ExactChoice(stack));
                     } else {
                         shapelessRecipe.addIngredient(stack);
                     }
 
                 } else {
                     if (isShaped) {
-                        shapedRecipe.setIngredient(entry.getKey(), mat);
+                        shapedRecipe.setIngredient(entry.getKey().charAt(0), mat);
                     } else {
                         shapelessRecipe.addIngredient(mat);
                     }

@@ -3,6 +3,7 @@ package io.github.btarg.definitions;
 import io.github.btarg.util.items.ItemParser;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -16,7 +17,7 @@ import java.util.*;
 public class CustomRecipeDefinition implements ConfigurationSerializable {
 
     @Getter
-    private final Map<Character, String> ingredientMap;
+    private final Map<String, String> ingredientMap;
     public NamespacedKey namespacedKey;
     public List<String> shape;
     public String result;
@@ -40,19 +41,23 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
             this.resultItemStack = new ItemStack(Material.AIR, 1);
         }
         this.ingredientMap = new HashMap<>();
-        for (String recipeKey : ingredients) {
-            String[] split = StringUtils.split(recipeKey, ";");
+        for (int i = 0; i < ingredients.size(); i++) {
+            String[] split = StringUtils.split(ingredients.get(i), ";");
 
             // d;DIAMOND
             if (split.length == 2) {
-                char key = split[0].charAt(0);
+                // we can only have a string with a length of 1
+                String key = String.valueOf(split[0].charAt(0));
                 this.ingredientMap.put(key, split[1]);
             }
             // DIAMOND
             else if (split.length == 1) {
-                this.ingredientMap.put(null, split[0]);
+                if (shape == null) {
+                    this.ingredientMap.put(String.valueOf(i), split[0]);
+                } else {
+                    Bukkit.getLogger().warning("Shaped Recipe has no keys! Each ingredient in a Shaped Recipe should be formatted as <key>;<item>");
+                }
             }
-
 
         }
         // we set this externally when loading from the file to be equal to the filename
