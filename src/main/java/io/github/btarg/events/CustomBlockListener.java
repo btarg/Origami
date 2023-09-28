@@ -243,7 +243,7 @@ public class CustomBlockListener implements Listener {
                     e.setExpToDrop(definition.dropExperience);
 
                 CustomBlockFunctions.OnCustomBlockMined(e, definition);
-                CustomBlockFunctions.DropBlockItems(e.getPlayer().getInventory().getItemInMainHand(), definition, e.getBlock());
+                CustomBlockFunctions.DropBlockItems(e.getPlayer(), definition, e.getBlock());
             }
         }
 

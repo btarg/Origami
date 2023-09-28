@@ -9,6 +9,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -43,18 +44,18 @@ public class CustomBlockFunctions {
         //event.getPlayer().sendMessage("Mined: " + blockName);
     }
 
-    public static void DropBlockItems(ItemStack minedWith, CustomBlockDefinition definition, Block blockBroken) {
+    public static void DropBlockItems(Player player, CustomBlockDefinition definition, Block blockBroken) {
         if (definition == null) return;
 
         World world = blockBroken.getWorld();
-        boolean silkTouch = (minedWith != null && minedWith.containsEnchantment(Enchantment.SILK_TOUCH));
+        boolean silkTouch = (player != null && player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH));
 
         if (silkTouch || definition.dropBlock()) {
             ItemStack blockItem = RegistryHelper.CreateCustomBlockItemStack(definition, 1);
             world.dropItemNaturally(blockBroken.getLocation(), blockItem);
         } else {
-            
-            for (ItemStack stack : definition.getDrops(minedWith)) {
+
+            for (ItemStack stack : definition.getDrops(player)) {
                 world.dropItemNaturally(blockBroken.getLocation(), stack);
             }
 

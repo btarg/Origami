@@ -3,11 +3,16 @@ package io.github.btarg.definitions;
 import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.items.ItemParser;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.loot.LootContext;
+import org.bukkit.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -16,7 +21,6 @@ import java.util.*;
 public class CustomBlockDefinition implements ConfigurationSerializable {
 
     private final Random random = new Random();
-    private final List<ItemStack> dropStacks;
     public String id;
     public Material baseBlock;
     public Boolean glowing;
@@ -24,6 +28,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
     public Integer blockModelData;
     public String displayName;
     public List<String> drops;
+    public String dropLootTable;
     public Boolean isAffectedByFortune;
     public Boolean canBePushed;
     public List<String> rightClickCommands;
@@ -49,16 +54,8 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         this.blockModelData = Objects.requireNonNullElse((Integer) map.get("blockModelData"), 0);
         this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Block");
 
+        this.dropLootTable = (String) map.get("dropLootTable");
         this.drops = Objects.requireNonNullElse((List<String>) map.get("drops"), new ArrayList<>());
-        this.dropStacks = new ArrayList<>();
-        for (String dropString : this.drops) {
-            try {
-                this.dropStacks.add(ItemParser.parseItemStack(dropString));
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            }
-
-        }
 
         this.isAffectedByFortune = Objects.requireNonNullElse((Boolean) map.get("isAffectedByFortune"), false);
         this.canBePushed = Objects.requireNonNullElse((Boolean) map.get("canBePushed"), true);
@@ -78,7 +75,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
     }
 
     public boolean dropBlock() {
-        return drops.isEmpty();
+        return dropLootTable.isEmpty();
     }
 
     public Component getDisplayName() {
@@ -95,20 +92,36 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         return toReturn;
     }
 
-    public List<ItemStack> getDrops(ItemStack minedWith) {
-        if (this.dropStacks == null) return null;
-        List<ItemStack> itemStacks = new ArrayList<>();
+    public Collection<ItemStack> getDrops(Player player) {
+        if (player == null) return null;
+        Collection<ItemStack> dropStacks = new ArrayList<>();
 
-        for (ItemStack stack : this.dropStacks) {
-            int amount = stack.getAmount();
-            if (minedWith != null) {
+        ItemStack minedWith = player.getInventory().getItemInMainHand();
+        if (this.dropLootTable != null) {
+            LootTable lootTable = Bukkit.getServer().getLootTable(Objects.requireNonNull(NamespacedKey.fromString(dropLootTable)));
+            LootContext context = new LootContext.Builder(player.getLocation())
+                    .lootingModifier(minedWith.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS))
+                    .killer(player)
+                    .lootedEntity(player)
+                    .build();
+            if (lootTable == null) return null;
+
+            dropStacks = lootTable.populateLoot(new Random(), context);
+        }
+        if (this.drops != null) {
+            for (String dropString : this.drops) {
+                ItemStack dropStack = ItemParser.parseItemStack(dropString);
+                if (dropStack == null) continue;
+
+                int amount = dropStack.getAmount();
                 if (minedWith.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS) && this.isAffectedByFortune) {
                     amount = getFortuneCount(amount, minedWith.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
                 }
+                dropStacks.add(new ItemStack(dropStack.getType(), amount));
             }
-            itemStacks.add(new ItemStack(stack.getType(), amount));
+
         }
-        return itemStacks;
+        return dropStacks;
     }
 
     public int getFortuneCount(int amount, int fortune) {
@@ -134,6 +147,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         map.put("blockItemModelData", this.blockItemModelData);
         map.put("displayName", this.displayName);
         map.put("drops", this.drops);
+        map.put("dropLootTable", this.dropLootTable);
         map.put("isAffectedByFortune", this.isAffectedByFortune);
         map.put("canBePushed", this.isAffectedByFortune);
         map.put("rightClickCommands", this.rightClickCommands);

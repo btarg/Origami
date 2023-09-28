@@ -29,11 +29,12 @@ public class ResourcePackGenerator {
 
             try {
                 ZipFiles.zipFolder(packDir, finalPath);
+                isReady = true;
+                callback.run();
             } catch (IOException ioException) {
-                return;
+                ioException.printStackTrace();
             }
-            isReady = true;
-            callback.run();
+
         }
 
     }
