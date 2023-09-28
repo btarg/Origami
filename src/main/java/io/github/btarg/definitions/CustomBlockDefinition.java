@@ -3,16 +3,27 @@ package io.github.btarg.definitions;
 import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.items.ItemParser;
 import net.kyori.adventure.text.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.loot.LootContext;
-import org.bukkit.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -92,21 +103,44 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         return toReturn;
     }
 
-    public Collection<ItemStack> getDrops(Player player) {
-        if (player == null) return null;
+    public Collection<ItemStack> getDrops(Entity entity, Location loc) {
         Collection<ItemStack> dropStacks = new ArrayList<>();
+        Player player = null;
+        if (entity instanceof Player) {
+            player = (Player) entity;
+        }
 
-        ItemStack minedWith = player.getInventory().getItemInMainHand();
+        ItemStack minedWith = null;
+        if (player != null) {
+            minedWith = player.getInventory().getItemInMainHand();
+        }
+
         if (this.dropLootTable != null) {
-            LootTable lootTable = Bukkit.getServer().getLootTable(Objects.requireNonNull(NamespacedKey.fromString(dropLootTable)));
-            LootContext context = new LootContext.Builder(player.getLocation())
-                    .lootingModifier(minedWith.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS))
-                    .killer(player)
-                    .lootedEntity(player)
-                    .build();
+
+            MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
+            ServerLevel level = ((CraftWorld) loc.getWorld()).getHandle();
+
+            LootTable lootTable = server.getLootData().getLootTable(ResourceLocation.of(dropLootTable, ':'));
             if (lootTable == null) return null;
 
-            dropStacks = lootTable.populateLoot(new Random(), context);
+            LootParams.Builder lp = new LootParams.Builder(level);
+
+            if (minedWith != null) {
+                lp.withParameter(LootContextParams.TOOL, CraftItemStack.asNMSCopy(minedWith));
+            } else {
+                lp.withParameter(LootContextParams.TOOL, net.minecraft.world.item.ItemStack.EMPTY);
+            }
+
+
+            lp.withParameter(LootContextParams.ORIGIN, new Vec3(loc.x(), loc.y(), loc.z()));
+            lp.withParameter(LootContextParams.BLOCK_STATE, level.getBlockState(BlockPos.containing(loc.x(), loc.y(), loc.z())));
+
+            LootParams lootParams = lp.create(LootContextParamSets.BLOCK);
+            List<net.minecraft.world.item.ItemStack> list = lootTable.getRandomItems(lootParams);
+            for (var e : list) {
+                dropStacks.add(e.getBukkitStack());
+            }
+
         }
         if (this.drops != null) {
             for (String dropString : this.drops) {
@@ -114,7 +148,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
                 if (dropStack == null) continue;
 
                 int amount = dropStack.getAmount();
-                if (minedWith.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS) && this.isAffectedByFortune) {
+                if (minedWith != null && minedWith.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS) && this.isAffectedByFortune) {
                     amount = getFortuneCount(amount, minedWith.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
                 }
                 dropStacks.add(new ItemStack(dropStack.getType(), amount));

@@ -264,8 +264,7 @@ public class CustomBlockListener implements Listener {
                 CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
                 if (definition == null) return;
 
-                CustomBlockFunctions.DropBlockItems(null, definition, block);
-                //CustomBlockFunctions.OnCustomBlockBroken(block.getLocation(), definition.breakSound);
+                CustomBlockFunctions.DropBlockItems(e.getEntity(), definition, block);
 
                 // remove without saving for better performance
                 CustomBlockDatabase.removeBlockFromDatabase(block.getLocation(), false);

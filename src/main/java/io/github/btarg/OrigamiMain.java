@@ -103,6 +103,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
             Integer port = (Integer) config.get("resource-packs.http-port");
             if (port == null) return;
 
+            Bukkit.getLogger().info("Hosting resource pack on port " + port);
             Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 
                         try {

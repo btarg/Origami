@@ -2,6 +2,7 @@ package io.github.btarg.resourcepack;
 
 import io.github.btarg.OrigamiMain;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ public class ResourcePackGenerator {
 
     public static void CreateZipFile(Runnable callback) {
         isReady = false;
+        Bukkit.getLogger().info("Zipping resource pack...");
         Path pathFromConfig = FileUtils.getPackFile();
         if (pathFromConfig == null) return;
 
@@ -30,6 +32,7 @@ public class ResourcePackGenerator {
             try {
                 ZipFiles.zipFolder(packDir, finalPath);
                 isReady = true;
+                Bukkit.getLogger().info("Resource pack zipped!");
                 callback.run();
             } catch (IOException ioException) {
                 ioException.printStackTrace();

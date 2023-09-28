@@ -9,6 +9,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -44,8 +45,12 @@ public class CustomBlockFunctions {
         //event.getPlayer().sendMessage("Mined: " + blockName);
     }
 
-    public static void DropBlockItems(Player player, CustomBlockDefinition definition, Block blockBroken) {
+    public static void DropBlockItems(Entity entity, CustomBlockDefinition definition, Block blockBroken) {
         if (definition == null) return;
+        Player player = null;
+        if (entity instanceof Player) {
+            player = (Player) entity;
+        }
 
         World world = blockBroken.getWorld();
         boolean silkTouch = (player != null && player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH));
@@ -55,7 +60,7 @@ public class CustomBlockFunctions {
             world.dropItemNaturally(blockBroken.getLocation(), blockItem);
         } else {
 
-            for (ItemStack stack : definition.getDrops(player)) {
+            for (ItemStack stack : definition.getDrops(player, blockBroken.getLocation())) {
                 world.dropItemNaturally(blockBroken.getLocation(), stack);
             }
 
