@@ -26,7 +26,7 @@ public class CustomBlockFunctions {
 
     public static void OnCustomBlockClicked(PlayerInteractEvent event, CustomBlockDefinition definition) {
 
-        if (event.getHand() == EquipmentSlot.OFF_HAND && event.getItem() == null) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) {
             return;
         }
 
