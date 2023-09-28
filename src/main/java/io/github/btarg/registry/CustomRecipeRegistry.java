@@ -18,13 +18,14 @@ public class CustomRecipeRegistry {
 
     public static void RegisterRecipe(CustomRecipeDefinition recipeDefinition) {
         recipeDefinitions.put(RegistryHelper.getRegistryPrefix() + recipeDefinition.namespacedKey.value(), recipeDefinition);
+        boolean isShaped = !(recipeDefinition.shape == null || recipeDefinition.shape.isEmpty());
 
         try {
 
             ShapedRecipe shapedRecipe = new ShapedRecipe(recipeDefinition.namespacedKey, recipeDefinition.getResultItemStack());
             ShapelessRecipe shapelessRecipe = new ShapelessRecipe(recipeDefinition.namespacedKey, recipeDefinition.getResultItemStack());
 
-            if (recipeDefinition.isShaped) {
+            if (isShaped) {
                 String[] shapeArray = recipeDefinition.shape.toArray(new String[0]);
                 shapedRecipe.shape(shapeArray);
             }
@@ -35,17 +36,18 @@ public class CustomRecipeRegistry {
             // Parse ingredients from the key material map
             for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
                 mat = Material.matchMaterial(entry.getValue().toUpperCase());
+
                 if (mat == null || mat.isEmpty()) {
                     stack = ItemParser.parseItemStack(entry.getValue());
 
-                    if (recipeDefinition.isShaped) {
+                    if (isShaped) {
                         shapedRecipe.setIngredient(entry.getKey(), new RecipeChoice.ExactChoice(stack));
                     } else {
                         shapelessRecipe.addIngredient(stack);
                     }
 
                 } else {
-                    if (recipeDefinition.isShaped) {
+                    if (isShaped) {
                         shapedRecipe.setIngredient(entry.getKey(), mat);
                     } else {
                         shapelessRecipe.addIngredient(mat);
@@ -53,7 +55,7 @@ public class CustomRecipeRegistry {
                 }
             }
 
-            if (recipeDefinition.isShaped) {
+            if (isShaped) {
                 Bukkit.addRecipe(shapedRecipe);
             } else {
                 Bukkit.addRecipe(shapelessRecipe);

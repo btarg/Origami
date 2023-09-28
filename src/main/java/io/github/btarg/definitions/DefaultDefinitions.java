@@ -38,7 +38,6 @@ public class DefaultDefinitions {
         CustomRecipeDefinition definition = new CustomRecipeDefinition(new HashMap<>());
         definition.namespacedKey = new NamespacedKey(OrigamiMain.Instance, "rainbow_block_recipe");
         definition.ingredients = List.of("d;DIAMOND", "r;origami:rainbow_block");
-        definition.isShaped = true;
         definition.shape = List.of("ddd", "drd", "ddd");
         definition.result = "ACACIA_BOAT(1)";
 
