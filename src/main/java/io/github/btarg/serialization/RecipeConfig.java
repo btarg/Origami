@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 public class RecipeConfig {
 
     private static String getConfigDirectory() {
-        return OrigamiMain.Instance.getDataFolder() + File.separator + "recipes" + File.separator;
+        return OrigamiMain.getInstance().getDataFolder() + File.separator + "recipes" + File.separator;
     }
 
     private File getFile(String fileName) {
@@ -53,7 +53,7 @@ public class RecipeConfig {
         CustomRecipeDefinition definition = (CustomRecipeDefinition) conf.get("recipe");
         if (definition == null) return null;
         if (definition.namespacedKey == null) {
-            definition.namespacedKey = new NamespacedKey(OrigamiMain.Instance, FilenameUtils.removeExtension(fileName));
+            definition.namespacedKey = new NamespacedKey(OrigamiMain.getInstance(), FilenameUtils.removeExtension(fileName));
         }
 
         return definition;

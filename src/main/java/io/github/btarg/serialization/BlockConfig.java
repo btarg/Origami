@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public class BlockConfig {
 
     private static String getConfigDirectory() {
-        return OrigamiMain.Instance.getDataFolder() + File.separator + "blocks" + File.separator;
+        return OrigamiMain.getInstance().getDataFolder() + File.separator + "blocks" + File.separator;
     }
 
     private File getFile(String fileName) {

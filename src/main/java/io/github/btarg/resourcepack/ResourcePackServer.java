@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import io.github.btarg.OrigamiMain;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,11 +13,15 @@ import java.nio.file.Path;
 
 public class ResourcePackServer {
 
+    @Getter
+    private static boolean isRunning = false;
+
     public static void startServer(int port) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/pack.zip", new MyHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
+        OrigamiMain.setHostingPack(true);
     }
 
     static class MyHandler implements HttpHandler {

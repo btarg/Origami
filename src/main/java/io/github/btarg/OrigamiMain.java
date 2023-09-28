@@ -14,6 +14,7 @@ import io.github.btarg.serialization.RecipeConfig;
 import io.github.btarg.util.loot.LootTableHelper;
 import io.github.btarg.util.loot.versions.LootTableHelper_1_20_R1;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
@@ -37,19 +38,20 @@ import java.util.Objects;
 @SuppressWarnings("deprecation")
 public final class OrigamiMain extends JavaPlugin implements Listener {
 
-    public static OrigamiMain Instance;
-
     public static FileConfiguration config;
     public static BlockConfig blockConfig;
     public static RecipeConfig recipeConfig;
-
     public static BrokenBlocksService brokenBlocksService;
     public static NamespacedKey customItemTag = null;
-
     public static String sversion;
-
+    @Getter
+    private static OrigamiMain Instance;
     @Getter
     private static LootTableHelper lootTableHelper;
+
+    @Getter
+    @Setter
+    private static boolean isHostingPack;
 
     @Override
     public void onEnable() {
@@ -163,7 +165,10 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
     @EventHandler
     public void playerResourcePack(PlayerResourcePackStatusEvent e) {
-        if (!ResourcePackGenerator.isReady() && config.getBoolean("resource-packs.generate-resource-pack")) {
+
+        if (!config.getBoolean("resource-packs.generate-resource-pack")) return;
+
+        if (!(ResourcePackGenerator.isReady() && isHostingPack)) {
             e.getPlayer().kick(Component.text("The server hasn't finished loading yet!\nTry again in a few seconds."), PlayerKickEvent.Cause.PLUGIN);
             return;
         }
