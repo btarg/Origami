@@ -11,6 +11,9 @@ import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.resourcepack.ResourcePackServer;
 import io.github.btarg.serialization.BlockConfig;
 import io.github.btarg.serialization.RecipeConfig;
+import io.github.btarg.util.loot.LootTableHelper;
+import io.github.btarg.util.loot.versions.LootTableHelper_1_20_R1;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
@@ -34,40 +37,64 @@ import java.util.Objects;
 @SuppressWarnings("deprecation")
 public final class OrigamiMain extends JavaPlugin implements Listener {
 
+    public static OrigamiMain Instance;
+
+    public static FileConfiguration config;
     public static BlockConfig blockConfig;
     public static RecipeConfig recipeConfig;
 
-
     public static BrokenBlocksService brokenBlocksService;
     public static NamespacedKey customItemTag = null;
-    public static FileConfiguration config;
 
-    public static OrigamiMain Instance;
+    public static String sversion;
+
+    @Getter
+    private static LootTableHelper lootTableHelper;
 
     @Override
     public void onEnable() {
 
         Instance = this;
+        if (!setupNMS()) {
+            Bukkit.getLogger().severe("This version of Paper is unsupported! See the Origami Docs for a list of supported versions, or contact the developer.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
+        initConfig();
         customItemTag = new NamespacedKey(this, "custom-item");
+        brokenBlocksService = new BrokenBlocksService();
 
+        this.getServer().getPluginManager().registerEvents(new CustomBlockListener(), this);
+        this.getServer().getPluginManager().registerEvents(this, this);
+        this.getCommand("origami").setExecutor(new RootCommand());
+
+        // Generate resource pack
+        ResourcePackGenerator.CreateZipFile(this::serveResourcePack);
+
+
+    }
+
+    private boolean setupNMS() {
+        try {
+            sversion = Bukkit.getServer().getClass().getPackageName().split("\\.")[3];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            return false;
+        }
+        if (sversion.equals("v1_20_R1")) {
+            lootTableHelper = new LootTableHelper_1_20_R1();
+        }
+        return lootTableHelper != null;
+    }
+
+    private void initConfig() {
         ConfigurationSerialization.registerClass(CustomBlockDefinition.class);
         ConfigurationSerialization.registerClass(CustomRecipeDefinition.class);
         blockConfig = new BlockConfig();
         recipeConfig = new RecipeConfig();
 
-
-        brokenBlocksService = new BrokenBlocksService();
-
-        // Plugin startup logic
-        this.getServer().getPluginManager().registerEvents(new CustomBlockListener(), this);
-        this.getServer().getPluginManager().registerEvents(this, this);
-
-        this.getCommand("origami").setExecutor(new RootCommand());
-
-        // resource pack config
         config = getConfig();
-
         config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true),", "you can set the local path to the resource pack which will be hosted below.", "If you enable resource pack generation, the unzipped directory specified below will be zipped and combined with any existing resource pack, otherwise the zipped resource pack path is where you should place your pack.", "Remember to set your server's IP address in server.properties"));
 
         ConfigurationSection resourcePackSection = config.createSection("resource-packs");
@@ -85,16 +112,9 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         config.options().copyDefaults(true);
         saveConfig();
 
-
         // load blocks from files (requires config loaded)
         blockConfig.loadAndRegisterBlocks();
         recipeConfig.loadAndRegisterRecipes();
-
-
-        // Generate resource pack
-        ResourcePackGenerator.CreateZipFile(this::serveResourcePack);
-
-
     }
 
     private void serveResourcePack() {
