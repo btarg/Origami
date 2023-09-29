@@ -10,19 +10,18 @@ import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.util.blocks.CustomBlockUtils;
 import io.github.btarg.util.items.ItemTagHelper;
 import io.github.btarg.util.items.ToolLevelHelper;
+import io.papermc.paper.event.player.PlayerPickItemEvent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
@@ -34,6 +33,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Transformation;
 
 import java.util.HashSet;
 import java.util.List;
@@ -53,82 +54,58 @@ public class CustomBlockListener implements Listener {
         transparentBlocks.add(Material.AIR);
     }
 
+
     @EventHandler
     public void ItemFramePlace(HangingPlaceEvent event) {
-        Entity entity = event.getEntity();
 
-        if (entity.getType() == EntityType.ITEM_FRAME) {
+        ItemStack blockItem = event.getItemStack();
+        ItemMeta meta = blockItem.getItemMeta();
 
-            ItemMeta meta = event.getItemStack().getItemMeta();
-            if (meta == null) return;
+        if (meta == null) return;
+        String blockName = meta.getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
+        if (blockName == null) return;
+        CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
+        if (definition == null) return;
 
-            String blockName = meta.getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
+        event.setCancelled(true);
 
-            CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
-            if (definition == null) return;
+        Block block = event.getBlock();
+        World world = block.getWorld();
+        Location placedLocation = event.getEntity().getLocation();
 
-            Block block = event.getBlock();
-            World world = block.getWorld();
+        // check for entities (other than item displays) that are too close
+        java.util.Collection<Entity> entities = world.getNearbyEntities(placedLocation, 0.5, 0.5, 0.5);
+        entities.removeIf(ent -> ent instanceof Display);
 
-            // set the item frame's item to be an item frame with a custom model
-            ItemStack modelItem = new ItemStack(Material.ITEM_FRAME, 1);
-            ItemMeta modelMeta = modelItem.getItemMeta();
-            modelMeta.setCustomModelData(definition.blockModelData);
-            modelMeta.getPersistentDataContainer().set(OrigamiMain.customItemTag, PersistentDataType.STRING, definition.id);
-            modelItem.setItemMeta(modelMeta);
-
-            // if this is supposed to be a glow item frame, then we create a new entity
-            if (definition.glowing) {
-
-                Location exLocation = entity.getLocation();
-                entity.remove();
-                entity = SpawnGlowItemFrame(exLocation);
-
-            }
-
-            ItemFrame frame = (ItemFrame) entity;
-            frame.setFacingDirection(BlockFace.UP);
-            frame.setVisible(false);
-            frame.setInvulnerable(true);
-            frame.setFixed(true);
-            frame.setSilent(true);
-            frame.setCustomNameVisible(false);
-            frame.setItem(modelItem, false);
-
-
-            // check for entities (other than item frames) that are too close
-            java.util.Collection<Entity> entities = world.getNearbyEntities(entity.getLocation(), 0.5, 0.5, 0.5);
-            entities.removeIf(ent -> ent instanceof ItemFrame);
-
-            if (!entities.isEmpty()) {
-                event.setCancelled(true);
-                entity.remove();
-                return;
-            }
-
-            // set the item frame uuid to the same as the base block
-            String block_uuid = entity.getUniqueId().toString();
-
-            // Add the block to the database
-            Location placedLocation = entity.getLocation();
-
-            // if we failed to add a block because there is one already there, then we should cancel the item frame place event
-            boolean added = CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
-            if (!added) {
-                event.setCancelled(true);
-                entity.remove();
-                return;
-            }
-            world.setBlockData(entity.getLocation(), definition.baseBlock.createBlockData());
-
-            if (definition.placeSound != null) {
-                world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
-            }
+        if (!entities.isEmpty()) {
+            return;
         }
-    }
+        // Get block position, with slight offset as scaling the model on the Y axis scales downward
+        Location blockLocation = new Location(world, placedLocation.getBlockX(), placedLocation.getBlockY() + 0.0001f, placedLocation.getBlockZ());
+        Entity entity = world.spawn(CustomBlockUtils.getDisplayLocationFromBlock(blockLocation), ItemDisplay.class, ent -> {
+            ent.setItemStack(blockItem);
+            ent.setPersistent(true);
+            ent.setInvulnerable(true);
+            Transformation t = ent.getTransformation();
+            Transformation transformation = new Transformation(t.getTranslation(), t.getLeftRotation(), t.getScale().add(0.0001f, 0.0002f, 0.0001f), t.getRightRotation());
 
-    private Entity SpawnGlowItemFrame(Location location) {
-        return location.getWorld().spawnEntity(location, EntityType.GLOW_ITEM_FRAME, CreatureSpawnEvent.SpawnReason.COMMAND);
+            ent.setTransformation(transformation);
+        });
+
+        // set the item frame uuid to the same as the base block
+        String block_uuid = entity.getUniqueId().toString();
+
+        // if we failed to add a block because there is one already there, then we should cancel the item frame place event
+        boolean added = CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
+        if (!added) {
+            entity.remove();
+            return;
+        }
+        world.setBlockData(placedLocation, definition.baseBlock.createBlockData());
+
+        if (definition.placeSound != null) {
+            world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
+        }
     }
 
     @EventHandler
@@ -223,9 +200,9 @@ public class CustomBlockListener implements Listener {
     @EventHandler
     public void onBlockBroken(BlockBreakEvent e) {
 
-        Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(e.getBlock().getLocation());
+        Entity linkedFrame = CustomBlockUtils.getLinkedItemDisplay(e.getBlock().getLocation());
         if (linkedFrame == null) return;
-        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedFrame);
         if (definition == null) return;
         e.setDropItems(false);
 
@@ -259,9 +236,9 @@ public class CustomBlockListener implements Listener {
         for (Block block : e.blockList()) {
             if (CustomBlockDatabase.blockIsInDatabase(block.getLocation())) {
 
-                Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block.getLocation());
+                Entity linkedFrame = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
                 if (linkedFrame == null) return;
-                CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
+                CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedFrame);
                 if (definition == null) return;
 
                 CustomBlockFunctions.DropBlockItems(e.getEntity(), definition, block);
@@ -299,10 +276,10 @@ public class CustomBlockListener implements Listener {
         for (int i = blocks.size(); i-- > 0; ) {
             Block block = blocks.get(i);
 
-            Entity linkedFrame = CustomBlockUtils.GetLinkedItemFrame(block.getLocation());
+            Entity linkedFrame = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
             if (linkedFrame == null) return;
 
-            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemFrame(linkedFrame);
+            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedFrame);
             if (definition == null) return;
             if (!definition.canBePushed) {
                 e.setCancelled(true);
@@ -321,5 +298,19 @@ public class CustomBlockListener implements Listener {
         }
 
         CustomBlockDatabase.saveData(e.getBlock().getWorld(), false);
+    }
+
+    @EventHandler
+    public void onBlockPicked(PlayerPickItemEvent e) {
+        RayTraceResult result = e.getPlayer().rayTraceBlocks(5d);
+        if (result == null) {
+            return;
+        }
+        Block block = result.getHitBlock();
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
+        if (definition == null) {
+        }
+        // TODO: do stuff with block
+
     }
 }

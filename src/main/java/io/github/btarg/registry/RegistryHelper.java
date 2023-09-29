@@ -17,10 +17,10 @@ public class RegistryHelper {
 
         if (customBlockDefinition == null) return null;
 
-        ItemStack frame = new ItemStack(Material.ITEM_FRAME, count);
+        ItemStack stone = new ItemStack(Material.ITEM_FRAME, count);
 
         // new item meta (name and lore)
-        ItemMeta meta = frame.getItemMeta();
+        ItemMeta meta = stone.getItemMeta();
         Component name = customBlockDefinition.getDisplayName();
         meta.displayName(name);
         meta.lore(customBlockDefinition.getLore());
@@ -28,9 +28,11 @@ public class RegistryHelper {
 
         // add custom block id to the item so that we can tell it's a custom item
         meta.getPersistentDataContainer().set(OrigamiMain.customItemTag, PersistentDataType.STRING, customBlockDefinition.id);
-        frame.setItemMeta(meta);
+        stone.setItemMeta(meta);
 
-        return frame;
+        return stone;
+
+
     }
 
     public static String getRegistryPrefix() {

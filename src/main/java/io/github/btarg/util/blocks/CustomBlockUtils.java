@@ -8,7 +8,7 @@ import io.github.btarg.registry.RegistryHelper;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -16,14 +16,13 @@ public class CustomBlockUtils {
 
     public static CustomBlockDefinition getDefinitionFromBlock(Block block) {
         if (!CustomBlockDatabase.blockIsInDatabase(block.getLocation())) return null;
-        Entity linkedFrame = GetLinkedItemFrame(block.getLocation());
+        Entity linkedFrame = getLinkedItemDisplay(block.getLocation());
         if (linkedFrame == null) return null;
-        return getDefinitionFromItemFrame(linkedFrame);
+        return getDefinitionFromItemDisplay(linkedFrame);
     }
 
-    public static CustomBlockDefinition getDefinitionFromItemFrame(Entity itemFrameEntity) {
-        ItemStack item = ((ItemFrame) itemFrameEntity).getItem();
-
+    public static CustomBlockDefinition getDefinitionFromItemDisplay(Entity itemDisplayEntity) {
+        ItemStack item = ((ItemDisplay) itemDisplayEntity).getItemStack();
         String blockId = item.getItemMeta().getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
 
         if (blockId != null) {
@@ -33,12 +32,11 @@ public class CustomBlockUtils {
             return CustomBlockRegistry.GetRegisteredBlock(blockId);
         }
 
-
         return null;
     }
 
 
-    public static Entity GetLinkedItemFrame(Location location) {
+    public static Entity getLinkedItemDisplay(Location location) {
         String check_uuid = CustomBlockDatabase.getBlockUUIDFromDatabase(location);
         if (check_uuid != null && !check_uuid.isEmpty()) {
 
@@ -49,5 +47,14 @@ public class CustomBlockUtils {
             }
         }
         return null;
+    }
+
+    public static Location getDisplayLocationFromBlock(Location location) {
+        Location entityLocation = location.clone();
+        entityLocation.setX(location.getX() + 0.5);
+        entityLocation.setY(location.getY() + 0.5);
+        entityLocation.setZ(location.getZ() + 0.5);
+
+        return entityLocation;
     }
 }
