@@ -103,6 +103,8 @@ public class DefinitionSerializer {
                 if (saveDef instanceof CustomBlockDefinition blockDefinition) {
                     CustomBlockRegistry.RegisterBlock(blockDefinition);
                 }
+            } else if (sender != null) {
+                sender.sendMessage("Registered " + fileCount.get() + " file(s)!");
             }
 
         } catch (IOException e) {

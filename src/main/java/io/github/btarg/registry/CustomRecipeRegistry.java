@@ -17,8 +17,9 @@ public class CustomRecipeRegistry {
     private static final Map<String, CustomRecipeDefinition> recipeDefinitions = new HashMap<>();
 
     public static void RegisterRecipe(CustomRecipeDefinition recipeDefinition) {
+        if (recipeDefinition.getResultItemStack() == null) return;
+        
         recipeDefinitions.put(RegistryHelper.getRegistryPrefix() + recipeDefinition.namespacedKey.value(), recipeDefinition);
-
         boolean isShaped = !(recipeDefinition.shape == null || recipeDefinition.shape.isEmpty());
 
         try {

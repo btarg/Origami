@@ -1,5 +1,5 @@
 name: Origami
-version: '${project.version}'
+version: '${version}'
 author: btarg
 main: io.github.btarg.OrigamiMain
 api-version: '1.20'

@@ -31,4 +31,15 @@ tasks {
         dependsOn(assemble)
         minecraftVersion("1.20.1")
     }
+    processResources {
+        filteringCharset = Charsets.UTF_8.name() // We want UTF-8 for everything
+        val props = mapOf(
+                "version" to project.version
+        )
+        inputs.properties(props)
+        filesMatching("plugin.yml") {
+            expand(props)
+        }
+    }
+
 }

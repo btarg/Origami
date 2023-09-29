@@ -13,6 +13,12 @@ resource packs and custom model data to allow **vanilla** clients to connect and
 
 # View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/)!
 
+# Credits and special thanks
+
+- The [PaperMC Discord](https://discord.gg/papermc) for being incredibly helpful and quick to respond to any questions
+- [Dannegm on GitHub](https://github.com/dannegm/BlockEntities) for providing an initial implementation of custom blocks
+  using Item Display entities
+
 ## Block Database
 
 The positions and UUIDs of custom blocks are stored in one file per world, under the `_data` folder. **DO NOT** delete

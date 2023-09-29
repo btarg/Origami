@@ -3,11 +3,11 @@ package io.github.btarg.commands;
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.TranslatableComponent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -38,15 +38,8 @@ public class RootCommand implements TabExecutor {
 
                 if (definition != null && target != null) {
                     target.getInventory().addItem(RegistryHelper.CreateCustomBlockItemStack(definition, count));
-
-                    TranslatableComponent giveMessage = new TranslatableComponent("commands.give.success.single");
-                    giveMessage.addWith(String.valueOf(count));
-                    giveMessage.addWith(definition.displayName);
-
-                    TextComponent username = new TextComponent(target.getDisplayName());
-                    giveMessage.addWith(username);
-
-                    sender.spigot().sendMessage(giveMessage);
+                    Component giveMessage = Component.translatable("commands.give.success.single", Component.text(count), definition.getDisplayName(), target.displayName());
+                    sender.sendMessage(giveMessage);
                 }
 
             } else {
@@ -57,13 +50,13 @@ public class RootCommand implements TabExecutor {
             if (Objects.equals(args[1], "blocks")) {
                 sender.sendMessage("Reloading custom blocks...");
                 CustomBlockRegistry.ClearBlockRegistry();
-                OrigamiMain.blockConfig.loadAndRegisterBlocks(sender);
+                OrigamiMain.definitionSerializer.loadAndRegister(CustomBlockDefinition.class);
             } else if (Objects.equals(args[1], "items")) {
                 sender.sendMessage("coming soon");
             } else if (Objects.equals(args[1], "recipes")) {
                 sender.sendMessage("Reloading recipes...");
                 CustomRecipeRegistry.ClearRecipeRegistry();
-                OrigamiMain.recipeConfig.loadAndRegisterRecipes(sender);
+                OrigamiMain.definitionSerializer.loadAndRegister(CustomRecipeDefinition.class);
             } else if (Objects.equals(args[1], "database")) {
                 sender.sendMessage("Reloading block database...");
                 CustomBlockDatabase.loadAll();
@@ -92,7 +85,7 @@ public class RootCommand implements TabExecutor {
             if (!currentDB.isEmpty()) {
                 int count = 0;
                 for (Map.Entry<Vector, String> blockEntry : currentDB.entrySet()) {
-                    finalString.append(String.format("§r  * %s %s[%s]\n", blockEntry.getValue(), ChatColor.GREEN, blockEntry.getKey().toString()));
+                    finalString.append(String.format("  * %s %s[%s]\n", blockEntry.getValue(), ChatColor.GREEN, blockEntry.getKey().toString()));
                     count++;
                 }
                 sender.sendMessage(String.valueOf(count) + finalString);
@@ -133,7 +126,7 @@ public class RootCommand implements TabExecutor {
             }
 
         } else if (Objects.equals(args[0], "reload")) {
-            tabComplete = Arrays.asList("blocks", "items", "database");
+            tabComplete = Arrays.asList("blocks", "items", "recipes", "database");
         } else if (Objects.equals(args[0], "listblocks")) {
             List<String> worldNames = new ArrayList<>();
             Bukkit.getWorlds().forEach(world -> {
