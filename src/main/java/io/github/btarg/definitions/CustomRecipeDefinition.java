@@ -4,7 +4,6 @@ import io.github.btarg.util.items.ItemParser;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -27,18 +26,19 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
 
     @SuppressWarnings("unchecked")
     public CustomRecipeDefinition(Map<String, Object> map) {
-        this.shape = (List<String>) map.get("shape");
 
+        this.shape = (List<String>) map.get("shape");
         this.ingredients = Objects.requireNonNullElse((List<String>) map.get("ingredients"), Collections.singletonList("A;AIR"));
 
         // Try to parse item stack from string, return a stack of 1 air if we can't
+        ItemStack resultStack = ItemStack.empty();
         try {
-            this.resultItemStack = ItemParser.parseItemStack(Objects.requireNonNullElse((String) map.get("result"), "AIR(1)"));
-            if (this.resultItemStack == null) {
-                this.resultItemStack = new ItemStack(Material.AIR, 1);
+            resultStack = ItemParser.parseItemStack(Objects.requireNonNullElse((String) map.get("result"), "AIR(1)"));
+            if (resultStack == null) {
+                resultStack = ItemStack.empty();
             }
         } catch (IllegalArgumentException ex) {
-            this.resultItemStack = new ItemStack(Material.AIR, 1);
+            Bukkit.getLogger().warning("A recipe has an empty result. Please ensure that every recipe has a result other than AIR.");
         }
         this.ingredientMap = new HashMap<>();
         for (int i = 0; i < ingredients.size(); i++) {
@@ -53,6 +53,7 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
             // DIAMOND
             else if (split.length == 1) {
                 if (shape == null) {
+                    // shapeless recipe
                     this.ingredientMap.put(String.valueOf(i), split[0]);
                 } else {
                     Bukkit.getLogger().warning("Shaped Recipe has no keys! Each ingredient in a Shaped Recipe should be formatted as <key>;<item>");
