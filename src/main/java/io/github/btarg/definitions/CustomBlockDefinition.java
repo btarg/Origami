@@ -4,6 +4,7 @@ import io.github.btarg.OrigamiMain;
 import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.items.ItemParser;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -42,9 +43,12 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
     @SuppressWarnings("unchecked")
     public CustomBlockDefinition(Map<String, Object> map) {
         this.id = null;
-        String baseBlockString = Objects.requireNonNullElse((String) map.get("baseBlock"), "GLASS");
-        this.baseBlock = Objects.requireNonNullElse(Material.matchMaterial(baseBlockString.toUpperCase()), Material.GLASS);
-        if (!this.baseBlock.isBlock()) {
+        String baseBlockString = (String) map.get("baseBlock");
+        if (baseBlockString != null) {
+            this.baseBlock = Material.matchMaterial(baseBlockString.toUpperCase());
+        }
+        if (this.baseBlock == null || !this.baseBlock.isBlock()) {
+            Bukkit.getLogger().severe("Custom Blocks require a base block to be set! Defaulting to glass...");
             this.baseBlock = Material.GLASS;
         }
         this.glowing = Objects.requireNonNullElse((Boolean) map.get("glowing"), false);

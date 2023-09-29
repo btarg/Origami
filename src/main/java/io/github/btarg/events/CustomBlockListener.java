@@ -5,6 +5,7 @@ import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
+import io.github.btarg.registry.RegistryHelper;
 import io.github.btarg.rendering.BrokenBlock;
 import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.util.blocks.CustomBlockUtils;
@@ -81,13 +82,13 @@ public class CustomBlockListener implements Listener {
             return;
         }
         // Get block position, with slight offset as scaling the model on the Y axis scales downward
-        Location blockLocation = new Location(world, placedLocation.getBlockX(), placedLocation.getBlockY() + 0.0001f, placedLocation.getBlockZ());
+        Location blockLocation = new Location(world, placedLocation.getBlockX(), placedLocation.getBlockY() + 0.00015f, placedLocation.getBlockZ());
         Entity entity = world.spawn(CustomBlockUtils.getDisplayLocationFromBlock(blockLocation), ItemDisplay.class, ent -> {
             ent.setItemStack(blockItem);
             ent.setPersistent(true);
             ent.setInvulnerable(true);
             Transformation t = ent.getTransformation();
-            Transformation transformation = new Transformation(t.getTranslation(), t.getLeftRotation(), t.getScale().add(0.0001f, 0.0002f, 0.0001f), t.getRightRotation());
+            Transformation transformation = new Transformation(t.getTranslation(), t.getLeftRotation(), t.getScale().add(0.0001f, 0.0003f, 0.0001f), t.getRightRotation());
 
             ent.setTransformation(transformation);
         });
@@ -308,9 +309,14 @@ public class CustomBlockListener implements Listener {
         }
         Block block = result.getHitBlock();
         CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
-        if (definition == null) {
-        }
-        // TODO: do stuff with block
+        if (definition == null) return;
+        ItemStack stack = RegistryHelper.CreateCustomBlockItemStack(definition, 1);
+        if (stack == null) return;
+
+        ItemStack inventoryStack = e.getPlayer().getInventory().getItem(e.getTargetSlot());
+        inventoryStack.setAmount(1);
+        inventoryStack.setType(stack.getType());
+        inventoryStack.setItemMeta(stack.getItemMeta());
 
     }
 }

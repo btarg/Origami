@@ -9,8 +9,7 @@ import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.resourcepack.FileUtils;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.resourcepack.ResourcePackServer;
-import io.github.btarg.serialization.BlockConfig;
-import io.github.btarg.serialization.RecipeConfig;
+import io.github.btarg.serialization.DefinitionSerializer;
 import io.github.btarg.util.loot.LootTableHelper;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,8 +38,7 @@ import java.util.Objects;
 public final class OrigamiMain extends JavaPlugin implements Listener {
 
     public static FileConfiguration config;
-    public static BlockConfig blockConfig;
-    public static RecipeConfig recipeConfig;
+    public static DefinitionSerializer definitionSerializer;
     public static BrokenBlocksService brokenBlocksService;
     public static NamespacedKey customItemTag = null;
     public static String sversion;
@@ -100,11 +98,11 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     private void initConfig() {
         ConfigurationSerialization.registerClass(CustomBlockDefinition.class);
         ConfigurationSerialization.registerClass(CustomRecipeDefinition.class);
-        blockConfig = new BlockConfig();
-        recipeConfig = new RecipeConfig();
 
         config = getConfig();
         config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true),", "you can set the local path to the resource pack which will be hosted below.", "If you enable resource pack generation, the unzipped directory specified below will be zipped and combined with any existing resource pack, otherwise the zipped resource pack path is where you should place your pack.", "Remember to set your server's IP address in server.properties"));
+        definitionSerializer = new DefinitionSerializer();
+
 
         ConfigurationSection resourcePackSection = config.createSection("resource-packs");
         resourcePackSection.addDefault("enable-http-server", true);
@@ -122,8 +120,9 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         saveConfig();
 
         // load blocks from files (requires config loaded)
-        blockConfig.loadAndRegisterBlocks();
-        recipeConfig.loadAndRegisterRecipes();
+        definitionSerializer.loadAndRegister(CustomBlockDefinition.class);
+        // recipes
+        definitionSerializer.loadAndRegister(CustomRecipeDefinition.class);
     }
 
     private void serveResourcePack() {

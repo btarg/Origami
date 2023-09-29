@@ -1,9 +1,11 @@
 package io.github.btarg.definitions;
 
 import io.github.btarg.OrigamiMain;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,8 +13,19 @@ import java.util.List;
 
 public class DefaultDefinitions {
 
+    public static ConfigurationSerializable getDefaultDefinition(Class definitionClass) {
+        if (definitionClass.equals(CustomBlockDefinition.class)) {
+            return getDefaultBlockDefinition();
+        } else if (definitionClass.equals(CustomRecipeDefinition.class)) {
+            return getDefaultRecipeDefinition();
+        }
+        return null;
+    }
+
     public static CustomBlockDefinition getDefaultBlockDefinition() {
         // save example object if there are no files
+        Bukkit.getLogger().warning("No block definitions found! Creating a new example block definition.");
+
         CustomBlockDefinition definition = new CustomBlockDefinition(new HashMap<>());
         definition.id = "rainbow_block";
         definition.baseBlock = Material.GLASS;
@@ -34,6 +47,8 @@ public class DefaultDefinitions {
     }
 
     public static CustomRecipeDefinition getDefaultRecipeDefinition() {
+
+        Bukkit.getLogger().warning("No recipe definitions found! Creating a new example recipe definition.");
 
         CustomRecipeDefinition definition = new CustomRecipeDefinition(new HashMap<>());
         definition.namespacedKey = new NamespacedKey(OrigamiMain.getInstance(), "rainbow_block_recipe");
