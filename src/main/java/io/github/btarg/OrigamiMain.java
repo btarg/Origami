@@ -1,6 +1,5 @@
 package io.github.btarg;
 
-import io.github.btarg.blockdata.CustomBlockDatabase;
 import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
@@ -41,6 +40,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     public static DefinitionSerializer definitionSerializer;
     public static BrokenBlocksService brokenBlocksService;
     public static NamespacedKey customItemTag = null;
+    public static NamespacedKey chunkDataKey = null;
     public static String sversion;
     @Getter
     private static OrigamiMain Instance;
@@ -55,14 +55,18 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     public void onEnable() {
 
         Instance = this;
+        customItemTag = new NamespacedKey(this, "custom-item");
+        chunkDataKey = new NamespacedKey(this, "block-data");
+
+
         if (!setupNMS()) {
             Bukkit.getLogger().severe("This version of Paper is unsupported! See the Origami Docs for a list of supported versions, or contact the developer.");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
 
-        customItemTag = new NamespacedKey(this, "custom-item");
         initConfig();
+
         brokenBlocksService = new BrokenBlocksService();
 
         this.getServer().getPluginManager().registerEvents(new CustomBlockListener(), this);
@@ -147,9 +151,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
 
-        // init world here to make sure we have fully loaded plugin
-        CustomBlockDatabase.initWorld(event.getPlayer().getWorld());
-
         String ipAddress = StringUtils.defaultIfEmpty(getServer().getIp(), "localhost");
         Integer port = Objects.requireNonNullElse((Integer) config.get("http-port"), 8008);
 
@@ -182,10 +183,5 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
             e.getPlayer().kick(Component.text("A resource pack is required to play on this server."), PlayerKickEvent.Cause.RESOURCE_PACK_REJECTION);
         }
 
-    }
-
-    @Override
-    public void onDisable() {
-        CustomBlockDatabase.saveAllNow();
     }
 }

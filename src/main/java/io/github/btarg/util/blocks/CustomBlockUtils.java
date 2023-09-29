@@ -1,7 +1,7 @@
 package io.github.btarg.util.blocks;
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.blockdata.CustomBlockDatabase;
+import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.RegistryHelper;
@@ -15,7 +15,7 @@ import org.bukkit.persistence.PersistentDataType;
 public class CustomBlockUtils {
 
     public static CustomBlockDefinition getDefinitionFromBlock(Block block) {
-        if (!CustomBlockDatabase.blockIsInDatabase(block.getLocation())) return null;
+        if (!CustomBlockPersistentData.blockIsInStorage(block.getLocation())) return null;
         Entity linkedFrame = getLinkedItemDisplay(block.getLocation());
         if (linkedFrame == null) return null;
         return getDefinitionFromItemDisplay(linkedFrame);
@@ -37,7 +37,7 @@ public class CustomBlockUtils {
 
 
     public static Entity getLinkedItemDisplay(Location location) {
-        String check_uuid = CustomBlockDatabase.getBlockUUIDFromDatabase(location);
+        String check_uuid = CustomBlockPersistentData.getUUIDFromLocation(location);
         if (check_uuid != null && !check_uuid.isEmpty()) {
 
             for (Entity ent : location.getWorld().getNearbyEntities(location, 1.0, 1.0, 1.0)) {

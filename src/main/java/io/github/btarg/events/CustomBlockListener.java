@@ -2,16 +2,14 @@ package io.github.btarg.events;
 
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.blockdata.CustomBlockDatabase;
+import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
-import io.github.btarg.registry.RegistryHelper;
 import io.github.btarg.rendering.BrokenBlock;
 import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.util.blocks.CustomBlockUtils;
 import io.github.btarg.util.items.ItemTagHelper;
 import io.github.btarg.util.items.ToolLevelHelper;
-import io.papermc.paper.event.player.PlayerPickItemEvent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -34,7 +32,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Transformation;
 
 import java.util.HashSet;
@@ -97,7 +94,7 @@ public class CustomBlockListener implements Listener {
         String block_uuid = entity.getUniqueId().toString();
 
         // if we failed to add a block because there is one already there, then we should cancel the item frame place event
-        boolean added = CustomBlockDatabase.addBlockToDatabase(placedLocation, block_uuid);
+        boolean added = CustomBlockPersistentData.storeBlockInformation(placedLocation, block_uuid);
         if (!added) {
             entity.remove();
             return;
@@ -235,7 +232,7 @@ public class CustomBlockListener implements Listener {
     public void onExplode(EntityExplodeEvent e) {
 
         for (Block block : e.blockList()) {
-            if (CustomBlockDatabase.blockIsInDatabase(block.getLocation())) {
+            if (CustomBlockPersistentData.blockIsInStorage(block.getLocation())) {
 
                 Entity linkedFrame = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
                 if (linkedFrame == null) return;
@@ -245,19 +242,18 @@ public class CustomBlockListener implements Listener {
                 CustomBlockFunctions.DropBlockItems(e.getEntity(), definition, block);
 
                 // remove without saving for better performance
-                CustomBlockDatabase.removeBlockFromDatabase(block.getLocation(), false);
+                CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
 
                 linkedFrame.remove();
 
             }
         }
-        CustomBlockDatabase.saveData(e.getLocation().getWorld(), false);
 
     }
 
     @EventHandler
     public void onFrameBroken(HangingBreakEvent e) {
-        e.setCancelled(CustomBlockDatabase.blockIsInDatabase(e.getEntity().getLocation()));
+        e.setCancelled(CustomBlockPersistentData.blockIsInStorage(e.getEntity().getLocation()));
     }
 
     @EventHandler
@@ -291,32 +287,13 @@ public class CustomBlockListener implements Listener {
             Location newLoc = block.getLocation().add(e.getDirection().getDirection()).toBlockLocation();
 
             // remove the old database entry and add the new one
-            CustomBlockDatabase.moveBlockInDatabase(block.getLocation(), newLoc, false);
+            CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
+            CustomBlockPersistentData.storeBlockInformation(newLoc, linkedFrame.getUniqueId().toString());
 
             // move the item frame to new location
-            linkedFrame.teleport(newLoc);
+            linkedFrame.teleport(CustomBlockUtils.getDisplayLocationFromBlock(newLoc));
 
         }
-
-        CustomBlockDatabase.saveData(e.getBlock().getWorld(), false);
     }
 
-    @EventHandler
-    public void onBlockPicked(PlayerPickItemEvent e) {
-        RayTraceResult result = e.getPlayer().rayTraceBlocks(5d);
-        if (result == null) {
-            return;
-        }
-        Block block = result.getHitBlock();
-        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
-        if (definition == null) return;
-        ItemStack stack = RegistryHelper.CreateCustomBlockItemStack(definition, 1);
-        if (stack == null) return;
-
-        ItemStack inventoryStack = e.getPlayer().getInventory().getItem(e.getTargetSlot());
-        inventoryStack.setAmount(1);
-        inventoryStack.setType(stack.getType());
-        inventoryStack.setItemMeta(stack.getItemMeta());
-
-    }
 }

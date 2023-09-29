@@ -1,21 +1,21 @@
 package io.github.btarg.commands;
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.blockdata.CustomBlockDatabase;
+import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
+import io.github.btarg.util.blocks.BlockPos;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.World;
+import org.bukkit.Chunk;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -57,43 +57,29 @@ public class RootCommand implements TabExecutor {
                 sender.sendMessage("Reloading recipes...");
                 CustomRecipeRegistry.ClearRecipeRegistry();
                 OrigamiMain.definitionSerializer.loadAndRegister(CustomRecipeDefinition.class);
-            } else if (Objects.equals(args[1], "database")) {
-                sender.sendMessage("Reloading block database...");
-                CustomBlockDatabase.loadAll();
             } else {
                 sender.sendMessage(ChatColor.RED + "Please specify which registry you want to reload.");
             }
         } else if (Objects.equals(args[0], "listblocks")) {
 
-            World world = null;
+            if (sender instanceof Player) {
+                Chunk chunk = ((Player) sender).getLocation().getChunk();
 
-            if (sender instanceof Player && args.length == 2) {
-                world = ((Player) sender).getWorld();
-            } else if (args.length == 3) {
-                world = sender.getServer().getWorld(args[1]);
-            }
-            if (world == null) {
-                sender.sendMessage(ChatColor.RED + "Could not get world. Usage:\n" + command.getUsage());
-                return true;
-            }
+                StringBuilder finalString = new StringBuilder(" blocks in " + chunk + ":\n");
+                Map<BlockPos, String> currentDB = CustomBlockPersistentData.getBlocksInStorage(chunk);
 
-            World.Environment environment = world.getEnvironment();
+                if (currentDB != null && !currentDB.isEmpty()) {
+                    int count = 0;
+                    for (Map.Entry<BlockPos, String> blockEntry : currentDB.entrySet()) {
+                        finalString.append(String.format("  * %s %s[%s]\n", blockEntry.getValue(), ChatColor.GREEN, blockEntry.getKey().toString()));
+                        count++;
+                    }
+                    sender.sendMessage(String.valueOf(count) + finalString);
 
-            StringBuilder finalString = new StringBuilder(" blocks in " + environment.name() + ":\n");
-            HashMap<org.bukkit.util.Vector, String> currentDB = CustomBlockDatabase.getBlocksInDatabase(world);
-
-            if (!currentDB.isEmpty()) {
-                int count = 0;
-                for (Map.Entry<Vector, String> blockEntry : currentDB.entrySet()) {
-                    finalString.append(String.format("  * %s %s[%s]\n", blockEntry.getValue(), ChatColor.GREEN, blockEntry.getKey().toString()));
-                    count++;
+                } else {
+                    sender.sendMessage("No blocks in database!");
                 }
-                sender.sendMessage(String.valueOf(count) + finalString);
-
-            } else {
-                sender.sendMessage("No blocks in database!");
             }
-
             return true;
 
         } else {
@@ -126,13 +112,7 @@ public class RootCommand implements TabExecutor {
             }
 
         } else if (Objects.equals(args[0], "reload")) {
-            tabComplete = Arrays.asList("blocks", "items", "recipes", "database");
-        } else if (Objects.equals(args[0], "listblocks")) {
-            List<String> worldNames = new ArrayList<>();
-            Bukkit.getWorlds().forEach(world -> {
-                worldNames.add(world.getName());
-            });
-            tabComplete = worldNames;
+            tabComplete = Arrays.asList("blocks", "items", "recipes");
         }
 
         return tabComplete;

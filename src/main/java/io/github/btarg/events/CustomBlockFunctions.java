@@ -1,6 +1,6 @@
 package io.github.btarg.events;
 
-import io.github.btarg.blockdata.CustomBlockDatabase;
+import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.RegistryHelper;
 import org.bukkit.Bukkit;
@@ -19,7 +19,7 @@ import org.bukkit.inventory.ItemStack;
 public class CustomBlockFunctions {
     public static void OnCustomBlockBroken(Location location, String breakSound) {
 
-        CustomBlockDatabase.removeBlockFromDatabase(location, true);
+        CustomBlockPersistentData.removeBlockFromStorage(location);
 
         if (breakSound != null && !breakSound.isEmpty())
             location.getWorld().playSound(location, Sound.valueOf(breakSound), 1, 1);
