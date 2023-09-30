@@ -21,11 +21,7 @@ public class ChunkBlockInformation implements Serializable {
 
     public void removeBlock(Location location) {
         if (this.blocksMap == null) return;
-        for (var entry : this.blocksMap.keySet()) {
-            if (entry.Compare(new BlockPos(location))) {
-                this.blocksMap.remove(entry);
-            }
-        }
+        this.blocksMap.keySet().removeIf(entry -> entry.Compare(new BlockPos(location)));
     }
 
     public String getBlockUUID(Location location) {

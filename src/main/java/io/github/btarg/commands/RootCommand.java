@@ -50,13 +50,13 @@ public class RootCommand implements TabExecutor {
             if (Objects.equals(args[1], "blocks")) {
                 sender.sendMessage("Reloading custom blocks...");
                 CustomBlockRegistry.ClearBlockRegistry();
-                OrigamiMain.definitionSerializer.loadAndRegister(CustomBlockDefinition.class);
+                OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomBlockDefinition.class);
             } else if (Objects.equals(args[1], "items")) {
                 sender.sendMessage("coming soon");
             } else if (Objects.equals(args[1], "recipes")) {
                 sender.sendMessage("Reloading recipes...");
                 CustomRecipeRegistry.ClearRecipeRegistry();
-                OrigamiMain.definitionSerializer.loadAndRegister(CustomRecipeDefinition.class);
+                OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomRecipeDefinition.class);
             } else {
                 sender.sendMessage(ChatColor.RED + "Please specify which registry you want to reload.");
             }

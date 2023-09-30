@@ -31,11 +31,11 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
         this.ingredients = Objects.requireNonNullElse((List<String>) map.get("ingredients"), Collections.singletonList("A;AIR"));
 
         // Try to parse item stack from string, return a stack of 1 air if we can't
-        ItemStack resultStack = ItemStack.empty();
+        resultItemStack = ItemStack.empty();
         try {
-            resultStack = ItemParser.parseItemStack(Objects.requireNonNullElse((String) map.get("result"), "AIR(1)"));
-            if (resultStack == null) {
-                resultStack = ItemStack.empty();
+            resultItemStack = ItemParser.parseItemStack(Objects.requireNonNullElse((String) map.get("result"), "AIR(1)"));
+            if (resultItemStack == null) {
+                resultItemStack = ItemStack.empty();
             }
         } catch (IllegalArgumentException ex) {
             Bukkit.getLogger().warning("A recipe has an empty result. Please ensure that every recipe has a result other than AIR.");

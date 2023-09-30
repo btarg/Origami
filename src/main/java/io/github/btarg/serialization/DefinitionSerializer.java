@@ -102,9 +102,11 @@ public class DefinitionSerializer {
 
                 if (saveDef instanceof CustomBlockDefinition blockDefinition) {
                     CustomBlockRegistry.RegisterBlock(blockDefinition);
+                } else if (saveDef instanceof CustomRecipeDefinition recipeDefinition) {
+                    CustomRecipeRegistry.RegisterRecipe(recipeDefinition);
                 }
             } else if (sender != null) {
-                sender.sendMessage("Registered " + fileCount.get() + " file(s)!");
+                sender.sendMessage("Registered " + fileCount.get() + " definitions(s)!");
             }
 
         } catch (IOException e) {

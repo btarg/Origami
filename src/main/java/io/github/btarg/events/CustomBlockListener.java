@@ -22,7 +22,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
@@ -34,10 +33,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Transformation;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class CustomBlockListener implements Listener {
 
@@ -54,7 +50,7 @@ public class CustomBlockListener implements Listener {
 
 
     @EventHandler
-    public void ItemFramePlace(HangingPlaceEvent event) {
+    public void onCustomBlockPlaced(HangingPlaceEvent event) {
 
         ItemStack blockItem = event.getItemStack();
         ItemMeta meta = blockItem.getItemMeta();
@@ -79,15 +75,14 @@ public class CustomBlockListener implements Listener {
             return;
         }
         // Get block position, with slight offset as scaling the model on the Y axis scales downward
-        Location blockLocation = new Location(world, placedLocation.getBlockX(), placedLocation.getBlockY() + 0.00015f, placedLocation.getBlockZ());
+        Location blockLocation = new Location(world, placedLocation.getBlockX(), placedLocation.getBlockY(), placedLocation.getBlockZ());
         Entity entity = world.spawn(CustomBlockUtils.getDisplayLocationFromBlock(blockLocation), ItemDisplay.class, ent -> {
             ent.setItemStack(blockItem);
             ent.setPersistent(true);
             ent.setInvulnerable(true);
-            Transformation t = ent.getTransformation();
-            Transformation transformation = new Transformation(t.getTranslation(), t.getLeftRotation(), t.getScale().add(0.0001f, 0.0003f, 0.0001f), t.getRightRotation());
-
+            Transformation transformation = CustomBlockUtils.getDisplayTransformation(ent);
             ent.setTransformation(transformation);
+
         });
 
         // set the item frame uuid to the same as the base block
@@ -102,7 +97,12 @@ public class CustomBlockListener implements Listener {
         world.setBlockData(placedLocation, definition.baseBlock.createBlockData());
 
         if (definition.placeSound != null) {
-            world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
+            try {
+                world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
+            } catch (IllegalArgumentException e) {
+                Bukkit.getLogger().warning("Block being placed does not have valid place sound: " + definition.id);
+            }
+
         }
     }
 
@@ -198,9 +198,9 @@ public class CustomBlockListener implements Listener {
     @EventHandler
     public void onBlockBroken(BlockBreakEvent e) {
 
-        Entity linkedFrame = CustomBlockUtils.getLinkedItemDisplay(e.getBlock().getLocation());
-        if (linkedFrame == null) return;
-        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedFrame);
+        Entity linkedItemDisplay = CustomBlockUtils.getLinkedItemDisplay(e.getBlock().getLocation());
+        if (linkedItemDisplay == null) return;
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedItemDisplay);
         if (definition == null) return;
         e.setDropItems(false);
 
@@ -224,7 +224,7 @@ public class CustomBlockListener implements Listener {
 
         // Remove item frame and remove block from database
         CustomBlockFunctions.OnCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
-        linkedFrame.remove();
+        linkedItemDisplay.remove();
 
     }
 
@@ -234,9 +234,9 @@ public class CustomBlockListener implements Listener {
         for (Block block : e.blockList()) {
             if (CustomBlockPersistentData.blockIsInStorage(block.getLocation())) {
 
-                Entity linkedFrame = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
-                if (linkedFrame == null) return;
-                CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedFrame);
+                Entity linkedItemDisplay = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
+                if (linkedItemDisplay == null) return;
+                CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedItemDisplay);
                 if (definition == null) return;
 
                 CustomBlockFunctions.DropBlockItems(e.getEntity(), definition, block);
@@ -244,16 +244,11 @@ public class CustomBlockListener implements Listener {
                 // remove without saving for better performance
                 CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
 
-                linkedFrame.remove();
+                linkedItemDisplay.remove();
 
             }
         }
 
-    }
-
-    @EventHandler
-    public void onFrameBroken(HangingBreakEvent e) {
-        e.setCancelled(CustomBlockPersistentData.blockIsInStorage(e.getEntity().getLocation()));
     }
 
     @EventHandler
@@ -270,14 +265,16 @@ public class CustomBlockListener implements Listener {
 
     private void onPistonMove(BlockPistonEvent e, List<Block> blocks) {
 
+        Map<Location, Display> pushedTempList = new HashMap<>();
+
         for (int i = blocks.size(); i-- > 0; ) {
             Block block = blocks.get(i);
 
-            Entity linkedFrame = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
-            if (linkedFrame == null) return;
+            Display linkedItemDisplay = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
+            if (linkedItemDisplay == null) continue;
 
-            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedFrame);
-            if (definition == null) return;
+            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedItemDisplay);
+            if (definition == null) continue;
             if (!definition.canBePushed) {
                 e.setCancelled(true);
                 return;
@@ -285,14 +282,16 @@ public class CustomBlockListener implements Listener {
 
             // get relative direction from original block of the moved block
             Location newLoc = block.getLocation().add(e.getDirection().getDirection()).toBlockLocation();
+            pushedTempList.put(newLoc, linkedItemDisplay);
 
-            // remove the old database entry and add the new one
             CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
-            CustomBlockPersistentData.storeBlockInformation(newLoc, linkedFrame.getUniqueId().toString());
 
-            // move the item frame to new location
-            linkedFrame.teleport(CustomBlockUtils.getDisplayLocationFromBlock(newLoc));
-
+        }
+        for (var pushedBlockEntry : pushedTempList.entrySet()) {
+            CustomBlockPersistentData.storeBlockInformation(pushedBlockEntry.getKey(), pushedBlockEntry.getValue().getUniqueId().toString());
+            // move the item display to new location
+            pushedBlockEntry.getValue().teleport(CustomBlockUtils.getDisplayLocationFromBlock(pushedBlockEntry.getKey()));
+            pushedBlockEntry.getValue().setTransformation(CustomBlockUtils.getDisplayTransformation(pushedBlockEntry.getValue()));
         }
     }
 

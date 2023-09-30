@@ -21,8 +21,14 @@ public class CustomBlockFunctions {
 
         CustomBlockPersistentData.removeBlockFromStorage(location);
 
-        if (breakSound != null && !breakSound.isEmpty())
-            location.getWorld().playSound(location, Sound.valueOf(breakSound), 1, 1);
+        if (breakSound != null && !breakSound.isEmpty()) {
+            try {
+                Sound sound = Sound.valueOf(breakSound);
+                location.getWorld().playSound(location, Sound.valueOf(breakSound), 1, 1);
+            } catch (IllegalArgumentException e) {
+                Bukkit.getLogger().warning("Block being broken does not have a valid sound!");
+            }
+        }
     }
 
     public static void OnCustomBlockClicked(PlayerInteractEvent event, CustomBlockDefinition definition) {
