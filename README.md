@@ -11,18 +11,12 @@ blocks and
 items using YAML configuration files, making use of
 resource packs and custom model data to allow **vanilla** clients to connect and play with your custom content.
 
-# View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/)!
+# Getting Started
+
+View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/) for information on how to use the plugin.
 
 # Credits and special thanks
 
 - The [PaperMC Discord](https://discord.gg/papermc) for being incredibly helpful and quick to respond to any questions
 - [Dannegm on GitHub](https://github.com/dannegm/BlockEntities) for providing an initial implementation of custom blocks
-  using Item Display entities
-
-## Block Database
-
-The positions and UUIDs of custom blocks are stored in one file per world, under the `_data` folder. **DO NOT** delete
-files
-in this folder or custom blocks placed in your world will not function correctly!
-> ***NOTE:*** *when renaming worlds, be sure to rename the corresponding file.*
-
+  using Item Display entities, and the basis for the resource pack used
