@@ -10,10 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CustomRecipeRegistry {
 
@@ -39,19 +36,27 @@ public class CustomRecipeRegistry {
                     CustomRecipeType.SMELTING.toString(),
                     CustomRecipeType.BLASTING.toString(),
                     CustomRecipeType.SMOKING.toString(),
-                    CustomRecipeType.CAMPFIRE_COOKING.toString())) {
+                    CustomRecipeType.CAMPFIRE_COOKING.toString(),
+                    CustomRecipeType.STONECUTTING.toString())) {
 
                 if (isShaped) {
-                    Bukkit.getLogger().warning("Cooking recipes cannot be shaped!");
+                    Bukkit.getLogger().warning("Cooking/Stonecutting recipes cannot be shaped!");
                     return;
                 }
 
-                List<Recipe> recipeList = RegisterCookingRecipe(recipeDefinition);
+                List<Recipe> recipeList;
+                if (!Objects.equals(recipeDefinition.getRecipeType().toString(), CustomRecipeType.STONECUTTING.toString())) {
+                    recipeList = RegisterCookingRecipe(recipeDefinition);
+                } else {
+                    recipeList = RegisterStonecuttingRecipe(recipeDefinition);
+                }
+
+
                 if (recipeList.isEmpty()) return;
                 for (Recipe recipe : recipeList) {
                     if (recipe == null) continue;
                     Bukkit.addRecipe(recipe);
-                    Bukkit.getLogger().info("Registered cooking recipe: " + recipeDefinition.namespacedKey.value());
+                    Bukkit.getLogger().info("Registered recipe: " + recipeDefinition.namespacedKey.value());
 
                 }
             } else if (recipeDefinition.getRecipeType().equals(CustomRecipeType.SMITHING)) {
@@ -62,7 +67,7 @@ public class CustomRecipeRegistry {
                 Recipe recipe = RegisterSmithingRecipe(recipeDefinition);
                 if (recipe == null) return;
                 Bukkit.addRecipe(recipe);
-                Bukkit.getLogger().info("Registered smithing recipe: " + recipeDefinition.namespacedKey.value());
+                Bukkit.getLogger().info("Registered Smithing recipe: " + recipeDefinition.namespacedKey.value());
 
             }
 
@@ -111,6 +116,21 @@ public class CustomRecipeRegistry {
             choice = new RecipeChoice.MaterialChoice(mat);
         }
         return choice;
+    }
+
+    private static List<Recipe> RegisterStonecuttingRecipe(CustomRecipeDefinition recipeDefinition) {
+        StonecuttingRecipe recipe = null;
+        List<Recipe> output = new ArrayList<>();
+        // Parse ingredients from the key material map
+        // here each possible ingredient is treated as a new recipe because there can only be 1 ingredient per smelting recipe
+        for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
+            // Since we might add one recipe per ingredient, we need unique namespacedkeys for every one of them
+            NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
+            RecipeChoice choice = GetRecipeChoice(entry.getValue());
+            recipe = new StonecuttingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice);
+            output.add(recipe);
+        }
+        return output;
     }
 
     private static List<Recipe> RegisterCookingRecipe(CustomRecipeDefinition recipeDefinition) {
