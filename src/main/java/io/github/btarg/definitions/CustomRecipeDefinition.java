@@ -21,14 +21,24 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
     public List<String> shape;
     public String result;
     public List<String> ingredients;
+    public String type;
+    public Integer experience;
+    public Integer cookingTime;
     @Getter
     private ItemStack resultItemStack;
+    @Getter
+    private CustomRecipeType recipeType;
 
     @SuppressWarnings("unchecked")
     public CustomRecipeDefinition(Map<String, Object> map) {
 
         this.shape = (List<String>) map.get("shape");
         this.ingredients = Objects.requireNonNullElse((List<String>) map.get("ingredients"), Collections.singletonList("A;AIR"));
+        this.type = Objects.requireNonNullElse((String) map.get("type"), "CRAFTING").toUpperCase();
+        this.recipeType = Objects.requireNonNullElse(CustomRecipeType.valueOf(type), CustomRecipeType.CRAFTING);
+        // only needed for furnace-like recipes
+        this.experience = Objects.requireNonNullElse((Integer) map.get("experience"), 0);
+        this.cookingTime = Objects.requireNonNullElse((Integer) map.get("cookingTime"), 20);
 
         // Try to parse item stack from string, return a stack of 1 air if we can't
         resultItemStack = ItemStack.empty();
@@ -46,9 +56,14 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
 
             // d;DIAMOND
             if (split.length == 2) {
-                // we can only have a string with a length of 1
                 String key = String.valueOf(split[0].charAt(0));
-                this.ingredientMap.put(key, split[1]);
+                // shapeless recipes with accidental keys - we try to get the value
+                if (shape == null) {
+                    this.ingredientMap.put(String.valueOf(i), split[1]);
+                } else {
+                    this.ingredientMap.put(key, split[1]);
+                }
+
             }
             // DIAMOND
             else if (split.length == 1) {
@@ -72,6 +87,9 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
         map.put("shape", this.shape);
         map.put("result", this.result);
         map.put("ingredients", this.ingredients);
+        map.put("type", this.type);
+        map.put("experience", this.experience);
+        map.put("cookingTime", this.cookingTime);
         return map;
     }
 }

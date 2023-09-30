@@ -6,10 +6,10 @@ import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.definitions.DefaultDefinitions;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
+import io.github.btarg.util.NamespacedKeyHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class DefinitionSerializer {
+
     public static String getConfigDirectory(Class clazz) {
         String dirName = null;
         if (clazz.equals(CustomBlockDefinition.class)) {
@@ -74,6 +75,7 @@ public class DefinitionSerializer {
                                  IllegalAccessException e) {
                             Bukkit.getLogger().severe("Could not load definition from file! See the stack trace for more information.");
                             e.printStackTrace();
+                            fileCount.getAndIncrement();
                             return;
                         }
 
@@ -93,6 +95,7 @@ public class DefinitionSerializer {
                             }
                             fileCount.getAndIncrement();
                         }
+
                     });
             if (fileCount.get() == 0) {
 
@@ -180,10 +183,11 @@ public class DefinitionSerializer {
     public ConfigurationSerializable getAnyDefinitionFromFile(String fileName, Class definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         File file = getFile(getConfigDirectory(definitionClass), fileName);
         FileConfiguration conf = YamlConfiguration.loadConfiguration(file);
-
         var constructor = definitionClass.getConstructor(Map.class);
+        var values = conf.getValues(true);
+        if (values == null) return null;
         if (constructor == null) return null;
-        Object obj = constructor.newInstance(conf.getValues(true));
+        Object obj = constructor.newInstance(values);
         if (obj == null) return null;
 
         if (obj instanceof CustomBlockDefinition) {
@@ -198,9 +202,8 @@ public class DefinitionSerializer {
 
         } else if (obj instanceof CustomRecipeDefinition) {
             CustomRecipeDefinition definition = (CustomRecipeDefinition) obj;
-            if (definition.namespacedKey == null) {
-                definition.namespacedKey = new NamespacedKey(OrigamiMain.getInstance(), FilenameUtils.removeExtension(fileName));
-            }
+            String name = FilenameUtils.removeExtension(fileName);
+            definition.namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(name);
             return definition;
 
         }
