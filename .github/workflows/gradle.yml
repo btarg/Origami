@@ -40,5 +40,5 @@ jobs:
       with:
         name: Plugin
         path: |
-          build/libs/Origami
-          !build/libs/Origami/*-dev*.jar
+          build/libs/
+          !build/libs/Origami*-dev*.jar
