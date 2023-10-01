@@ -38,5 +38,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: Package
-        path: build/libs
+        name: Plugin
+        path: |
+          build/libs/Origami
+          !build/libs/Origami/*-dev*.jar
