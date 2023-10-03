@@ -18,7 +18,7 @@ public class ResourcePackServer {
 
     public static void startServer(int port) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/pack.zip", new MyHandler());
+        server.createContext("/" + FileUtils.currentSHA1(), new MyHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
         OrigamiMain.setHostingPack(true);

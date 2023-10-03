@@ -7,7 +7,6 @@ import io.github.btarg.events.CustomBlockListener;
 import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.resourcepack.FileUtils;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
-import io.github.btarg.resourcepack.ResourcePackServer;
 import io.github.btarg.serialization.DefinitionSerializer;
 import io.github.btarg.util.loot.LootTableHelper;
 import lombok.Getter;
@@ -139,7 +138,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
             Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 
                         try {
-                            ResourcePackServer.startServer(port);
+                            io.github.btarg.resourcepack.ResourcePackServer.startServer(port);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -156,17 +155,15 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         try {
             String sha1 = FileUtils.currentSHA1();
-            if (sha1.isEmpty()) {
-                getLogger().warning("No hash generated!");
-                event.getPlayer().setResourcePack("http://" + ipAddress + "/pack.zip");
-            } else {
+            if (!sha1.isEmpty()) {
                 getLogger().info("Resource pack hash: " + sha1);
-                event.getPlayer().setResourcePack("http://" + ipAddress + ":" + port + "/pack.zip", sha1);
+                event.getPlayer().setResourcePack("http://" + ipAddress + ":" + port + "/" + sha1, sha1);
+            } else {
+                isHostingPack = false;
             }
         } catch (Exception e) {
             getLogger().severe(e.getMessage());
         }
-
 
     }
 

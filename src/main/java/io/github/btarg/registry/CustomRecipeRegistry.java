@@ -4,7 +4,6 @@ import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.definitions.CustomRecipeType;
 import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.items.ItemParser;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -25,49 +24,48 @@ public class CustomRecipeRegistry {
         boolean isShaped = !(recipeDefinition.shape == null || recipeDefinition.shape.isEmpty());
 
         try {
-            if (recipeDefinition.getRecipeType().equals(CustomRecipeType.CRAFTING)) {
+            if (!recipeDefinition.getRecipeType().equals(CustomRecipeType.CRAFTING)) {
+
+                if (recipeDefinition.getRecipeType().equals(CustomRecipeType.SMITHING)) {
+                    if (isShaped) {
+                        Bukkit.getLogger().warning("Smithing recipes cannot be shaped!");
+                        return;
+                    }
+                    Recipe recipe = RegisterSmithingRecipe(recipeDefinition);
+                    if (recipe == null) return;
+                    Bukkit.addRecipe(recipe);
+                    Bukkit.getLogger().info("Registered Smithing recipe: " + recipeDefinition.namespacedKey.value());
+
+
+                } else {
+
+                    if (isShaped) {
+                        Bukkit.getLogger().warning("Cooking/Stonecutting recipes cannot be shaped!");
+                        return;
+                    }
+
+                    List<Recipe> recipeList;
+                    if (Objects.equals(recipeDefinition.getRecipeType().toString(), CustomRecipeType.STONECUTTING.toString())) {
+                        recipeList = RegisterStonecuttingRecipe(recipeDefinition);
+                    } else {
+                        // is cooking recipe
+                        recipeList = RegisterCookingRecipe(recipeDefinition);
+                    }
+
+                    if (recipeList.isEmpty()) return;
+                    for (Recipe recipe : recipeList) {
+                        if (recipe == null) continue;
+                        Bukkit.addRecipe(recipe);
+                        Bukkit.getLogger().info("Registered recipe: " + recipeDefinition.namespacedKey.value());
+
+                    }
+                }
+            } else {
 
                 Recipe recipe = RegisterCraftingRecipe(recipeDefinition, isShaped);
                 if (recipe == null) return;
                 Bukkit.addRecipe(recipe);
                 Bukkit.getLogger().info("Registered crafting recipe: " + recipeDefinition.namespacedKey.value());
-
-            } else if (StringUtils.equalsAny(recipeDefinition.getRecipeType().toString(),
-                    CustomRecipeType.SMELTING.toString(),
-                    CustomRecipeType.BLASTING.toString(),
-                    CustomRecipeType.SMOKING.toString(),
-                    CustomRecipeType.CAMPFIRE_COOKING.toString(),
-                    CustomRecipeType.STONECUTTING.toString())) {
-
-                if (isShaped) {
-                    Bukkit.getLogger().warning("Cooking/Stonecutting recipes cannot be shaped!");
-                    return;
-                }
-
-                List<Recipe> recipeList;
-                if (!Objects.equals(recipeDefinition.getRecipeType().toString(), CustomRecipeType.STONECUTTING.toString())) {
-                    recipeList = RegisterCookingRecipe(recipeDefinition);
-                } else {
-                    recipeList = RegisterStonecuttingRecipe(recipeDefinition);
-                }
-
-
-                if (recipeList.isEmpty()) return;
-                for (Recipe recipe : recipeList) {
-                    if (recipe == null) continue;
-                    Bukkit.addRecipe(recipe);
-                    Bukkit.getLogger().info("Registered recipe: " + recipeDefinition.namespacedKey.value());
-
-                }
-            } else if (recipeDefinition.getRecipeType().equals(CustomRecipeType.SMITHING)) {
-                if (isShaped) {
-                    Bukkit.getLogger().warning("Smithing recipes cannot be shaped!");
-                    return;
-                }
-                Recipe recipe = RegisterSmithingRecipe(recipeDefinition);
-                if (recipe == null) return;
-                Bukkit.addRecipe(recipe);
-                Bukkit.getLogger().info("Registered Smithing recipe: " + recipeDefinition.namespacedKey.value());
 
             }
 
@@ -144,14 +142,15 @@ public class CustomRecipeRegistry {
 
             RecipeChoice choice = GetRecipeChoice(entry.getValue());
 
-            if (recipeDefinition.getRecipeType().equals(CustomRecipeType.SMELTING)) {
-                recipe = new FurnaceRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
-            } else if (recipeDefinition.getRecipeType().equals(CustomRecipeType.BLASTING)) {
-                recipe = new BlastingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
-            } else if (recipeDefinition.getRecipeType().equals(CustomRecipeType.SMOKING)) {
-                recipe = new SmokingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
-            } else if (recipeDefinition.getRecipeType().equals(CustomRecipeType.CAMPFIRE_COOKING)) {
-                recipe = new CampfireRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+            switch (recipeDefinition.getRecipeType()) {
+                case SMELTING ->
+                        recipe = new FurnaceRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+                case BLASTING ->
+                        recipe = new BlastingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+                case SMOKING ->
+                        recipe = new SmokingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+                case CAMPFIRE_COOKING ->
+                        recipe = new CampfireRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
             }
 
             output.add(recipe);
