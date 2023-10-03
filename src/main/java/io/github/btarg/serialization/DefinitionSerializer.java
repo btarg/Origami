@@ -1,10 +1,9 @@
 package io.github.btarg.serialization;
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.definitions.CustomBlockDefinition;
-import io.github.btarg.definitions.CustomRecipeDefinition;
-import io.github.btarg.definitions.DefaultDefinitions;
+import io.github.btarg.definitions.*;
 import io.github.btarg.registry.CustomBlockRegistry;
+import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.util.NamespacedKeyHelper;
 import org.apache.commons.io.FileUtils;
@@ -28,12 +27,14 @@ import java.util.stream.Stream;
 
 public class DefinitionSerializer {
 
-    public static String getConfigDirectory(Class clazz) {
+    public static String getConfigDirectory(Class<?> clazz) {
         String dirName = null;
         if (clazz.equals(CustomBlockDefinition.class)) {
             dirName = "blocks";
         } else if (clazz.equals(CustomRecipeDefinition.class)) {
             dirName = "recipes";
+        } else if (clazz.equals(CustomItemDefinition.class)) {
+            dirName = "items";
         }
         if (dirName != null) {
             return OrigamiMain.getInstance().getDataFolder() + File.separator + dirName + File.separator;
@@ -43,7 +44,7 @@ public class DefinitionSerializer {
 
     }
 
-    public void loadAndRegister(CommandSender sender, Class definitionClass) {
+    public void loadAndRegister(CommandSender sender, Class<?> definitionClass) {
         String pathString = getConfigDirectory(definitionClass);
         if (pathString == null) return;
 
@@ -55,9 +56,13 @@ public class DefinitionSerializer {
             return;
         }
 
-
         if (!definitionDirectory.toFile().exists()) {
-            definitionDirectory.toFile().mkdirs();
+            try {
+                definitionDirectory.toFile().mkdirs();
+            } catch (SecurityException ex) {
+                ex.printStackTrace();
+                return;
+            }
         }
 
         try (Stream<Path> paths = Files.walk(definitionDirectory)) {
@@ -79,7 +84,6 @@ public class DefinitionSerializer {
                             return;
                         }
 
-
                         if (loadedDefinition != null) {
 
                             if (loadedDefinition instanceof CustomBlockDefinition blockDefinition) {
@@ -91,6 +95,11 @@ public class DefinitionSerializer {
                                 CustomRecipeRegistry.RegisterRecipe(recipeDefinition);
                                 if (sender != null) {
                                     sender.sendMessage("Registered recipe: " + recipeDefinition.namespacedKey.value());
+                                }
+                            } else if (loadedDefinition instanceof CustomItemDefinition itemDefinition) {
+                                CustomItemRegistry.RegisterItem(itemDefinition);
+                                if (sender != null) {
+                                    sender.sendMessage("Registered item: " + itemDefinition.id);
                                 }
                             }
                             fileCount.getAndIncrement();
@@ -107,6 +116,8 @@ public class DefinitionSerializer {
                     CustomBlockRegistry.RegisterBlock(blockDefinition);
                 } else if (saveDef instanceof CustomRecipeDefinition recipeDefinition) {
                     CustomRecipeRegistry.RegisterRecipe(recipeDefinition);
+                } else if (saveDef instanceof CustomItemDefinition itemDefinition) {
+                    CustomItemRegistry.RegisterItem(itemDefinition);
                 }
             } else if (sender != null) {
                 sender.sendMessage("Registered " + fileCount.get() + " definitions(s)!");
@@ -122,6 +133,7 @@ public class DefinitionSerializer {
     }
 
     public void saveDefinitionToFile(ConfigurationSerializable def) {
+        if (def == null) return;
         String saveDir = getConfigDirectory(def.getClass());
         if (def instanceof CustomRecipeDefinition definition) {
             if (definition.namespacedKey != null) {
@@ -135,7 +147,7 @@ public class DefinitionSerializer {
 
                 SaveConfig(conf, file);
             }
-        } else if (def instanceof CustomBlockDefinition definition) {
+        } else if (def instanceof ItemDefinition definition) {
             if (definition.id != null) {
                 String fileName = definition.id;
                 File file = getFile(saveDir, fileName);
@@ -179,8 +191,7 @@ public class DefinitionSerializer {
         return file;
     }
 
-    @SuppressWarnings("unchecked")
-    public ConfigurationSerializable getAnyDefinitionFromFile(String fileName, Class definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public ConfigurationSerializable getAnyDefinitionFromFile(String fileName, Class<?> definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         File file = getFile(getConfigDirectory(definitionClass), fileName);
         FileConfiguration conf = YamlConfiguration.loadConfiguration(file);
         var constructor = definitionClass.getConstructor(Map.class);
@@ -190,18 +201,10 @@ public class DefinitionSerializer {
         Object obj = constructor.newInstance(values);
         if (obj == null) return null;
 
-        if (obj instanceof CustomBlockDefinition) {
-            CustomBlockDefinition definition = (CustomBlockDefinition) obj;
-            if (definition == null) {
-                return null;
-            }
-            if (definition.id == null) {
-                definition.id = FilenameUtils.removeExtension(fileName);
-            }
+        if (obj instanceof ItemDefinition definition) {
+            definition.id = FilenameUtils.removeExtension(fileName);
             return definition;
-
-        } else if (obj instanceof CustomRecipeDefinition) {
-            CustomRecipeDefinition definition = (CustomRecipeDefinition) obj;
+        } else if (obj instanceof CustomRecipeDefinition definition) {
             String name = FilenameUtils.removeExtension(fileName);
             definition.namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(name);
             return definition;

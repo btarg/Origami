@@ -15,10 +15,14 @@ public class ComponentHelper {
 
         Component textComponent = Component.empty();
 
-        // allow for display name to be set in resource pack
-        TranslatableComponent translated = new TranslatableComponent(input);
-        if (!translated.toPlainText().equals(input)) {
-            input = translated.toPlainText();
+        try {
+            // allow for display name to be set in resource pack
+            TranslatableComponent translated = new TranslatableComponent(input);
+            if (!translated.toPlainText().equals(input)) {
+                input = translated.toPlainText();
+            }
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
         }
 
         // if there are any colour codes in the string they will use the section char

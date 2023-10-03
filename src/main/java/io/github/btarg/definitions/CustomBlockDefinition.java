@@ -1,9 +1,7 @@
 package io.github.btarg.definitions;
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.items.ItemParser;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,21 +16,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 @SerializableAs("CustomBlock")
-public class CustomBlockDefinition implements ConfigurationSerializable {
+public class CustomBlockDefinition extends ItemDefinition implements ConfigurationSerializable {
 
     private final Random random = new Random();
-    public String id;
     public Material baseBlock;
     public Boolean glowing;
-    public Integer blockItemModelData;
-    public Integer blockModelData;
-    public String displayName;
     public List<String> drops;
     public String dropLootTable;
     public Boolean isAffectedByFortune;
     public Boolean canBePushed;
-    public List<String> rightClickCommands;
-    public List<String> lore;
     public Integer dropExperience;
     public Integer toolLevelRequired;
     public List<String> canBeMinedWith;
@@ -45,16 +37,14 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         this.id = null;
         String baseBlockString = (String) map.get("baseBlock");
         if (baseBlockString != null) {
-            this.baseBlock = Material.matchMaterial(baseBlockString.toUpperCase());
+            this.baseBlock = Material.matchMaterial(baseBlockString.trim().toUpperCase());
         }
         if (this.baseBlock == null || !this.baseBlock.isBlock()) {
             Bukkit.getLogger().severe("Custom Blocks require a base block to be set! Defaulting to glass...");
             this.baseBlock = Material.GLASS;
         }
         this.glowing = Objects.requireNonNullElse((Boolean) map.get("glowing"), false);
-
-        this.blockItemModelData = Objects.requireNonNullElse((Integer) map.get("blockItemModelData"), 0);
-        this.blockModelData = Objects.requireNonNullElse((Integer) map.get("blockModelData"), 0);
+        this.modelData = Objects.requireNonNullElse((Integer) map.get("modelData"), 0);
         this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Block");
 
         this.dropLootTable = (String) map.get("dropLootTable");
@@ -73,26 +63,8 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         this.placeSound = (String) map.get("placeSound");
     }
 
-    public static CustomBlockDefinition deserialize(Map<String, Object> map) {
-        return new CustomBlockDefinition(map);
-    }
-
     public boolean dropBlock() {
         return (dropLootTable == null || dropLootTable.isEmpty()) && (drops == null || drops.isEmpty());
-    }
-
-    public Component getDisplayName() {
-        Component nameComponent = ComponentHelper.deserializeGenericComponent(displayName);
-        return ComponentHelper.removeItalicsIfAbsent(nameComponent);
-    }
-
-    public List<Component> getLore() {
-        List<Component> toReturn = new ArrayList<>();
-        lore.forEach(loreString -> {
-            Component loreComponent = ComponentHelper.deserializeGenericComponent(loreString);
-            toReturn.add(ComponentHelper.removeItalicsIfAbsent(loreComponent));
-        });
-        return toReturn;
     }
 
     public Collection<ItemStack> getDrops(Entity entity, Location loc) {
@@ -145,8 +117,7 @@ public class CustomBlockDefinition implements ConfigurationSerializable {
         Map<String, Object> map = new HashMap<>();
         map.put("baseBlock", this.baseBlock.name());
         map.put("glowing", this.glowing);
-        map.put("blockModelData", this.blockModelData);
-        map.put("blockItemModelData", this.blockItemModelData);
+        map.put("modelData", this.modelData);
         map.put("displayName", this.displayName);
         map.put("drops", this.drops);
         map.put("dropLootTable", this.dropLootTable);

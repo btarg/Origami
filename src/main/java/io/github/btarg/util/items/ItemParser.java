@@ -1,6 +1,5 @@
 package io.github.btarg.util.items;
 
-import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.RegistryHelper;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -26,13 +25,7 @@ public class ItemParser {
 
 
         if (materialName.startsWith(RegistryHelper.getRegistryPrefix())) {
-            materialName = materialName.substring(RegistryHelper.getRegistryPrefix().length());
-            ItemStack stack = RegistryHelper.CreateCustomBlockItemStack(CustomBlockRegistry.GetRegisteredBlock(materialName), amount);
-            // not in the block registry, check item registry
-            if (stack == null) {
-                // TODO: check item registry
-            }
-            return stack;
+            return RegistryHelper.GetAnyItemStack(materialName, amount);
 
         } else {
             // Convert the material name to uppercase (assuming it's in uppercase in the input)

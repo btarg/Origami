@@ -13,7 +13,7 @@ import java.util.List;
 
 public class DefaultDefinitions {
 
-    public static ConfigurationSerializable getDefaultDefinition(Class definitionClass) {
+    public static ConfigurationSerializable getDefaultDefinition(Class<?> definitionClass) {
         if (definitionClass.equals(CustomBlockDefinition.class)) {
             return getDefaultBlockDefinition();
         } else if (definitionClass.equals(CustomRecipeDefinition.class)) {
@@ -30,8 +30,7 @@ public class DefaultDefinitions {
         definition.id = "rainbow_block";
         definition.baseBlock = Material.GLASS;
         definition.glowing = false;
-        definition.blockItemModelData = 4;
-        definition.blockModelData = 3;
+        definition.modelData = 1000;
         definition.displayName = "&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk";
         definition.rightClickCommands = Collections.singletonList("tellraw @s {\"text\":\"The block reverberates majestically.\",\"italic\":true,\"color\":\"gray\"}");
         definition.lore = Collections.singletonList("<rainbow>It shimmers beautifully in the sunlight.</rainbow>");

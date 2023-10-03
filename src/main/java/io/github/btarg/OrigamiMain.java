@@ -2,6 +2,7 @@ package io.github.btarg;
 
 import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.events.CustomBlockListener;
 import io.github.btarg.rendering.BrokenBlocksService;
@@ -114,18 +115,16 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         resourcePackSection.addDefault("zipped-resource-pack-path", this.getDataFolder() + File.separator + "pack.zip");
         resourcePackSection.addDefault("unzipped-resource-pack-path", this.getDataFolder() + File.separator + "resources");
 
-        ConfigurationSection itemSection = config.createSection("custom-items");
-        itemSection.addDefault("prefix", "origami");
-        ConfigurationSection blockSection = config.createSection("custom-blocks");
-        blockSection.addDefault("save-cooldown-seconds", 3);
-
         config.options().copyDefaults(true);
         saveConfig();
 
         // load blocks from files (requires config loaded)
         definitionSerializer.loadAndRegister(CustomBlockDefinition.class);
+        // items
+        definitionSerializer.loadAndRegister(CustomItemDefinition.class);
         // recipes
         definitionSerializer.loadAndRegister(CustomRecipeDefinition.class);
+
     }
 
     private void serveResourcePack() {

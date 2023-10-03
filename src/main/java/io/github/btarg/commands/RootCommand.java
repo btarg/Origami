@@ -3,8 +3,10 @@ package io.github.btarg.commands;
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
+import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
 import io.github.btarg.util.blocks.BlockPos;
@@ -16,6 +18,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -33,12 +36,12 @@ public class RootCommand implements TabExecutor {
 
             if (args.length >= 3) {
                 Player target = Bukkit.getPlayer(args[1]);
-                String blockId = args[2];
-                CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockId);
-
-                if (definition != null && target != null) {
-                    target.getInventory().addItem(RegistryHelper.CreateCustomBlockItemStack(definition, count));
-                    Component giveMessage = Component.translatable("commands.give.success.single", Component.text(count), definition.getDisplayName(), target.displayName());
+                String itemId = args[2];
+                if (target != null) {
+                    ItemStack stack = RegistryHelper.GetAnyItemStack(itemId, count);
+                    if (stack == null) return false;
+                    target.getInventory().addItem(stack);
+                    Component giveMessage = Component.translatable("commands.give.success.single", Component.text(count), stack.displayName(), target.displayName());
                     sender.sendMessage(giveMessage);
                 }
 
@@ -52,9 +55,11 @@ public class RootCommand implements TabExecutor {
                 CustomBlockRegistry.ClearBlockRegistry();
                 OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomBlockDefinition.class);
             } else if (Objects.equals(args[1], "items")) {
-                sender.sendMessage("coming soon");
+                sender.sendMessage("Reloading custom items...");
+                CustomItemRegistry.ClearItemRegistry();
+                OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomItemDefinition.class);
             } else if (Objects.equals(args[1], "recipes")) {
-                sender.sendMessage("Reloading recipes...");
+                sender.sendMessage("Reloading custom recipes...");
                 CustomRecipeRegistry.ClearRecipeRegistry();
                 OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomRecipeDefinition.class);
             } else {
@@ -107,6 +112,7 @@ public class RootCommand implements TabExecutor {
 
             } else if (args.length == 3 && !args[1].isEmpty()) {
                 tabComplete = CustomBlockRegistry.GetBlockIDs();
+                tabComplete.addAll(CustomItemRegistry.GetItemIds());
             } else if (args.length == 4 && !args[2].isEmpty()) {
                 tabComplete = Collections.singletonList("64");
             }
