@@ -1,9 +1,10 @@
 plugins {
     `java-library`
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.papermc.paperweight.userdev") version "1.5.5"
-    id("xyz.jpenilla.run-paper") version "2.2.0" // Adds runServer and runMojangMappedServer tasks for testing
+    id("com.github.johnrengelman.shadow") version "8.+"
+    id("io.papermc.paperweight.userdev") version "1.5+"
+    id("xyz.jpenilla.run-paper") version "2.+" // Adds runServer and runMojangMappedServer tasks for testing
+    id("io.freefair.lombok") version "8.+"
 }
 repositories {
     mavenCentral()
@@ -13,10 +14,9 @@ repositories {
 }
 dependencies {
     paperweight.paperDevBundle("1.20.1-R0.1-SNAPSHOT")
-    api("commons-io:commons-io:2.13.0")
-    compileOnly("org.projectlombok:lombok:1.18.28")
-    annotationProcessor("org.projectlombok:lombok:1.18.28")
+    api("commons-io:commons-io:2.+")
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+
 }
 group = "io.github"
 version = "1.0-SNAPSHOT"
