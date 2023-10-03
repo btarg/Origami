@@ -25,6 +25,8 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
     public Integer experience;
     public Integer cookingTime;
     @Getter
+    private List<ItemStack> resultItemStacks;
+    @Getter
     private ItemStack resultItemStack;
     @Getter
     private CustomRecipeType recipeType;
@@ -40,16 +42,29 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
         this.experience = Objects.requireNonNullElse((Integer) map.get("experience"), 0);
         this.cookingTime = Objects.requireNonNullElse((Integer) map.get("cookingTime"), 20);
 
+        this.resultItemStacks = new ArrayList<>();
         // Try to parse item stack from string, return a stack of 1 air if we can't
-        resultItemStack = ItemStack.empty();
+        this.resultItemStack = ItemStack.empty();
+        String itemStackString = Objects.requireNonNullElse((String) map.get("result"), "AIR(1)");
         try {
-            resultItemStack = ItemParser.parseItemStack(Objects.requireNonNullElse((String) map.get("result"), "AIR(1)"));
-            if (resultItemStack == null) {
-                resultItemStack = ItemStack.empty();
+            if (!itemStackString.contains(",")) {
+                ItemStack result = itemStackFromString(itemStackString);
+                this.resultItemStacks.add(result);
+                this.resultItemStack = result;
+
+            } else {
+                String[] splitSections;
+                splitSections = StringUtils.split(itemStackString, ",");
+                for (String splitStackString : splitSections) {
+                    this.resultItemStacks.add(itemStackFromString(splitStackString));
+                }
+                this.resultItemStack = this.resultItemStacks.get(0);
             }
+
         } catch (IllegalArgumentException ex) {
             Bukkit.getLogger().warning("A recipe has an empty result. Please ensure that every recipe has a result other than AIR.");
         }
+
         this.ingredientMap = new HashMap<>();
         for (int i = 0; i < ingredients.size(); i++) {
             String[] split = StringUtils.split(ingredients.get(i), ";");
@@ -80,6 +95,14 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
         this.namespacedKey = null;
     }
 
+    private ItemStack itemStackFromString(String input) {
+        ItemStack result;
+        result = ItemParser.parseItemStack(input);
+        if (result == null) {
+            result = ItemStack.empty();
+        }
+        return result;
+    }
 
     @Override
     public @NotNull Map<String, Object> serialize() {

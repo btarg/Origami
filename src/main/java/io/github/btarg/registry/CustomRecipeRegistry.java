@@ -5,22 +5,24 @@ import io.github.btarg.definitions.CustomRecipeType;
 import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.items.ItemParser;
 import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class CustomRecipeRegistry {
 
-    private static final Map<String, CustomRecipeDefinition> recipeDefinitions = new HashMap<>();
+    private static final List<Recipe> registeredRecipes = new ArrayList<>();
 
     public static void RegisterRecipe(CustomRecipeDefinition recipeDefinition) {
         if (recipeDefinition.getResultItemStack() == null) return;
 
         String recipeId = recipeDefinition.namespacedKey.value();
 
-        recipeDefinitions.put(RegistryHelper.getRegistryPrefix() + recipeId, recipeDefinition);
         boolean isShaped = !(recipeDefinition.shape == null || recipeDefinition.shape.isEmpty());
 
         try {
@@ -33,8 +35,8 @@ public class CustomRecipeRegistry {
                     }
                     Recipe recipe = RegisterSmithingRecipe(recipeDefinition);
                     if (recipe == null) return;
-                    Bukkit.addRecipe(recipe);
-                    Bukkit.getLogger().info("Registered Smithing recipe: " + recipeDefinition.namespacedKey.value());
+                    addRecipe(recipe);
+                    Bukkit.getLogger().info("Registered Smithing recipe: " + recipeId);
 
 
                 } else {
@@ -55,8 +57,8 @@ public class CustomRecipeRegistry {
                     if (recipeList.isEmpty()) return;
                     for (Recipe recipe : recipeList) {
                         if (recipe == null) continue;
-                        Bukkit.addRecipe(recipe);
-                        Bukkit.getLogger().info("Registered recipe: " + recipeDefinition.namespacedKey.value());
+                        addRecipe(recipe);
+                        Bukkit.getLogger().info("Registered recipe: " + recipeId);
 
                     }
                 }
@@ -64,8 +66,8 @@ public class CustomRecipeRegistry {
 
                 Recipe recipe = RegisterCraftingRecipe(recipeDefinition, isShaped);
                 if (recipe == null) return;
-                Bukkit.addRecipe(recipe);
-                Bukkit.getLogger().info("Registered crafting recipe: " + recipeDefinition.namespacedKey.value());
+                addRecipe(recipe);
+                Bukkit.getLogger().info("Registered crafting recipe: " + recipeId);
 
             }
 
@@ -117,16 +119,21 @@ public class CustomRecipeRegistry {
     }
 
     private static List<Recipe> RegisterStonecuttingRecipe(CustomRecipeDefinition recipeDefinition) {
-        StonecuttingRecipe recipe = null;
         List<Recipe> output = new ArrayList<>();
         // Parse ingredients from the key material map
         // here each possible ingredient is treated as a new recipe because there can only be 1 ingredient per smelting recipe
         for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
-            // Since we might add one recipe per ingredient, we need unique namespacedkeys for every one of them
-            NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
+
             RecipeChoice choice = GetRecipeChoice(entry.getValue());
-            recipe = new StonecuttingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice);
-            output.add(recipe);
+
+            // For stonecutting recipes, we can have multiple outputs, create a new recipe for each output
+            // We also generate the namespacedkey here
+            recipeDefinition.getResultItemStacks().forEach(itemStack -> {
+                NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
+                Recipe recipe = new StonecuttingRecipe(namespacedKey, itemStack, choice);
+                output.add(recipe);
+            });
+
         }
         return output;
     }
@@ -181,11 +188,18 @@ public class CustomRecipeRegistry {
         else return shapelessRecipe;
     }
 
+    private static void addRecipe(Recipe recipe) {
+        Bukkit.addRecipe(recipe, true);
+        registeredRecipes.add(recipe);
+    }
+
     public static void ClearRecipeRegistry() {
-        for (CustomRecipeDefinition recipe : recipeDefinitions.values()) {
-            Bukkit.removeRecipe(recipe.namespacedKey);
+        for (Recipe recipe : registeredRecipes) {
+            if (recipe instanceof Keyed kr) {
+                Bukkit.removeRecipe(kr.getKey());
+            }
         }
-        recipeDefinitions.clear();
+        registeredRecipes.clear();
     }
 
 }

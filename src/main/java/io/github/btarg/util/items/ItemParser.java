@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 public class ItemParser {
     public static ItemStack parseItemStack(String input) {
         // Split the input string by "(" and ")"
-        String[] parts = input.split("\\(");
+        String[] parts = input.trim().split("\\(");
 
         // Default to 1 so that if we don't specify a count we still get an item stack
         int amount = 1;
