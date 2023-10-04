@@ -7,6 +7,7 @@ import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.rendering.BrokenBlock;
 import io.github.btarg.rendering.BrokenBlocksService;
+import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.blocks.CustomBlockUtils;
 import io.github.btarg.util.items.ItemTagHelper;
 import io.github.btarg.util.items.ToolLevelHelper;
@@ -56,7 +57,7 @@ public class CustomBlockListener implements Listener {
         ItemMeta meta = blockItem.getItemMeta();
 
         if (meta == null) return;
-        String blockName = meta.getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
+        String blockName = meta.getPersistentDataContainer().get(NamespacedKeyHelper.customBlockItemTag, PersistentDataType.STRING);
         if (blockName == null) return;
         CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
         if (definition == null) return;
@@ -94,7 +95,7 @@ public class CustomBlockListener implements Listener {
             entity.remove();
             return;
         }
-        world.setBlockData(placedLocation, definition.baseBlock.createBlockData());
+        world.setBlockData(placedLocation, definition.baseMaterial.createBlockData());
 
         if (definition.placeSound != null) {
             try {
@@ -166,18 +167,17 @@ public class CustomBlockListener implements Listener {
         BrokenBlock brokenBlock = brokenBlocksService.getBrokenBlock(blockPosition);
         if (brokenBlock == null) return;
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 4, -1, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 2, -1, false, false));
         ItemStack playerHand = player.getInventory().getItemInMainHand();
 
         CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
         if (definition == null) return;
-
+        //TODO: properly determine the tool strength for breaking
         if (ToolLevelHelper.checkItemTypeByString(playerHand, definition.canBeMinedWith)) {
             brokenBlock.incrementDamage(player, ToolLevelHelper.getToolLevel(playerHand, true));
         } else {
             brokenBlock.incrementDamage(player, 0.5);
         }
-
 
     }
 

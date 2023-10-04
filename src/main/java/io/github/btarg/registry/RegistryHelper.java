@@ -1,8 +1,8 @@
 package io.github.btarg.registry;
 
-import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.ItemDefinition;
+import io.github.btarg.util.NamespacedKeyHelper;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +25,7 @@ public class RegistryHelper {
         meta.lore(customBlockDefinition.getLore());
         meta.setCustomModelData(customBlockDefinition.modelData);
 
-        meta.getPersistentDataContainer().set(OrigamiMain.customItemTag, PersistentDataType.STRING, customBlockDefinition.id);
+        meta.getPersistentDataContainer().set(NamespacedKeyHelper.customBlockItemTag, PersistentDataType.STRING, customBlockDefinition.id);
         itemStack.setItemMeta(meta);
 
         return itemStack;
@@ -34,7 +34,7 @@ public class RegistryHelper {
     public static ItemStack CreateCustomItemStack(CustomItemDefinition customItemDefinition, int count) {
         if (customItemDefinition == null) return null;
 
-        ItemStack itemStack = new ItemStack(customItemDefinition.baseItem, count);
+        ItemStack itemStack = new ItemStack(customItemDefinition.baseMaterial, count);
 
         // new item meta (name and lore)
         ItemMeta meta = itemStack.getItemMeta();
@@ -43,7 +43,7 @@ public class RegistryHelper {
         meta.lore(customItemDefinition.getLore());
         meta.setCustomModelData(customItemDefinition.modelData);
 
-        meta.getPersistentDataContainer().set(OrigamiMain.customItemTag, PersistentDataType.STRING, customItemDefinition.id);
+        meta.getPersistentDataContainer().set(NamespacedKeyHelper.customItemTag, PersistentDataType.STRING, customItemDefinition.id);
         itemStack.setItemMeta(meta);
 
         return itemStack;

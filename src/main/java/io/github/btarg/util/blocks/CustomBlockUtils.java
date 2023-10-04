@@ -1,10 +1,10 @@
 package io.github.btarg.util.blocks;
 
-import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.RegistryHelper;
+import io.github.btarg.util.NamespacedKeyHelper;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Display;
@@ -25,7 +25,7 @@ public class CustomBlockUtils {
 
     public static CustomBlockDefinition getDefinitionFromItemDisplay(Entity itemDisplayEntity) {
         ItemStack item = ((ItemDisplay) itemDisplayEntity).getItemStack();
-        String blockId = item.getItemMeta().getPersistentDataContainer().get(OrigamiMain.customItemTag, PersistentDataType.STRING);
+        String blockId = item.getItemMeta().getPersistentDataContainer().get(NamespacedKeyHelper.customBlockItemTag, PersistentDataType.STRING);
 
         if (blockId != null) {
             if (!blockId.startsWith(RegistryHelper.getRegistryPrefix())) {

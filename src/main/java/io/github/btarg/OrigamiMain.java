@@ -5,17 +5,19 @@ import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.events.CustomBlockListener;
+import io.github.btarg.events.CustomItemListener;
 import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.resourcepack.FileUtils;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.serialization.DefinitionSerializer;
+import io.github.btarg.util.NamespacedKeyHelper;
+import io.github.btarg.util.items.CooldownManager;
 import io.github.btarg.util.loot.LootTableHelper;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -39,8 +41,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     public static FileConfiguration config;
     public static DefinitionSerializer definitionSerializer;
     public static BrokenBlocksService brokenBlocksService;
-    public static NamespacedKey customItemTag = null;
-    public static NamespacedKey chunkDataKey = null;
     public static String sversion;
     @Getter
     private static OrigamiMain Instance;
@@ -55,9 +55,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     public void onEnable() {
 
         Instance = this;
-        customItemTag = new NamespacedKey(this, "custom-item");
-        chunkDataKey = new NamespacedKey(this, "block-data");
-
+        NamespacedKeyHelper.init(this);
 
         if (!setupNMS()) {
             Bukkit.getLogger().severe("This version of Paper is unsupported! See the Origami Docs for a list of supported versions, or contact the developer.");
@@ -66,16 +64,16 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         }
 
         initConfig();
-
         brokenBlocksService = new BrokenBlocksService();
 
         this.getServer().getPluginManager().registerEvents(new CustomBlockListener(), this);
+        this.getServer().getPluginManager().registerEvents(new CustomItemListener(), this);
+        this.getServer().getPluginManager().registerEvents(new CooldownManager(), this);
         this.getServer().getPluginManager().registerEvents(this, this);
         this.getCommand("origami").setExecutor(new RootCommand());
 
         // Generate resource pack
         ResourcePackGenerator.CreateZipFile(this::serveResourcePack);
-
 
     }
 

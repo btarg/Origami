@@ -19,7 +19,6 @@ import java.util.*;
 public class CustomBlockDefinition extends ItemDefinition implements ConfigurationSerializable {
 
     private final Random random = new Random();
-    public Material baseBlock;
     public Boolean glowing;
     public List<String> drops;
     public String dropLootTable;
@@ -37,11 +36,11 @@ public class CustomBlockDefinition extends ItemDefinition implements Configurati
         this.id = null;
         String baseBlockString = (String) map.get("baseBlock");
         if (baseBlockString != null) {
-            this.baseBlock = Material.matchMaterial(baseBlockString.trim().toUpperCase());
+            this.baseMaterial = Material.matchMaterial(baseBlockString.trim().toUpperCase());
         }
-        if (this.baseBlock == null || !this.baseBlock.isBlock()) {
+        if (this.baseMaterial == null || !this.baseMaterial.isBlock()) {
             Bukkit.getLogger().severe("Custom Blocks require a base block to be set! Defaulting to glass...");
-            this.baseBlock = Material.GLASS;
+            this.baseMaterial = Material.GLASS;
         }
         this.glowing = Objects.requireNonNullElse((Boolean) map.get("glowing"), false);
         this.modelData = Objects.requireNonNullElse((Integer) map.get("modelData"), 0);
@@ -61,6 +60,8 @@ public class CustomBlockDefinition extends ItemDefinition implements Configurati
         this.timeToBreak = Objects.requireNonNullElse((Integer) map.get("timeToBreak"), 40);
         this.breakSound = (String) map.get("breakSound");
         this.placeSound = (String) map.get("placeSound");
+
+        this.interactionCooldownTicks = Objects.requireNonNullElse((Integer) map.get("cooldownTicks"), 0);
     }
 
     public boolean dropBlock() {
@@ -115,23 +116,18 @@ public class CustomBlockDefinition extends ItemDefinition implements Configurati
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put("baseBlock", this.baseBlock.name());
         map.put("glowing", this.glowing);
-        map.put("modelData", this.modelData);
-        map.put("displayName", this.displayName);
         map.put("drops", this.drops);
         map.put("dropLootTable", this.dropLootTable);
         map.put("isAffectedByFortune", this.isAffectedByFortune);
         map.put("canBePushed", this.isAffectedByFortune);
-        map.put("rightClickCommands", this.rightClickCommands);
-        map.put("lore", this.lore);
         map.put("dropExperience", this.dropExperience);
         map.put("toolLevelRequired", this.toolLevelRequired);
         map.put("canBeMinedWith", this.canBeMinedWith);
         map.put("timeToBreak", this.timeToBreak);
         map.put("breakSound", this.breakSound);
         map.put("placeSound", this.placeSound);
-
+        map.putAll(super.serialize());
         return map;
     }
 

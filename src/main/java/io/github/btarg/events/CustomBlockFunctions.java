@@ -3,6 +3,9 @@ package io.github.btarg.events;
 import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.RegistryHelper;
+import io.github.btarg.util.items.CommandRunner;
+import io.github.btarg.util.items.CooldownManager;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -32,19 +35,15 @@ public class CustomBlockFunctions {
     }
 
     public static void OnCustomBlockClicked(PlayerInteractEvent event, CustomBlockDefinition definition) {
-
-        if (event.getHand() == EquipmentSlot.OFF_HAND) {
+        if (event.getHand() == EquipmentSlot.OFF_HAND) return;
+        int cooldown = CooldownManager.getCooldown(event.getPlayer(), definition.id);
+        float cooldownSeconds = ((float) cooldown / 20f);
+        if (cooldown > 0) {
+            event.getPlayer().sendMessage(Component.text("You cannot interact with this block for another " + cooldownSeconds + " seconds."));
+            event.setCancelled(true);
             return;
         }
-
-        for (String command : definition.rightClickCommands) {
-            if (command.startsWith("/")) {
-                command = command.substring(1);
-            }
-
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute as " + event.getPlayer().getName() + " run " + command);
-        }
-
+        CommandRunner.runCommands(definition.rightClickCommands, event.getPlayer().getUniqueId().toString());
     }
 
     public static void OnCustomBlockMined(BlockBreakEvent event, CustomBlockDefinition definition) {

@@ -1,6 +1,6 @@
 package io.github.btarg.blockdata;
 
-import io.github.btarg.OrigamiMain;
+import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.blocks.BlockPos;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -15,7 +15,7 @@ public class CustomBlockPersistentData {
         ChunkBlockInformation information = getBlockInformation(chunk);
 
         information.addBlock(uuid, blockLocation);
-        chunk.getPersistentDataContainer().set(OrigamiMain.chunkDataKey, new InformationDataType(), information);
+        chunk.getPersistentDataContainer().set(NamespacedKeyHelper.chunkDataKey, new InformationDataType(), information);
         return true;
     }
 
@@ -24,11 +24,11 @@ public class CustomBlockPersistentData {
         ChunkBlockInformation information = getBlockInformation(chunk);
 
         information.removeBlock(location);
-        chunk.getPersistentDataContainer().set(OrigamiMain.chunkDataKey, new InformationDataType(), information);
+        chunk.getPersistentDataContainer().set(NamespacedKeyHelper.chunkDataKey, new InformationDataType(), information);
     }
 
     public static ChunkBlockInformation getBlockInformation(Chunk chunk) {
-        ChunkBlockInformation information = chunk.getPersistentDataContainer().get(OrigamiMain.chunkDataKey, new InformationDataType());
+        ChunkBlockInformation information = chunk.getPersistentDataContainer().get(NamespacedKeyHelper.chunkDataKey, new InformationDataType());
         // initialise map if empty
         if (information == null) {
             information = new ChunkBlockInformation(new HashMap<>());

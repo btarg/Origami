@@ -2,6 +2,7 @@ package io.github.btarg.definitions;
 
 import io.github.btarg.util.ComponentHelper;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,6 +18,8 @@ public class ItemDefinition implements ConfigurationSerializable {
     public List<String> lore;
     public List<String> rightClickCommands;
     public Integer modelData;
+    public Integer interactionCooldownTicks;
+    public Material baseMaterial;
 
 
     public Component getDisplayName() {
@@ -33,9 +36,14 @@ public class ItemDefinition implements ConfigurationSerializable {
         return toReturn;
     }
 
-    // Override me!
     public @NotNull Map<String, Object> serialize() {
-        return new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        map.put("baseMaterial", this.baseMaterial);
+        map.put("displayName", this.displayName);
+        map.put("lore", this.lore);
+        map.put("rightClickCommands", this.rightClickCommands);
+        map.put("modelData", this.modelData);
+        return map;
     }
 
 }

@@ -28,7 +28,7 @@ public class DefaultDefinitions {
 
         CustomBlockDefinition definition = new CustomBlockDefinition(new HashMap<>());
         definition.id = "rainbow_block";
-        definition.baseBlock = Material.GLASS;
+        definition.baseMaterial = Material.GLASS;
         definition.glowing = false;
         definition.modelData = 1000;
         definition.displayName = "&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk";
