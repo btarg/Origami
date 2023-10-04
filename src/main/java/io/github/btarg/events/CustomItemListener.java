@@ -13,6 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 public class CustomItemListener implements Listener {
+
+    private long messageLastSent = 0L;
+
     @EventHandler
     public void onItemRightClick(PlayerInteractEvent e) {
         if (e.getItem() == null) return;
@@ -23,7 +26,10 @@ public class CustomItemListener implements Listener {
         int cooldown = CooldownManager.getCooldown(e.getPlayer(), customItemString);
         float cooldownSeconds = ((float) cooldown / 20f);
         if (cooldown > 0) {
-            e.getPlayer().sendMessage(Component.text("You cannot use this item for another " + cooldownSeconds + " seconds."));
+            if (System.currentTimeMillis() - messageLastSent > 500L) {
+                e.getPlayer().sendMessage(Component.text("You cannot use this item for another " + cooldownSeconds + " seconds."));
+                messageLastSent = System.currentTimeMillis();
+            }
             return;
         }
 

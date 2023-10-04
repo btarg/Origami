@@ -20,13 +20,15 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class CustomBlockFunctions {
+
+    private static long messageLastSent = 0L;
+
     public static void OnCustomBlockBroken(Location location, String breakSound) {
 
         CustomBlockPersistentData.removeBlockFromStorage(location);
 
         if (breakSound != null && !breakSound.isEmpty()) {
             try {
-                Sound sound = Sound.valueOf(breakSound);
                 location.getWorld().playSound(location, Sound.valueOf(breakSound), 1, 1);
             } catch (IllegalArgumentException e) {
                 Bukkit.getLogger().warning("Block being broken does not have a valid sound!");
@@ -39,7 +41,10 @@ public class CustomBlockFunctions {
         int cooldown = CooldownManager.getCooldown(event.getPlayer(), definition.id);
         float cooldownSeconds = ((float) cooldown / 20f);
         if (cooldown > 0) {
-            event.getPlayer().sendMessage(Component.text("You cannot interact with this block for another " + cooldownSeconds + " seconds."));
+            if (System.currentTimeMillis() - messageLastSent > 500L) {
+                event.getPlayer().sendMessage(Component.text("You cannot interact with this block for another " + cooldownSeconds + " seconds."));
+                messageLastSent = System.currentTimeMillis();
+            }
             event.setCancelled(true);
             return;
         }
@@ -68,8 +73,6 @@ public class CustomBlockFunctions {
             for (ItemStack stack : definition.getDrops(player, blockBroken.getLocation())) {
                 world.dropItemNaturally(blockBroken.getLocation(), stack);
             }
-
         }
-
     }
 }
