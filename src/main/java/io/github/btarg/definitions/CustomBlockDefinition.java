@@ -1,7 +1,7 @@
 package io.github.btarg.definitions;
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.util.items.ItemParser;
+import io.github.btarg.util.parsers.ItemParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -61,7 +61,8 @@ public class CustomBlockDefinition extends ItemDefinition implements Configurati
         this.breakSound = (String) map.get("breakSound");
         this.placeSound = (String) map.get("placeSound");
 
-        this.interactionCooldownTicks = Objects.requireNonNullElse((Integer) map.get("cooldownTicks"), 0);
+        this.leftClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("leftClickCooldown"), 0);
+        this.rightClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("rightClickCooldown"), 0);
     }
 
     public boolean dropBlock() {

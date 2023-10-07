@@ -1,4 +1,4 @@
-package io.github.btarg.util.items;
+package io.github.btarg.util.parsers;
 
 import io.github.btarg.registry.RegistryHelper;
 import org.bukkit.Material;

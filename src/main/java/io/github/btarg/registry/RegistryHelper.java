@@ -5,9 +5,13 @@ import io.github.btarg.definitions.ItemDefinition;
 import io.github.btarg.util.NamespacedKeyHelper;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.Map;
 
 public class RegistryHelper {
 
@@ -42,6 +46,14 @@ public class RegistryHelper {
         meta.displayName(name);
         meta.lore(customItemDefinition.getLore());
         meta.setCustomModelData(customItemDefinition.modelData);
+        for (Map.Entry<Enchantment, Integer> entry : customItemDefinition.enchantments.entrySet()) {
+            Enchantment key = entry.getKey();
+            Integer value = entry.getValue();
+            if (key != null) {
+                meta.addEnchant(key, value, true);
+            }
+        }
+        meta.addItemFlags(customItemDefinition.flags.toArray(new ItemFlag[0]));
 
         meta.getPersistentDataContainer().set(NamespacedKeyHelper.customItemTag, PersistentDataType.STRING, customItemDefinition.id);
         itemStack.setItemMeta(meta);

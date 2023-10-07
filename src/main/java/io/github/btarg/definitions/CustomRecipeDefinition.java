@@ -1,6 +1,6 @@
 package io.github.btarg.definitions;
 
-import io.github.btarg.util.items.ItemParser;
+import io.github.btarg.util.parsers.ItemParser;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;

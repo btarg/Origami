@@ -17,8 +17,10 @@ public class ItemDefinition implements ConfigurationSerializable {
     public String displayName;
     public List<String> lore;
     public List<String> rightClickCommands;
+    public List<String> leftClickCommands;
     public Integer modelData;
-    public Integer interactionCooldownTicks;
+    public Integer rightClickCooldownTicks;
+    public Integer leftClickCooldownTicks;
     public Material baseMaterial;
 
 
@@ -43,6 +45,8 @@ public class ItemDefinition implements ConfigurationSerializable {
         map.put("lore", this.lore);
         map.put("rightClickCommands", this.rightClickCommands);
         map.put("modelData", this.modelData);
+        map.put("leftClickCooldown", this.leftClickCooldownTicks);
+        map.put("rightClickCooldown", this.rightClickCooldownTicks);
         return map;
     }
 
