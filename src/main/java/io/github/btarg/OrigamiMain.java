@@ -13,6 +13,7 @@ import io.github.btarg.serialization.DefinitionSerializer;
 import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.items.CooldownManager;
 import io.github.btarg.util.loot.LootTableHelper;
+import io.github.btarg.util.loot.versions.LootTableHelper_1_20_R2;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -31,7 +32,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -78,23 +78,13 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     }
 
     private boolean setupNMS() {
-        try {
-            sversion = Bukkit.getServer().getClass().getPackageName().split("\\.")[3];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
+
+        if (Bukkit.getServer().getMinecraftVersion().equals("1.20.2")) {
+            lootTableHelper = new LootTableHelper_1_20_R2();
+        } else {
             return false;
         }
-        try {
-            Class<?> clazz = Class.forName("io.github.btarg.util.loot.versions.LootTableHelper_" + sversion.substring(1));
-            Constructor<?> cons = clazz.getDeclaredConstructor();
-            cons.setAccessible(true);
-            Object obj = cons.newInstance();
-            lootTableHelper = (LootTableHelper) obj;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return lootTableHelper != null;
+        return true;
     }
 
     private void initConfig() {

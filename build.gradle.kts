@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     id("com.github.johnrengelman.shadow") version "8.+"
-    id("io.papermc.paperweight.userdev") version "1.5+"
+    id("io.papermc.paperweight.userdev") version "1.+"
     id("xyz.jpenilla.run-paper") version "2.+" // Adds runServer and runMojangMappedServer tasks for testing
     id("io.freefair.lombok") version "8.+"
 }
@@ -13,9 +13,9 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/")
 }
 dependencies {
-    paperweight.paperDevBundle("1.20.1-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.20.2-R0.1-SNAPSHOT")
     api("commons-io:commons-io:2.+")
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT")
 
 }
 group = "io.github"
@@ -29,7 +29,7 @@ tasks {
     }
     runServer {
         dependsOn(assemble)
-        minecraftVersion("1.20.1")
+        minecraftVersion("1.20.2")
     }
     processResources {
         filteringCharset = Charsets.UTF_8.name() // We want UTF-8 for everything
