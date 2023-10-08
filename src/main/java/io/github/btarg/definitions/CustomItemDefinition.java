@@ -19,22 +19,13 @@ public class CustomItemDefinition extends ItemDefinition implements Configuratio
     public double damage = 0.0;
 
     public CustomItemDefinition(Map<String, Object> map) {
+        super(map);
 
         this.id = null;
-        String baseBlockString = (String) map.get("baseItem");
-        if (baseBlockString != null) {
-            this.baseMaterial = Material.matchMaterial(baseBlockString.trim().toUpperCase());
-        }
         if (this.baseMaterial == null) {
             Bukkit.getLogger().severe("Custom Items need a base material! Defaulting to a Command Block...");
             this.baseMaterial = Material.COMMAND_BLOCK;
         }
-
-        this.modelData = Objects.requireNonNullElse((Integer) map.get("modelData"), 0);
-        this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Item");
-        this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
-        this.leftClickCommands = Objects.requireNonNullElse((List<String>) map.get("leftClickCommands"), new ArrayList<>());
-        this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
 
         this.leftClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("leftClickCooldown"), 0);
         this.rightClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("rightClickCooldown"), 0);

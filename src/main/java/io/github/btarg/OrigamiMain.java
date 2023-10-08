@@ -4,6 +4,7 @@ import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
+import io.github.btarg.events.BlockDamageListener;
 import io.github.btarg.events.CustomBlockListener;
 import io.github.btarg.events.CustomItemListener;
 import io.github.btarg.rendering.BrokenBlocksService;
@@ -67,10 +68,11 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         brokenBlocksService = new BrokenBlocksService();
 
         this.getServer().getPluginManager().registerEvents(new CustomBlockListener(), this);
+        this.getServer().getPluginManager().registerEvents(new BlockDamageListener(), this);
         this.getServer().getPluginManager().registerEvents(new CustomItemListener(), this);
         this.getServer().getPluginManager().registerEvents(new CooldownManager(), this);
         this.getServer().getPluginManager().registerEvents(this, this);
-        this.getCommand("origami").setExecutor(new RootCommand());
+        Objects.requireNonNull(this.getCommand("origami")).setExecutor(new RootCommand());
 
         // Generate resource pack
         ResourcePackGenerator.CreateZipFile(this::serveResourcePack);

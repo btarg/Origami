@@ -5,8 +5,6 @@ import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
-import io.github.btarg.rendering.BrokenBlock;
-import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.blocks.CustomBlockUtils;
 import io.github.btarg.util.items.ItemTagHelper;
@@ -25,30 +23,19 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class CustomBlockListener implements Listener {
-
-    private final Set<Material> transparentBlocks;
-    private final BrokenBlocksService brokenBlocksService;
-
-    public CustomBlockListener() {
-        brokenBlocksService = OrigamiMain.brokenBlocksService; // Get the BrokenBlocksService instance
-        transparentBlocks = new HashSet<>();
-        transparentBlocks.add(Material.WATER);
-        transparentBlocks.add(Material.LAVA);
-        transparentBlocks.add(Material.AIR);
-    }
-
 
     @EventHandler
     public void onCustomBlockPlaced(HangingPlaceEvent event) {
@@ -61,8 +48,6 @@ public class CustomBlockListener implements Listener {
         if (blockName == null) return;
         CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
         if (definition == null) return;
-
-        event.setCancelled(true);
 
         Block block = event.getBlock();
         World world = block.getWorld();
@@ -97,6 +82,21 @@ public class CustomBlockListener implements Listener {
         }
         world.setBlockData(placedLocation, definition.baseMaterial.createBlockData());
 
+        // make sure item is removed when placed
+        event.setCancelled(true);
+        int amount = Math.max(blockItem.getAmount() - 1, 0);
+        Player player = event.getPlayer();
+
+        if (player != null && !player.getGameMode().equals(GameMode.CREATIVE)) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    player.getInventory().getItem(Objects.requireNonNull(event.getHand())).setAmount(amount);
+                    player.updateInventory();
+                }
+            }.runTaskLater(OrigamiMain.getInstance(), 1); // delay by 1 tick to prevent super from not allowing the stack change
+        }
+
         if (definition.placeSound != null) {
             try {
                 world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
@@ -120,7 +120,7 @@ public class CustomBlockListener implements Listener {
             CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
             if (definition == null) return;
 
-            if (block.getType() == Material.SPAWNER && e.getPlayer().getInventory().getItemInMainHand().getType().name().endsWith("SPAWN_EGG")) {
+            if (block.getType() == Material.SPAWNER && e.getPlayer().getInventory().getItem(Objects.requireNonNull(e.getHand())).getType().name().endsWith("SPAWN_EGG")) {
                 e.setCancelled(true);
                 return;
             }
@@ -136,63 +136,13 @@ public class CustomBlockListener implements Listener {
         if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.GLOW_ITEM_FRAME) {
             for (ItemStack itemStack : event.getInventory().getMatrix()) {
                 if (itemStack != null) {
-
                     if (ItemTagHelper.isCustomItem(itemStack)) {
                         event.setResult(Event.Result.DENY);
                         event.setCurrentItem(null);
                     }
-
                 }
             }
         }
-    }
-
-    @EventHandler
-    public void onPlayerAnimation(PlayerAnimationEvent event) {
-        Player player = event.getPlayer();
-
-        if (player.getGameMode().equals(GameMode.CREATIVE)) return;
-
-        Block block = player.getTargetBlock(transparentBlocks, 5);
-        Location blockPosition = block.getLocation();
-
-        if (!brokenBlocksService.isBrokenBlock(blockPosition)) return;
-
-        double distanceX = blockPosition.getX() - player.getLocation().getBlockX();
-        double distanceY = blockPosition.getY() - player.getLocation().getBlockY();
-        double distanceZ = blockPosition.getZ() - player.getLocation().getBlockZ();
-
-        if (distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ >= 1024.0D) return;
-
-        BrokenBlock brokenBlock = brokenBlocksService.getBrokenBlock(blockPosition);
-        if (brokenBlock == null) return;
-
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 2, -1, false, false));
-        ItemStack playerHand = player.getInventory().getItemInMainHand();
-
-        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
-        if (definition == null) return;
-        //TODO: properly determine the tool strength for breaking
-        if (ToolLevelHelper.checkItemTypeByString(playerHand, definition.canBeMinedWith)) {
-            brokenBlock.incrementDamage(player, ToolLevelHelper.getToolLevel(playerHand, true));
-        } else {
-            brokenBlock.incrementDamage(player, 0.5);
-        }
-
-    }
-
-    @EventHandler
-    public void onBlockDamage(BlockDamageEvent event) {
-        Block block = event.getBlock();
-        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
-        if (definition == null) return;
-        brokenBlocksService.createBrokenBlock(block, (double) definition.timeToBreak);
-
-    }
-
-    @EventHandler
-    public void onBlockDamageStop(BlockDamageAbortEvent event) {
-        brokenBlocksService.removeBrokenBlock(event.getBlock().getLocation());
     }
 
     @EventHandler
@@ -217,7 +167,6 @@ public class CustomBlockListener implements Listener {
                 if (!silkTouch)
                     e.setExpToDrop(definition.dropExperience);
 
-                CustomBlockFunctions.OnCustomBlockMined(e, definition);
                 CustomBlockFunctions.DropBlockItems(e.getPlayer(), definition, e.getBlock());
             }
         }
@@ -241,14 +190,11 @@ public class CustomBlockListener implements Listener {
 
                 CustomBlockFunctions.DropBlockItems(e.getEntity(), definition, block);
 
-                // remove without saving for better performance
                 CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
-
                 linkedItemDisplay.remove();
 
             }
         }
-
     }
 
     @EventHandler
@@ -258,10 +204,8 @@ public class CustomBlockListener implements Listener {
 
     @EventHandler
     public void onPistonRetract(BlockPistonRetractEvent e) {
-        // move with sticky piston
         if (e.isSticky()) onPistonMove(e, e.getBlocks());
     }
-
 
     private void onPistonMove(BlockPistonEvent e, List<Block> blocks) {
 
@@ -287,11 +231,14 @@ public class CustomBlockListener implements Listener {
             CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
 
         }
-        for (var pushedBlockEntry : pushedTempList.entrySet()) {
-            CustomBlockPersistentData.storeBlockInformation(pushedBlockEntry.getKey(), pushedBlockEntry.getValue().getUniqueId().toString());
-            // move the item display to new location
-            pushedBlockEntry.getValue().teleport(CustomBlockUtils.getDisplayLocationFromBlock(pushedBlockEntry.getKey()));
-            pushedBlockEntry.getValue().setTransformation(CustomBlockUtils.getDisplayTransformation(pushedBlockEntry.getValue()));
+        // move the item display to new location
+        for (Map.Entry<Location, Display> entry : pushedTempList.entrySet()) {
+            Location key = entry.getKey();
+            Display value = entry.getValue();
+            CustomBlockPersistentData.storeBlockInformation(key, value.getUniqueId().toString());
+            value.setTeleportDuration(1);
+            value.teleport(CustomBlockUtils.getDisplayLocationFromBlock(key));
+            value.setTransformation(CustomBlockUtils.getDisplayTransformation(value));
         }
     }
 

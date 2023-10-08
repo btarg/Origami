@@ -33,27 +33,18 @@ public class CustomBlockDefinition extends ItemDefinition implements Configurati
 
     @SuppressWarnings("unchecked")
     public CustomBlockDefinition(Map<String, Object> map) {
+        super(map);
         this.id = null;
-        String baseBlockString = (String) map.get("baseBlock");
-        if (baseBlockString != null) {
-            this.baseMaterial = Material.matchMaterial(baseBlockString.trim().toUpperCase());
-        }
         if (this.baseMaterial == null || !this.baseMaterial.isBlock()) {
             Bukkit.getLogger().severe("Custom Blocks require a base block to be set! Defaulting to glass...");
             this.baseMaterial = Material.GLASS;
         }
         this.glowing = Objects.requireNonNullElse((Boolean) map.get("glowing"), false);
-        this.modelData = Objects.requireNonNullElse((Integer) map.get("modelData"), 0);
-        this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Block");
 
         this.dropLootTable = (String) map.get("dropLootTable");
         this.drops = Objects.requireNonNullElse((List<String>) map.get("drops"), new ArrayList<>());
-
         this.isAffectedByFortune = Objects.requireNonNullElse((Boolean) map.get("isAffectedByFortune"), false);
         this.canBePushed = Objects.requireNonNullElse((Boolean) map.get("canBePushed"), true);
-
-        this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
-        this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
         this.dropExperience = Objects.requireNonNullElse((Integer) map.get("dropExperience"), 0);
         this.toolLevelRequired = Objects.requireNonNullElse((Integer) map.get("toolLevelRequired"), 0);
         this.canBeMinedWith = Objects.requireNonNullElse((List<String>) map.get("canBeMinedWith"), new ArrayList<>());
@@ -61,8 +52,6 @@ public class CustomBlockDefinition extends ItemDefinition implements Configurati
         this.breakSound = (String) map.get("breakSound");
         this.placeSound = (String) map.get("placeSound");
 
-        this.leftClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("leftClickCooldown"), 0);
-        this.rightClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("rightClickCooldown"), 0);
     }
 
     public boolean dropBlock() {

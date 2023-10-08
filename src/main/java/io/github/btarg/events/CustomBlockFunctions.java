@@ -14,7 +14,6 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -49,10 +48,6 @@ public class CustomBlockFunctions {
             return;
         }
         CommandRunner.runCommands(definition.rightClickCommands, event.getPlayer().getUniqueId().toString());
-    }
-
-    public static void OnCustomBlockMined(BlockBreakEvent event, CustomBlockDefinition definition) {
-        //event.getPlayer().sendMessage("Mined: " + blockName);
     }
 
     public static void DropBlockItems(Entity entity, CustomBlockDefinition definition, Block blockBroken) {

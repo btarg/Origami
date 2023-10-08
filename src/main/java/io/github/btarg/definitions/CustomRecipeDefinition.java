@@ -66,14 +66,14 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
         }
 
         this.ingredientMap = new HashMap<>();
-        for (int i = 0; i < ingredients.size(); i++) {
-            String[] split = StringUtils.split(ingredients.get(i), ";");
+        for (int i = 0; i < this.ingredients.size(); i++) {
+            String[] split = StringUtils.split(this.ingredients.get(i), ";");
 
             // d;DIAMOND
             if (split.length == 2) {
                 String key = String.valueOf(split[0].charAt(0));
                 // shapeless recipes with accidental keys - we try to get the value
-                if (shape == null) {
+                if (this.shape == null) {
                     this.ingredientMap.put(String.valueOf(i), split[1]);
                 } else {
                     this.ingredientMap.put(key, split[1]);
@@ -82,7 +82,7 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
             }
             // DIAMOND
             else if (split.length == 1) {
-                if (shape == null) {
+                if (this.shape == null) {
                     // shapeless recipe
                     this.ingredientMap.put(String.valueOf(i), split[0]);
                 } else {

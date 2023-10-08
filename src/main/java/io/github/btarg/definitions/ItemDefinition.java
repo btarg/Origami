@@ -6,11 +6,9 @@ import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class ItemDefinition implements ConfigurationSerializable {
 
     public String id;
@@ -23,6 +21,22 @@ public class ItemDefinition implements ConfigurationSerializable {
     public Integer leftClickCooldownTicks;
     public Material baseMaterial;
 
+
+    public ItemDefinition(Map<String, Object> map) {
+
+        String baseMaterialString = map.get("baseBlock") != null ? (String) map.get("baseBlock") : (String) map.get("baseItem");
+        if (baseMaterialString != null) {
+            this.baseMaterial = Material.matchMaterial(baseMaterialString.trim().toUpperCase());
+        }
+
+        this.modelData = Objects.requireNonNullElse((Integer) map.get("modelData"), 0);
+        this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Item");
+        this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
+        this.leftClickCommands = Objects.requireNonNullElse((List<String>) map.get("leftClickCommands"), new ArrayList<>());
+        this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
+        this.leftClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("leftClickCooldown"), 0);
+        this.rightClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("rightClickCooldown"), 0);
+    }
 
     public Component getDisplayName() {
         Component nameComponent = ComponentHelper.deserializeGenericComponent(displayName);
