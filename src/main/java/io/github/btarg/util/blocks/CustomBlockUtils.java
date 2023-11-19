@@ -54,7 +54,7 @@ public class CustomBlockUtils {
     public static Location getDisplayLocationFromBlock(Location location) {
         Location entityLocation = location.clone();
         entityLocation.setX(location.getX() + 0.5);
-        entityLocation.setY(location.getY() + 0.50015); // prevent z-fighting
+        entityLocation.setY(location.getY() + 0.5002); // prevent z-fighting
         entityLocation.setZ(location.getZ() + 0.5);
 
         return entityLocation;
@@ -62,7 +62,6 @@ public class CustomBlockUtils {
 
     public static Transformation getDisplayTransformation(Display ent) {
         Transformation t = ent.getTransformation();
-        Transformation transformation = new Transformation(t.getTranslation(), t.getLeftRotation(), t.getScale().add(0.0001f, 0.0003f, 0.0001f), t.getRightRotation());
-        return transformation;
+        return new Transformation(t.getTranslation(), t.getLeftRotation(), t.getScale().add(0.0002f, 0.0004f, 0.0002f), t.getRightRotation());
     }
 }

@@ -1,13 +1,15 @@
 package io.github.btarg.registry;
 
 import io.github.btarg.definitions.CustomBlockDefinition;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 
 import java.util.*;
 
 public class CustomBlockRegistry {
 
-    private static final Map<String, CustomBlockDefinition> blockDefinitions = new HashMap<>();
+    @Getter
+    private static Map<String, CustomBlockDefinition> blockDefinitions = new HashMap<>();
 
     public static List<String> GetBlockIDs() {
         return new ArrayList<>(blockDefinitions.keySet());

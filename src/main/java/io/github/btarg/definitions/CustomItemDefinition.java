@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
-public class CustomItemDefinition extends ItemDefinition implements ConfigurationSerializable {
+public class CustomItemDefinition extends CustomDefinition implements ConfigurationSerializable {
     public Map<Enchantment, Integer> enchantments = new HashMap<>();
     public List<ItemFlag> flags = new ArrayList<>();
     public List<PotionEffectType> potionEffects = new ArrayList<>();

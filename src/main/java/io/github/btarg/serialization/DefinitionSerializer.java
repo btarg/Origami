@@ -147,7 +147,7 @@ public class DefinitionSerializer {
 
                 SaveConfig(conf, file);
             }
-        } else if (def instanceof ItemDefinition definition) {
+        } else if (def instanceof CustomDefinition definition) {
             if (definition.id != null) {
                 String fileName = definition.id;
                 File file = getFile(saveDir, fileName);
@@ -201,7 +201,7 @@ public class DefinitionSerializer {
         Object obj = constructor.newInstance(values);
         if (obj == null) return null;
 
-        if (obj instanceof ItemDefinition definition) {
+        if (obj instanceof CustomDefinition definition) {
             definition.id = FilenameUtils.removeExtension(fileName);
             return definition;
         } else if (obj instanceof CustomRecipeDefinition definition) {

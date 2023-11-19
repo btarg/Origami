@@ -48,6 +48,7 @@ public class CustomBlockListener implements Listener {
         if (blockName == null) return;
         CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
         if (definition == null) return;
+        event.setCancelled(true);
 
         Block block = event.getBlock();
         World world = block.getWorld();
@@ -83,7 +84,6 @@ public class CustomBlockListener implements Listener {
         world.setBlockData(placedLocation, definition.baseMaterial.createBlockData());
 
         // make sure item is removed when placed
-        event.setCancelled(true);
         int amount = Math.max(blockItem.getAmount() - 1, 0);
         Player player = event.getPlayer();
 

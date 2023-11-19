@@ -11,11 +11,20 @@ repositories {
     google()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/groups/public/")
+    maven("https://repo.unnamed.team/repository/unnamed-public/")
 }
 dependencies {
     paperweight.paperDevBundle("1.20.2-R0.1-SNAPSHOT")
     api("commons-io:commons-io:2.+")
     compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT")
+
+    implementation("team.unnamed:creative-api:1.+")
+
+    // Serializer for Minecraft format (ZIP / Folder)
+    implementation("team.unnamed:creative-serializer-minecraft:1.+")
+
+    // Resource Pack server
+    implementation("team.unnamed:creative-server:1.+")
 
 }
 group = "io.github"

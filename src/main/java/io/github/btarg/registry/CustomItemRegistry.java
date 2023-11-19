@@ -1,13 +1,15 @@
 package io.github.btarg.registry;
 
 import io.github.btarg.definitions.CustomItemDefinition;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 
 import java.util.*;
 
 public class CustomItemRegistry {
 
-    private static final Map<String, CustomItemDefinition> itemDefinitions = new HashMap<>();
+    @Getter
+    private static Map<String, CustomItemDefinition> itemDefinitions = new HashMap<>();
 
     public static List<String> GetItemIds() {
         return new ArrayList<>(itemDefinitions.keySet());

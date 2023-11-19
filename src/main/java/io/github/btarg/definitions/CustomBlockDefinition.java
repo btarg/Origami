@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 @SerializableAs("CustomBlock")
-public class CustomBlockDefinition extends ItemDefinition implements ConfigurationSerializable {
+public class CustomBlockDefinition extends CustomDefinition implements ConfigurationSerializable {
 
     private final Random random = new Random();
     public Boolean glowing;

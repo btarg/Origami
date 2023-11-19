@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
-public class ItemDefinition implements ConfigurationSerializable {
+public class CustomDefinition implements ConfigurationSerializable {
 
     public String id;
     public String displayName;
@@ -17,18 +17,19 @@ public class ItemDefinition implements ConfigurationSerializable {
     public List<String> rightClickCommands;
     public List<String> leftClickCommands;
     public Integer modelData;
+    public String model;
     public Integer rightClickCooldownTicks;
     public Integer leftClickCooldownTicks;
     public Material baseMaterial;
 
 
-    public ItemDefinition(Map<String, Object> map) {
+    public CustomDefinition(Map<String, Object> map) {
 
         String baseMaterialString = map.get("baseBlock") != null ? (String) map.get("baseBlock") : (String) map.get("baseItem");
         if (baseMaterialString != null) {
             this.baseMaterial = Material.matchMaterial(baseMaterialString.trim().toUpperCase());
         }
-
+        this.model = (String) map.get("model"); // allow null models for default base material instead
         this.modelData = Objects.requireNonNullElse((Integer) map.get("modelData"), 0);
         this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Item");
         this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());

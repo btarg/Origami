@@ -1,7 +1,7 @@
 package io.github.btarg.registry;
 
+import io.github.btarg.definitions.CustomDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
-import io.github.btarg.definitions.ItemDefinition;
 import io.github.btarg.util.NamespacedKeyHelper;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class RegistryHelper {
 
 
-    public static ItemStack CreateCustomBlockItemStack(ItemDefinition customBlockDefinition, int count) {
+    public static ItemStack CreateCustomBlockItemStack(CustomDefinition customBlockDefinition, int count) {
 
         if (customBlockDefinition == null) return null;
 
