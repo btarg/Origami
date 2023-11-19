@@ -4,7 +4,9 @@ import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomItemRegistry;
+import io.github.btarg.util.ComponentHelper;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import team.unnamed.creative.ResourcePack;
@@ -20,10 +22,7 @@ import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -32,13 +31,19 @@ public class ResourcePackGenerator {
     public static ResourcePack generateResourcePack() {
 
         ResourcePack resourcePack = ResourcePack.resourcePack();
-        resourcePack.packMeta(15, "Origami Server Pack");
+        String description = (String) OrigamiMain.config.get("resource-pack.pack-description");
+        if (description == null || description.isBlank()) {
+            description = "Powered by <color:#f51d5e>Origami</color>";
+        }
+        Component descriptionComponent = ComponentHelper.deserializeGenericComponent(description);
+        resourcePack.packMeta(15, descriptionComponent);
         File packFolder = new File(OrigamiMain.getInstance().getDataFolder(), "generated");
 
         try {
             FileUtils.createParentDirectories(packFolder);
 
             PackTextures(resourcePack);
+            resourcePack.icon(Writable.copyInputStream(Objects.requireNonNull(OrigamiMain.getInstance().getResource("logo.png"))));
 
             // Overwrite vanilla item frame model
             Model.Builder itemFrameBuilder = Model.model()
