@@ -16,7 +16,6 @@ public class CustomDefinition implements ConfigurationSerializable {
     public List<String> lore;
     public List<String> rightClickCommands;
     public List<String> leftClickCommands;
-    public Integer modelData;
     public String model;
     public Integer rightClickCooldownTicks;
     public Integer leftClickCooldownTicks;
@@ -30,7 +29,6 @@ public class CustomDefinition implements ConfigurationSerializable {
             this.baseMaterial = Material.matchMaterial(baseMaterialString.trim().toUpperCase());
         }
         this.model = (String) map.get("model"); // allow null models for default base material instead
-        this.modelData = Objects.requireNonNullElse((Integer) map.get("modelData"), 0);
         this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Item");
         this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
         this.leftClickCommands = Objects.requireNonNullElse((List<String>) map.get("leftClickCommands"), new ArrayList<>());
@@ -59,7 +57,7 @@ public class CustomDefinition implements ConfigurationSerializable {
         map.put("displayName", this.displayName);
         map.put("lore", this.lore);
         map.put("rightClickCommands", this.rightClickCommands);
-        map.put("modelData", this.modelData);
+        map.put("model", this.model);
         map.put("leftClickCooldown", this.leftClickCooldownTicks);
         map.put("rightClickCooldown", this.rightClickCooldownTicks);
         return map;

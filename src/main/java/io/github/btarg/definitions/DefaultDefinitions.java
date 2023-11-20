@@ -30,7 +30,7 @@ public class DefaultDefinitions {
         definition.id = "rainbow_block";
         definition.baseMaterial = Material.GLASS;
         definition.glowing = false;
-        definition.modelData = 1000;
+        definition.model = "rainbow";
         definition.displayName = "&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk";
         definition.rightClickCommands = Collections.singletonList("tellraw @s {\"text\":\"The block reverberates majestically.\",\"italic\":true,\"color\":\"gray\"}");
         definition.lore = Collections.singletonList("<rainbow>It shimmers beautifully in the sunlight.</rainbow>");
