@@ -25,13 +25,13 @@ jobs:
       - name: Execute Gradle build
         run: chmod +x ./gradlew && ./gradlew assemble
 
-      - name: Find Artifact
-        run: find build -name "*-dev*.jar" -delete
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: Plugin
-          path: /build/libs/Origami-*.jar
+          path: |
+            build/libs
+            !build/libs/*-dev*.jar
           if-no-files-found: error
 
       - name: Release
