@@ -48,8 +48,6 @@ public class ResourcePackGenerator {
         File packFolder = new File(OrigamiMain.getInstance().getDataFolder(), "generated");
 
         try {
-            FileUtils.createParentDirectories(packFolder);
-
             packTextures(resourcePack);
             resourcePack.icon(Writable.copyInputStream(Objects.requireNonNull(OrigamiMain.getInstance().getResource("logo.png"))));
 
@@ -75,7 +73,12 @@ public class ResourcePackGenerator {
             resourcePack.model(itemFrameBuilder.build());
 
             // save resource pack for debugging
-            MinecraftResourcePackWriter.minecraft().writeToDirectory(packFolder, resourcePack);
+            if (OrigamiMain.config.getBoolean("resource-pack.save-generated-pack")) {
+                // create "generated" folder
+                FileUtils.createParentDirectories(packFolder);
+                // save pack to folder
+                MinecraftResourcePackWriter.minecraft().writeToDirectory(packFolder, resourcePack);
+            }
 
             return resourcePack;
 

@@ -28,6 +28,7 @@ public class ResourcePackListener implements Listener {
 
         if (isRunning) {
             server.stop(0);
+            isRunning = false;
         }
 
         // Start resource pack host server
