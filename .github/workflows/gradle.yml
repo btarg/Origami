@@ -30,10 +30,10 @@ jobs:
       - name: Find Artifact
         run: |
           # Use find command to locate files matching the specified regex
-          find build -type f -name 'Origami*.jar' ! -name '*DEV*' -exec echo "Uploading {}" \; -exec mv {} /tmp/artifact \;
+          find build -type f -name 'Origami*.jar' ! -name '*-dev*' -exec echo "Uploading {}" \; -exec mv {} /tmp/artifact \;
       - name: Upload Artifact
         # Upload the files matching the regex as an artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Origami-Artifact
           path: /tmp/artifact/Origami*.jar
