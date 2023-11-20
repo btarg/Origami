@@ -76,8 +76,8 @@ public class RootCommand implements TabExecutor {
             }
         } else if (Objects.equals(args[0], "listblocks")) {
 
-            if (sender instanceof Player) {
-                Chunk chunk = ((Player) sender).getLocation().getChunk();
+            if (sender instanceof Player player) {
+                Chunk chunk = player.getLocation().getChunk();
 
                 StringBuilder finalString = new StringBuilder(" blocks in " + chunk + ":\n");
                 Map<BlockPos, String> currentDB = CustomBlockPersistentData.getBlocksInStorage(chunk);

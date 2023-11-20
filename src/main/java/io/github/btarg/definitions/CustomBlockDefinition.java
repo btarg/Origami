@@ -57,31 +57,25 @@ public class CustomBlockDefinition extends CustomDefinition implements Configura
 
     public Collection<ItemStack> getDrops(Entity entity, Location loc) {
         Collection<ItemStack> dropStacks = new ArrayList<>();
-        Player player = null;
-        if (entity instanceof Player) {
-            player = (Player) entity;
-        }
 
-        ItemStack minedWith = ItemStack.empty();
-        if (player != null) {
-            minedWith = player.getInventory().getItemInMainHand();
-        }
+        if (entity instanceof Player player) {
+            ItemStack minedWith = player.getInventory().getItemInMainHand();
 
-        if (this.dropLootTable != null) {
-            dropStacks = OrigamiMain.getLootTableHelper().getBlockDrops(this.dropLootTable, loc, minedWith);
-        }
-        if (this.drops != null) {
-            for (String dropString : this.drops) {
-                ItemStack dropStack = ItemParser.parseItemStack(dropString);
-                if (dropStack == null) continue;
-
-                int amount = dropStack.getAmount();
-                if (minedWith != null && minedWith.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS) && this.isAffectedByFortune) {
-                    amount = getFortuneCount(amount, minedWith.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
-                }
-                dropStacks.add(new ItemStack(dropStack.getType(), amount));
+            if (this.dropLootTable != null) {
+                dropStacks = OrigamiMain.getLootTableHelper().getBlockDrops(this.dropLootTable, loc, minedWith);
             }
+            if (this.drops != null) {
+                for (String dropString : this.drops) {
+                    ItemStack dropStack = ItemParser.parseItemStack(dropString);
+                    if (dropStack == null) continue;
 
+                    int amount = dropStack.getAmount();
+                    if (minedWith.getEnchantments().containsKey(Enchantment.LOOT_BONUS_BLOCKS) && this.isAffectedByFortune) {
+                        amount = getFortuneCount(amount, minedWith.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
+                    }
+                    dropStacks.add(new ItemStack(dropStack.getType(), amount));
+                }
+            }
         }
         return dropStacks;
     }

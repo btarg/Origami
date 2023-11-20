@@ -52,21 +52,18 @@ public class CustomBlockFunctions {
 
     public static void DropBlockItems(Entity entity, CustomBlockDefinition definition, Block blockBroken) {
         if (definition == null) return;
-        Player player = null;
-        if (entity instanceof Player) {
-            player = (Player) entity;
-        }
+        if (entity instanceof Player player) {
+            World world = blockBroken.getWorld();
+            boolean silkTouch = (player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH));
 
-        World world = blockBroken.getWorld();
-        boolean silkTouch = (player != null && player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH));
+            if (silkTouch || definition.dropBlock()) {
+                ItemStack blockItem = RegistryHelper.createCustomItemStack(definition, 1);
+                world.dropItemNaturally(blockBroken.getLocation(), blockItem);
+            } else {
 
-        if (silkTouch || definition.dropBlock()) {
-            ItemStack blockItem = RegistryHelper.createCustomItemStack(definition, 1);
-            world.dropItemNaturally(blockBroken.getLocation(), blockItem);
-        } else {
-
-            for (ItemStack stack : definition.getDrops(player, blockBroken.getLocation())) {
-                world.dropItemNaturally(blockBroken.getLocation(), stack);
+                for (ItemStack stack : definition.getDrops(player, blockBroken.getLocation())) {
+                    world.dropItemNaturally(blockBroken.getLocation(), stack);
+                }
             }
         }
     }
