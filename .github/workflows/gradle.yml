@@ -25,7 +25,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
       - name: Execute Gradle build
-        run: ./gradlew assemble
+        run: chmod +x ./gradlew && ./gradlew assemble
 
       - name: Find Artifact
         run: |
