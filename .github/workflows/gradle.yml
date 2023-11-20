@@ -27,11 +27,11 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew assemble
 
-      - name: Find and Upload Artifact
+      - name: Find Artifact
         run: |
           # Use find command to locate files matching the specified regex
           find build -type f -name 'Origami*.jar' ! -name '*DEV*' -exec echo "Uploading {}" \; -exec mv {} /tmp/artifact \;
-
+      - name: Upload Artifact
         # Upload the files matching the regex as an artifact
         uses: actions/upload-artifact@v2
         with:
