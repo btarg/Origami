@@ -30,6 +30,7 @@ import java.util.Objects;
 
 public final class OrigamiMain extends JavaPlugin implements Listener {
 
+    public static final String PREFIX = "origami:";
     public static FileConfiguration config;
     public static DefinitionSerializer definitionSerializer;
     public static BrokenBlocksService brokenBlocksService;

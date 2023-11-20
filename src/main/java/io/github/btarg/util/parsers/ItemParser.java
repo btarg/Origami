@@ -1,5 +1,6 @@
 package io.github.btarg.util.parsers;
 
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.registry.RegistryHelper;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -24,8 +25,8 @@ public class ItemParser {
         }
 
 
-        if (materialName.startsWith(RegistryHelper.getRegistryPrefix())) {
-            return RegistryHelper.GetAnyItemStack(materialName, amount);
+        if (materialName.startsWith(OrigamiMain.PREFIX)) {
+            return RegistryHelper.getAnyItemStack(materialName, amount);
 
         } else {
             // Convert the material name to uppercase (assuming it's in uppercase in the input)

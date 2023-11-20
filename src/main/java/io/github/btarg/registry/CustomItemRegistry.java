@@ -1,5 +1,6 @@
 package io.github.btarg.registry;
 
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomItemDefinition;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -16,15 +17,15 @@ public class CustomItemRegistry {
     }
 
     public static void RegisterItem(CustomItemDefinition itemDefinition) {
-        itemDefinitions.put(RegistryHelper.getRegistryPrefix() + itemDefinition.id, itemDefinition);
+        itemDefinitions.put(OrigamiMain.PREFIX + itemDefinition.id, itemDefinition);
         Bukkit.getLogger().info("Registered item: " + itemDefinition.id);
     }
 
     public static CustomItemDefinition GetRegisteredItem(String itemId) {
         if (itemId == null) return null;
 
-        if (!itemId.startsWith(RegistryHelper.getRegistryPrefix())) {
-            itemId = RegistryHelper.getRegistryPrefix() + itemId;
+        if (!itemId.startsWith(OrigamiMain.PREFIX)) {
+            itemId = OrigamiMain.PREFIX + itemId;
         }
 
         CustomItemDefinition foundItem = null;

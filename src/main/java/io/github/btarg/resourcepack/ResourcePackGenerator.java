@@ -27,7 +27,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 
+@SuppressWarnings({"PatternValidation", "UnstableApiUsage"})
 public class ResourcePackGenerator {
+
+    private static final Map<String, Integer> modelOverrideMap = new HashMap<>();
+
+    public static int getOverrideByModelName(String modelName) {
+        return Objects.requireNonNullElse(modelOverrideMap.get(modelName), 1);
+    }
+
     public static ResourcePack generateResourcePack() {
 
         ResourcePack resourcePack = ResourcePack.resourcePack();
@@ -42,7 +50,7 @@ public class ResourcePackGenerator {
         try {
             FileUtils.createParentDirectories(packFolder);
 
-            PackTextures(resourcePack);
+            packTextures(resourcePack);
             resourcePack.icon(Writable.copyInputStream(Objects.requireNonNull(OrigamiMain.getInstance().getResource("logo.png"))));
 
             // Overwrite vanilla item frame model
@@ -52,8 +60,15 @@ public class ResourcePackGenerator {
                     .textures(ModelTextures.builder().layers(ModelTexture.ofKey(Key.key("minecraft:item/item_frame"))).build());
 
             // generate models and collect as overrides for item frame
-            List<ItemOverride> itemFrameOverrides = new ArrayList<>(GenerateModels(resourcePack, CustomBlockRegistry.getBlockDefinitions(), false));
-            itemFrameOverrides.addAll(GenerateModels(resourcePack, CustomItemRegistry.getItemDefinitions(), true));
+            List<ItemOverride> itemFrameOverrides = new ArrayList<>(generateModels(resourcePack, CustomBlockRegistry.getBlockDefinitions(), false));
+
+            if (itemFrameOverrides.isEmpty()) {
+                //TODO: add example block model
+            }
+            itemFrameOverrides.addAll(generateModels(resourcePack, CustomItemRegistry.getItemDefinitions(), true));
+            if (itemFrameOverrides.isEmpty()) {
+                //TODO: add example item model
+            }
 
             // add the overrides to the item frame and build it
             itemFrameOverrides.forEach(itemFrameBuilder::addOverride);
@@ -70,7 +85,7 @@ public class ResourcePackGenerator {
 
     }
 
-    public static void PackTextures(ResourcePack resourcePack) {
+    private static void packTextures(ResourcePack resourcePack) {
         try {
             Path texturesFolderPath = new File(OrigamiMain.getInstance().getDataFolder(), "textures").toPath();
             FileUtils.createParentDirectories(texturesFolderPath.toFile());
@@ -87,13 +102,16 @@ public class ResourcePackGenerator {
                             String relativePath = texturesFolderPath.relativize(f).toString().replace("\\", "/");
 
                             Texture texture = Texture.texture()
-                                    .key(Key.key("origami", relativePath))
+                                    .key(Key.key(OrigamiMain.PREFIX + relativePath))
                                     .data(Writable.file(f.toFile()))
                                     .build();
                             resourcePack.texture(texture);
                             fileCount.getAndIncrement();
 
                         });
+            }
+            if (fileCount.get() == 0) {
+                //TODO: add example texture
             }
 
             Bukkit.getLogger().info("Processed " + fileCount.get() + " PNG files.");
@@ -102,10 +120,10 @@ public class ResourcePackGenerator {
         }
     }
 
-    public static List<ItemOverride> GenerateModels(ResourcePack pack, Map<String, ? extends CustomDefinition> definitions, boolean isItem) throws IOException {
+    private static List<ItemOverride> generateModels(ResourcePack pack, Map<String, ? extends CustomDefinition> definitions, boolean isItem) throws IOException {
         List<ItemOverride> itemOverrides = new ArrayList<>();
         // Read JSON models from the models folder
-        Iterator<? extends Map.Entry<String, ? extends CustomDefinition>> iterator = definitions.entrySet().iterator();
+        var iterator = definitions.entrySet().iterator();
         for (int i = 1; iterator.hasNext(); i++) {
             Map.Entry<String, ? extends CustomDefinition> entry = iterator.next();
             if (entry.getValue().model != null) {
@@ -114,6 +132,8 @@ public class ResourcePackGenerator {
                 Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getBlockModelFile(entry.getValue().model, isItem)), key);
                 // add to the list of overrides for the vanilla item frame
                 itemOverrides.add(ItemOverride.of(key, ItemPredicate.customModelData(i)));
+                // add to a map so we can get it later
+                modelOverrideMap.put(entry.getValue().model, i);
                 pack.model(model);
             }
         }
@@ -121,7 +141,7 @@ public class ResourcePackGenerator {
 
     }
 
-    public static File getFile(String folderName, String identifier, boolean isItem) throws IOException {
+    private static File getFile(String folderName, String identifier, boolean isItem) throws IOException {
         File mainFolder = new File(OrigamiMain.getInstance().getDataFolder(), folderName);
         FileUtils.createParentDirectories(mainFolder);
 
@@ -132,12 +152,8 @@ public class ResourcePackGenerator {
         return new File(thisFolder, identifier + ".json");
     }
 
-    public static File getBlockModelFile(String identifier, boolean isItem) throws IOException {
+    private static File getBlockModelFile(String identifier, boolean isItem) throws IOException {
         return getFile("models", identifier, isItem);
-    }
-
-    public static File getTextureFile(String identifier, boolean isItem) throws IOException {
-        return getFile("textures", identifier, isItem);
     }
 
 }

@@ -1,5 +1,6 @@
 package io.github.btarg.registry;
 
+import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -16,15 +17,15 @@ public class CustomBlockRegistry {
     }
 
     public static void RegisterBlock(CustomBlockDefinition blockDefinition) {
-        blockDefinitions.put(RegistryHelper.getRegistryPrefix() + blockDefinition.id, blockDefinition);
+        blockDefinitions.put(OrigamiMain.PREFIX + blockDefinition.id, blockDefinition);
         Bukkit.getLogger().info("Registered block: " + blockDefinition.id);
     }
 
     public static CustomBlockDefinition GetRegisteredBlock(String blockId) {
         if (blockId == null) return null;
 
-        if (!blockId.startsWith(RegistryHelper.getRegistryPrefix())) {
-            blockId = RegistryHelper.getRegistryPrefix() + blockId;
+        if (!blockId.startsWith(OrigamiMain.PREFIX)) {
+            blockId = OrigamiMain.PREFIX + blockId;
         }
 
         CustomBlockDefinition foundBlock = null;

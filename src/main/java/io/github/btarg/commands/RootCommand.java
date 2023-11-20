@@ -5,10 +5,12 @@ import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
+import io.github.btarg.events.ResourcePackListener;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
+import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.util.blocks.BlockPos;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -38,7 +40,7 @@ public class RootCommand implements TabExecutor {
                 Player target = Bukkit.getPlayer(args[1]);
                 String itemId = args[2];
                 if (target != null) {
-                    ItemStack stack = RegistryHelper.GetAnyItemStack(itemId, count);
+                    ItemStack stack = RegistryHelper.getAnyItemStack(itemId, count);
                     if (stack == null) return false;
                     target.getInventory().addItem(stack);
                     Component giveMessage = Component.translatable("commands.give.success.single", Component.text(count), stack.displayName(), target.displayName());
@@ -62,6 +64,12 @@ public class RootCommand implements TabExecutor {
                 sender.sendMessage("Reloading custom recipes...");
                 CustomRecipeRegistry.ClearRecipeRegistry();
                 OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomRecipeDefinition.class);
+            } else if (Objects.equals(args[1], "resources")) {
+                sender.sendMessage("Reloading resource pack...");
+                // Generate resource pack and serve with http
+                ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
+                Bukkit.getServer().getOnlinePlayers().forEach(ResourcePackListener::sendResourcePack);
+
             } else {
                 sender.sendMessage(ChatColor.RED + "Please specify which registry you want to reload.");
             }
@@ -118,7 +126,7 @@ public class RootCommand implements TabExecutor {
             }
 
         } else if (Objects.equals(args[0], "reload")) {
-            tabComplete = Arrays.asList("blocks", "items", "recipes");
+            tabComplete = Arrays.asList("blocks", "items", "recipes", "resources");
         }
 
         return tabComplete;

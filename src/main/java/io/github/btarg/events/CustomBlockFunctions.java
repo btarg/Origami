@@ -61,7 +61,7 @@ public class CustomBlockFunctions {
         boolean silkTouch = (player != null && player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH));
 
         if (silkTouch || definition.dropBlock()) {
-            ItemStack blockItem = RegistryHelper.CreateCustomBlockItemStack(definition, 1);
+            ItemStack blockItem = RegistryHelper.createCustomItemStack(definition, 1);
             world.dropItemNaturally(blockBroken.getLocation(), blockItem);
         } else {
 

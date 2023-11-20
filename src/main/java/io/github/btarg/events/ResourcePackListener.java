@@ -4,6 +4,7 @@ import io.github.btarg.OrigamiMain;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -19,10 +20,15 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class ResourcePackListener implements Listener {
+    private static boolean isRunning = false;
     private static ResourcePackServer server;
     private static String resourcePackHash;
 
     public static void serveResourcePack(ResourcePack resourcePack) {
+
+        if (isRunning) {
+            server.stop(0);
+        }
 
         // Start resource pack host server
         Integer port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
@@ -38,33 +44,36 @@ public class ResourcePackListener implements Listener {
 
             server.start();
             Bukkit.getLogger().info("Hosting resource pack at http://localhost:" + port + "/" + resourcePackHash);
+            isRunning = true;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-
+    public static void sendResourcePack(Player player) {
         String ipAddress = StringUtils.defaultIfEmpty(Bukkit.getServer().getIp(), "localhost");
         Integer port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
 
         if (resourcePackHash == null) {
-            event.getPlayer().kick(Component.text("The server is still loading!\nTry rejoining in a second."));
+            player.kick(Component.text("The server is still loading!\nTry rejoining in a second."));
         }
 
         try {
-            event.getPlayer().setResourcePack("http://" + ipAddress + ":" + port + "/" + resourcePackHash, resourcePackHash);
+            player.setResourcePack("http://" + ipAddress + ":" + port + "/" + resourcePackHash, resourcePackHash);
         } catch (Exception e) {
             Bukkit.getLogger().severe(e.getMessage());
         }
+    }
 
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        sendResourcePack(event.getPlayer());
     }
 
     @EventHandler
     public void playerResourcePack(PlayerResourcePackStatusEvent e) {
-        
+
         if (e.getStatus() == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD || e.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED) {
             e.getPlayer().kick(Component.text("A resource pack is required to play on this server."), PlayerKickEvent.Cause.RESOURCE_PACK_REJECTION);
         }

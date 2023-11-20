@@ -128,7 +128,7 @@ public class DefinitionSerializer {
         }
     }
 
-    public void loadAndRegister(Class definitionClass) {
+    public void loadAndRegister(Class<?> definitionClass) {
         loadAndRegister(null, definitionClass);
     }
 
