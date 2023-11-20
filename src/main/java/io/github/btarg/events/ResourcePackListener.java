@@ -23,6 +23,7 @@ public class ResourcePackListener implements Listener {
     private static String resourcePackHash;
 
     public static void serveResourcePack(ResourcePack resourcePack) {
+
         // Start resource pack host server
         Integer port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
         BuiltResourcePack builtResourcePack = MinecraftResourcePackWriter.minecraft().build(resourcePack);
@@ -63,8 +64,7 @@ public class ResourcePackListener implements Listener {
 
     @EventHandler
     public void playerResourcePack(PlayerResourcePackStatusEvent e) {
-
-        if (!OrigamiMain.config.getBoolean("resource-pack.generate-resource-pack")) return;
+        
         if (e.getStatus() == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD || e.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED) {
             e.getPlayer().kick(Component.text("A resource pack is required to play on this server."), PlayerKickEvent.Cause.RESOURCE_PACK_REJECTION);
         }

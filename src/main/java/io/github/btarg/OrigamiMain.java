@@ -25,7 +25,6 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -67,10 +66,8 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         this.getServer().getPluginManager().registerEvents(this, this);
         Objects.requireNonNull(this.getCommand("origami")).setExecutor(new RootCommand());
 
-        if (config.getBoolean("resource-pack.generate-resource-pack")) {
-            // Generate resource pack and serve with http
-            ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
-        }
+        // Generate resource pack and serve with http
+        ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
 
     }
 
@@ -93,7 +90,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         definitionSerializer = new DefinitionSerializer();
 
         ConfigurationSection resourcePackSection = config.createSection("resource-pack");
-        resourcePackSection.addDefault("generate-resource-pack", true);
         resourcePackSection.addDefault("http-port", 8008);
         resourcePackSection.addDefault("pack-description", "Powered by <color:#f51d5e>Origami</color>");
         config.options().copyDefaults(true);

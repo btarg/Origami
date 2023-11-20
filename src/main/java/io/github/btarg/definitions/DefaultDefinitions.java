@@ -29,7 +29,6 @@ public class DefaultDefinitions {
         CustomBlockDefinition definition = new CustomBlockDefinition(new HashMap<>());
         definition.id = "rainbow_block";
         definition.baseMaterial = Material.GLASS;
-        definition.glowing = false;
         definition.model = "rainbow";
         definition.displayName = "&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk";
         definition.rightClickCommands = Collections.singletonList("tellraw @s {\"text\":\"The block reverberates majestically.\",\"italic\":true,\"color\":\"gray\"}");
