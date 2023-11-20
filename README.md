@@ -18,5 +18,8 @@ View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/) for 
 # Credits and special thanks
 
 - The [PaperMC Discord](https://discord.gg/papermc) for being incredibly helpful and quick to respond to any questions
+- [Unnamed Team](https://unnamed.team) for creating
+  the [Creative](https://unnamed.team/docs/creative/latest/getting-started) API and [yusshu](https://github.com/yusshu)
+  for helping me with implementing it
 - [Dannegm on GitHub](https://github.com/dannegm/BlockEntities) for providing an initial implementation of custom blocks
   using Item Display entities, and the basis for the resource pack used
