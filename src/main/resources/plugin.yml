@@ -10,7 +10,7 @@ commands:
     aliases:
       - oc
       - cc
-    description: Give a custom block or item, reload custom blocks and items or list custom blocks currently in the world
+    description: Give a custom block or item, reload custom content from disk, or list custom blocks currently placed
     usage: /oc [give | reload | listblocks]
     permission: origami.commands
 

@@ -19,22 +19,27 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class ResourcePackListener implements Listener {
-    public static String resourcePackHash;
-    public static ResourcePackServer server;
+    private static ResourcePackServer server;
+    private static String resourcePackHash;
 
-    public static void serveResourcePack(ResourcePack resourcePack) throws IOException {
+    public static void serveResourcePack(ResourcePack resourcePack) {
         // Start resource pack host server
-        if (OrigamiMain.config.getBoolean("resource-packs.enable-http-server")) {
-            Integer port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
-            BuiltResourcePack builtResourcePack = MinecraftResourcePackWriter.minecraft().build(resourcePack);
-            resourcePackHash = builtResourcePack.hash();
+        Integer port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
+        BuiltResourcePack builtResourcePack = MinecraftResourcePackWriter.minecraft().build(resourcePack);
+        resourcePackHash = builtResourcePack.hash();
+
+        try {
             server = ResourcePackServer.server()
                     .address("127.0.0.1", port)
                     .pack(builtResourcePack)
                     .path("/" + resourcePackHash)
                     .build();
+
             server.start();
             Bukkit.getLogger().info("Hosting resource pack at http://localhost:" + port + "/" + resourcePackHash);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -43,6 +48,10 @@ public class ResourcePackListener implements Listener {
 
         String ipAddress = StringUtils.defaultIfEmpty(Bukkit.getServer().getIp(), "localhost");
         Integer port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
+
+        if (resourcePackHash == null) {
+            event.getPlayer().kick(Component.text("The server is still loading!\nTry rejoining in a second."));
+        }
 
         try {
             event.getPlayer().setResourcePack("http://" + ipAddress + ":" + port + "/" + resourcePackHash, resourcePackHash);
@@ -55,7 +64,7 @@ public class ResourcePackListener implements Listener {
     @EventHandler
     public void playerResourcePack(PlayerResourcePackStatusEvent e) {
 
-        if (!OrigamiMain.config.getBoolean("resource-packs.generate-resource-pack")) return;
+        if (!OrigamiMain.config.getBoolean("resource-pack.generate-resource-pack")) return;
         if (e.getStatus() == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD || e.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED) {
             e.getPlayer().kick(Component.text("A resource pack is required to play on this server."), PlayerKickEvent.Cause.RESOURCE_PACK_REJECTION);
         }

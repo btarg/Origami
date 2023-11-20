@@ -1,5 +1,6 @@
 package io.github.btarg;
 
+import io.github.btarg.commands.KillInterceptor;
 import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
@@ -24,8 +25,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public final class OrigamiMain extends JavaPlugin implements Listener {
@@ -62,16 +63,13 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         this.getServer().getPluginManager().registerEvents(new BlockDamageListener(), this);
         this.getServer().getPluginManager().registerEvents(new CustomItemListener(), this);
         this.getServer().getPluginManager().registerEvents(new CooldownManager(), this);
+        this.getServer().getPluginManager().registerEvents(new KillInterceptor(), this);
         this.getServer().getPluginManager().registerEvents(this, this);
         Objects.requireNonNull(this.getCommand("origami")).setExecutor(new RootCommand());
 
-        if (config.getBoolean("resource-packs.generate-resource-pack")) {
+        if (config.getBoolean("resource-pack.generate-resource-pack")) {
             // Generate resource pack and serve with http
-            try {
-                ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
         }
 
     }
@@ -91,14 +89,13 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         ConfigurationSerialization.registerClass(CustomRecipeDefinition.class);
 
         config = getConfig();
-        config.options().setHeader(Arrays.asList("If you choose to enable the internal HTTP server (enable-http-server: true),", "you can set the local path to the resource pack which will be hosted below.", "If you enable resource pack generation, the unzipped directory specified below will be zipped and combined with any existing resource pack, otherwise the zipped resource pack path is where you should place your pack.", "Remember to set your server's IP address in server.properties"));
+        config.options().setHeader(List.of("Remember to set your server's IP address properly in server.properties!"));
         definitionSerializer = new DefinitionSerializer();
 
-
-        ConfigurationSection resourcePackSection = config.createSection("resource-packs");
-        resourcePackSection.addDefault("enable-http-server", true);
-        resourcePackSection.addDefault("http-port", 8008);
+        ConfigurationSection resourcePackSection = config.createSection("resource-pack");
         resourcePackSection.addDefault("generate-resource-pack", true);
+        resourcePackSection.addDefault("http-port", 8008);
+        resourcePackSection.addDefault("pack-description", "Powered by <color:#f51d5e>Origami</color>");
         config.options().copyDefaults(true);
         saveConfig();
 
