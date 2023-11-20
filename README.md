@@ -3,13 +3,15 @@
   <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
     <br />
     <p><h2>Custom blocks and items for <a href="https://papermc.io">Paper</a></h2></p>
-  <br />
 </div>
 
 Origami is a Minecraft server plugin which allows a server admin to easily add configurable custom
-blocks and
-items using YAML configuration files, making use of
-resource packs and custom model data to allow **vanilla** clients to connect and play with your custom content.
+blocks,
+items and crafting recipes using YAML configuration files.
+
+The plugin generates and hosts resource packs to allow **vanilla** clients to connect and play with your custom content.
+
+[![Build status](https://github.com/btarg/Origami/actions/workflows/gradle.yml/badge.svg)](https://github.com/btarg/Origami/actions)
 
 # Getting Started
 
