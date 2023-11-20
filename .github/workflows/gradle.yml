@@ -11,9 +11,7 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -28,12 +26,16 @@ jobs:
         run: chmod +x ./gradlew && ./gradlew assemble
 
       - name: Find Artifact
-        run: |
-          # Use find command to locate files matching the specified regex
-          find build -type f -name 'Origami*.jar' ! -name '*-dev*' -exec echo "Uploading {}" \; -exec mv {} /tmp/artifact \;
+        run: find build -name "*-dev*.jar" -delete
       - name: Upload Artifact
-        # Upload the files matching the regex as an artifact
         uses: actions/upload-artifact@v3
         with:
-          name: Origami-Artifact
-          path: /tmp/artifact/Origami*.jar
+          name: Plugin
+          path: /build/libs/Origami-*.jar
+          if-no-files-found: error
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: /build/libs/Origami-*.jar
