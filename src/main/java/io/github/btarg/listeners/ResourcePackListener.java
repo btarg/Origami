@@ -1,4 +1,4 @@
-package io.github.btarg.events;
+package io.github.btarg.listeners;
 
 import io.github.btarg.OrigamiMain;
 import net.kyori.adventure.text.Component;

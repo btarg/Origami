@@ -1,4 +1,4 @@
-package io.github.btarg.events;
+package io.github.btarg.listeners.items;
 
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.registry.CustomItemRegistry;

@@ -1,4 +1,4 @@
-package io.github.btarg.events;
+package io.github.btarg.listeners.blocks;
 
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomBlockDefinition;

@@ -5,10 +5,11 @@ import io.github.btarg.commands.RootCommand;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
-import io.github.btarg.events.BlockDamageListener;
-import io.github.btarg.events.CustomBlockListener;
-import io.github.btarg.events.CustomItemListener;
-import io.github.btarg.events.ResourcePackListener;
+import io.github.btarg.listeners.ResourcePackListener;
+import io.github.btarg.listeners.blocks.BlockDamageListener;
+import io.github.btarg.listeners.blocks.CustomBlockListener;
+import io.github.btarg.listeners.items.CustomItemListener;
+import io.github.btarg.listeners.items.DurabilityListener;
 import io.github.btarg.rendering.BrokenBlocksService;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.serialization.DefinitionSerializer;
@@ -23,6 +24,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
@@ -32,8 +34,9 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
     public static final String PREFIX = "origami:";
     public static FileConfiguration config;
-    public static DefinitionSerializer definitionSerializer;
     public static BrokenBlocksService brokenBlocksService;
+    @Getter
+    private static DefinitionSerializer definitionSerializer;
     @Getter
     private static OrigamiMain Instance;
     @Getter
@@ -58,13 +61,17 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         initConfig();
         brokenBlocksService = new BrokenBlocksService();
 
-        this.getServer().getPluginManager().registerEvents(new ResourcePackListener(), this);
-        this.getServer().getPluginManager().registerEvents(new CustomBlockListener(), this);
-        this.getServer().getPluginManager().registerEvents(new BlockDamageListener(), this);
-        this.getServer().getPluginManager().registerEvents(new CustomItemListener(), this);
-        this.getServer().getPluginManager().registerEvents(new CooldownManager(), this);
-        this.getServer().getPluginManager().registerEvents(new KillInterceptor(), this);
-        this.getServer().getPluginManager().registerEvents(this, this);
+        PluginManager pluginManager = this.getServer().getPluginManager();
+
+        pluginManager.registerEvents(new ResourcePackListener(), this);
+        pluginManager.registerEvents(new CustomBlockListener(), this);
+        pluginManager.registerEvents(new BlockDamageListener(), this);
+        pluginManager.registerEvents(new CustomItemListener(), this);
+        pluginManager.registerEvents(new DurabilityListener(), this);
+
+        pluginManager.registerEvents(new CooldownManager(), this);
+        pluginManager.registerEvents(new KillInterceptor(), this);
+        pluginManager.registerEvents(this, this);
         Objects.requireNonNull(this.getCommand("origami")).setExecutor(new RootCommand());
 
         // Generate resource pack and serve with http

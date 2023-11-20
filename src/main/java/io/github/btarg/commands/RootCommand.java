@@ -5,7 +5,7 @@ import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
-import io.github.btarg.events.ResourcePackListener;
+import io.github.btarg.listeners.ResourcePackListener;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
@@ -22,6 +22,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -29,7 +30,7 @@ import java.util.*;
 public class RootCommand implements TabExecutor {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
         if (Objects.equals(args[0], "give")) {
             int count = 1;
@@ -56,17 +57,17 @@ public class RootCommand implements TabExecutor {
             if (StringUtils.equalsAny(args[1], "blocks", "all")) {
                 sender.sendMessage("Reloading custom blocks...");
                 CustomBlockRegistry.ClearBlockRegistry();
-                OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomBlockDefinition.class);
+                OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomBlockDefinition.class);
             }
             if (StringUtils.equalsAny(args[1], "items", "all")) {
                 sender.sendMessage("Reloading custom items...");
                 CustomItemRegistry.ClearItemRegistry();
-                OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomItemDefinition.class);
+                OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomItemDefinition.class);
             }
             if (StringUtils.equalsAny(args[1], "recipes", "all")) {
                 sender.sendMessage("Reloading custom recipes...");
                 CustomRecipeRegistry.ClearRecipeRegistry();
-                OrigamiMain.definitionSerializer.loadAndRegister(sender, CustomRecipeDefinition.class);
+                OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomRecipeDefinition.class);
             }
             if (StringUtils.equalsAny(args[1], "resources", "all")) {
                 sender.sendMessage("Reloading resource pack...");
@@ -105,7 +106,7 @@ public class RootCommand implements TabExecutor {
 
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         List<String> tabComplete = new ArrayList<>();
         if (args.length == 1) return Arrays.asList("give", "reload", "listblocks");
 

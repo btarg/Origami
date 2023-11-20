@@ -13,10 +13,10 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class CustomItemDefinition extends CustomDefinition implements ConfigurationSerializable {
-    public Map<Enchantment, Integer> enchantments = new HashMap<>();
+    public Map<Enchantment, Integer> enchantments;
     public List<ItemFlag> flags = new ArrayList<>();
     public List<PotionEffectType> potionEffects = new ArrayList<>();
-    public double damage = 0.0;
+    public Integer durability;
 
     public CustomItemDefinition(Map<String, Object> map) {
         super(map);
@@ -30,11 +30,11 @@ public class CustomItemDefinition extends CustomDefinition implements Configurat
         this.leftClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("leftClickCooldown"), 0);
         this.rightClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("rightClickCooldown"), 0);
 
+        this.durability = Objects.requireNonNullElse((Integer) map.get("durability"), (int) this.baseMaterial.getMaxDurability());
 
         this.enchantments = EnchantmentParser.parseEnchantments(Objects.requireNonNullElse((List<String>) map.get("enchantments"), new ArrayList<>()));
         this.flags = deserializeFlags(map);
         this.potionEffects = deserializePotionEffects(map);
-        this.damage = Objects.requireNonNullElse((Double) map.get("damage"), 0.0);
     }
 
     private List<ItemFlag> deserializeFlags(Map<String, Object> map) {
@@ -74,11 +74,9 @@ public class CustomItemDefinition extends CustomDefinition implements Configurat
             enchantmentStrings.add(entry.getKey().getKey().value() + ";" + entry.getValue().toString());
         }
         map.put("enchantments", enchantmentStrings);
-
         map.put("potionEffects", this.potionEffects.stream().map(PotionEffectType::getName).toList());
         map.put("flags", this.flags.stream().map(ItemFlag::name).toList());
-
-        map.put("damage", this.damage);
+        map.put("durability", this.durability);
         map.putAll(super.serialize());
         return map;
     }
