@@ -38,7 +38,6 @@ public class CustomBlockPersistentData {
 
     public static String getUUIDFromLocation(Location location) {
         ChunkBlockInformation information = getBlockInformation(location.getChunk());
-        if (information == null) return null;
         return information.getBlockUUID(location);
     }
 
@@ -48,7 +47,6 @@ public class CustomBlockPersistentData {
 
     public static Map<BlockPos, String> getBlocksInStorage(Chunk chunk) {
         ChunkBlockInformation information = getBlockInformation(chunk);
-        if (information == null) return null;
         return information.getBlocksMap();
     }
 }

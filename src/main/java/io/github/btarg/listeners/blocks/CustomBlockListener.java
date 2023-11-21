@@ -48,40 +48,47 @@ public class CustomBlockListener implements Listener {
         if (blockName == null) return;
         CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
         if (definition == null) return;
+
         event.setCancelled(true);
 
-        Block block = event.getBlock();
-        World world = block.getWorld();
+        World world = event.getBlock().getWorld();
         Location placedLocation = event.getEntity().getLocation();
+        Location blockLocation = new Location(world, placedLocation.getBlockX(), placedLocation.getBlockY(), placedLocation.getBlockZ());
+
+        // Check if placed inside another solid (not empty) block, unless it is replaceable (e.g. tall grass)
+        Block currentBlockHere = blockLocation.getBlock();
+        if (!currentBlockHere.isEmpty() && !Tag.REPLACEABLE.isTagged(currentBlockHere.getType()))
+            return;
 
         // check for entities (other than item displays) that are too close
         java.util.Collection<Entity> entities = world.getNearbyEntities(placedLocation, 0.5, 0.5, 0.5);
         entities.removeIf(ent -> ent instanceof Display);
+        if (!entities.isEmpty()) return;
 
-        if (!entities.isEmpty()) {
-            return;
-        }
-        // Get block position, with slight offset as scaling the model on the Y axis scales downward
-        Location blockLocation = new Location(world, placedLocation.getBlockX(), placedLocation.getBlockY(), placedLocation.getBlockZ());
         Entity entity = world.spawn(CustomBlockUtils.getDisplayLocationFromBlock(blockLocation), ItemDisplay.class, ent -> {
-            ent.setItemStack(blockItem);
             ent.setPersistent(true);
             ent.setInvulnerable(true);
+            // Set the display item
+            ent.setItemStack(blockItem);
+            // Translate with slight offset as scaling the model on the Y axis scales downward
             Transformation transformation = CustomBlockUtils.getDisplayTransformation(ent);
             ent.setTransformation(transformation);
-
+            // Set block and skylight
+            if (definition.brightness > 0) {
+                ent.setBrightness(new Display.Brightness(definition.brightness, currentBlockHere.getLightFromSky()));
+            }
         });
 
-        // set the item frame uuid to the same as the base block
+        // set the item display uuid to the same as the base block
         String block_uuid = entity.getUniqueId().toString();
 
         // if we failed to add a block because there is one already there, then we should cancel the item frame place event
-        boolean added = CustomBlockPersistentData.storeBlockInformation(placedLocation, block_uuid);
+        boolean added = CustomBlockPersistentData.storeBlockInformation(blockLocation, block_uuid);
         if (!added) {
             entity.remove();
             return;
         }
-        world.setBlockData(placedLocation, definition.baseMaterial.createBlockData());
+        world.setBlockData(blockLocation, definition.baseMaterial.createBlockData());
 
         // make sure item is removed when placed
         int amount = Math.max(blockItem.getAmount() - 1, 0);
@@ -99,7 +106,7 @@ public class CustomBlockListener implements Listener {
 
         if (definition.placeSound != null) {
             try {
-                world.playSound(block.getLocation(), Sound.valueOf(definition.placeSound), 1, 1);
+                world.playSound(blockLocation, Sound.valueOf(definition.placeSound), 1, 1);
             } catch (IllegalArgumentException e) {
                 Bukkit.getLogger().warning("Block being placed does not have valid place sound: " + definition.id);
             }

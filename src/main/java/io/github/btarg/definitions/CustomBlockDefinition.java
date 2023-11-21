@@ -19,6 +19,7 @@ import java.util.*;
 public class CustomBlockDefinition extends CustomDefinition implements ConfigurationSerializable {
 
     private final Random random = new Random();
+    public Integer brightness;
     public List<String> drops;
     public String dropLootTable;
     public Boolean isAffectedByFortune;
@@ -38,6 +39,7 @@ public class CustomBlockDefinition extends CustomDefinition implements Configura
             Bukkit.getLogger().severe("Custom Blocks require a base block to be set! Defaulting to glass...");
             this.baseMaterial = Material.GLASS;
         }
+        this.brightness = Objects.requireNonNullElse((Integer) map.get("brightness"), this.baseMaterial.createBlockData().getLightEmission());
         this.dropLootTable = (String) map.get("dropLootTable");
         this.drops = Objects.requireNonNullElse((List<String>) map.get("drops"), new ArrayList<>());
         this.isAffectedByFortune = Objects.requireNonNullElse((Boolean) map.get("isAffectedByFortune"), false);
@@ -97,6 +99,7 @@ public class CustomBlockDefinition extends CustomDefinition implements Configura
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
+        map.put("brightness", this.brightness);
         map.put("drops", this.drops);
         map.put("dropLootTable", this.dropLootTable);
         map.put("isAffectedByFortune", this.isAffectedByFortune);

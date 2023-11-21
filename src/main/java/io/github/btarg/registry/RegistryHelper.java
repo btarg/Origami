@@ -16,15 +16,13 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.Map;
 
 public class RegistryHelper {
-    
+
     public static ItemStack createCustomItemStack(CustomDefinition definition, int count) {
         if (definition == null) {
             return null;
         }
 
-        Material baseMaterial = (definition instanceof CustomItemDefinition)
-                ? definition.baseMaterial
-                : Material.ITEM_FRAME;
+        Material baseMaterial = (definition instanceof CustomItemDefinition) ? definition.baseMaterial : Material.ITEM_FRAME;
 
         ItemStack itemStack = new ItemStack(baseMaterial, count);
         ItemMeta meta = itemStack.getItemMeta();
@@ -44,6 +42,9 @@ public class RegistryHelper {
                     }
                 }
                 meta.addItemFlags(customItem.flags.toArray(new ItemFlag[0]));
+
+                //TODO: add attributes here
+
             }
 
             meta.getPersistentDataContainer().set(
