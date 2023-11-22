@@ -1,10 +1,10 @@
 package io.github.btarg.serialization;
 
-import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.*;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
+import io.github.btarg.util.ContentPackHelper;
 import io.github.btarg.util.NamespacedKeyHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 
 public class DefinitionSerializer {
 
-    public static String getConfigDirectory(Class<?> clazz) {
+    public static String getConfigDirectory(String parentDirectory, Class<?> clazz) {
         String dirName = null;
         if (clazz.equals(CustomBlockDefinition.class)) {
             dirName = "blocks";
@@ -37,15 +37,15 @@ public class DefinitionSerializer {
             dirName = "items";
         }
         if (dirName != null) {
-            return OrigamiMain.getInstance().getDataFolder() + File.separator + dirName + File.separator;
+            return Paths.get(ContentPackHelper.getContentPacksFolder().toString(), parentDirectory, dirName).toString();
         } else {
             return null;
         }
 
     }
 
-    public void loadAndRegister(CommandSender sender, Class<?> definitionClass) {
-        String pathString = getConfigDirectory(definitionClass);
+    public void loadAndRegister(CommandSender sender, String parentDirectory, Class<?> definitionClass) {
+        String pathString = getConfigDirectory(parentDirectory, definitionClass);
         if (pathString == null) return;
 
         Path definitionDirectory;
@@ -75,7 +75,7 @@ public class DefinitionSerializer {
 
                         Object loadedDefinition = null;
                         try {
-                            loadedDefinition = getAnyDefinitionFromFile(cleanName, definitionClass);
+                            loadedDefinition = getAnyDefinitionFromFile(cleanName, parentDirectory, definitionClass);
                         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                                  IllegalAccessException e) {
                             Bukkit.getLogger().severe("Could not load definition from file! See the stack trace for more information.");
@@ -110,7 +110,7 @@ public class DefinitionSerializer {
 
                 ConfigurationSerializable saveDef = DefaultDefinitions.getDefaultDefinition(definitionClass);
                 // save to file
-                saveDefinitionToFile(saveDef);
+                saveDefinitionToFile(saveDef, "example");
 
                 if (saveDef instanceof CustomBlockDefinition blockDefinition) {
                     CustomBlockRegistry.RegisterBlock(blockDefinition);
@@ -128,13 +128,21 @@ public class DefinitionSerializer {
         }
     }
 
-    public void loadAndRegister(Class<?> definitionClass) {
+    public void loadAndRegister(Class<?> definitionClass) throws IOException {
         loadAndRegister(null, definitionClass);
     }
 
-    public void saveDefinitionToFile(ConfigurationSerializable def) {
+    public void loadAndRegister(CommandSender sender, Class<?> definitionClass) throws IOException {
+        File[] contentPacksList = ContentPackHelper.getAllContentPacks();
+
+        for (File parentDirectory : contentPacksList) {
+            loadAndRegister(sender, parentDirectory.getName(), definitionClass);
+        }
+    }
+
+    public void saveDefinitionToFile(ConfigurationSerializable def, String parentDirectory) {
         if (def == null) return;
-        String saveDir = getConfigDirectory(def.getClass());
+        String saveDir = getConfigDirectory(parentDirectory, def.getClass());
         if (def instanceof CustomRecipeDefinition definition) {
             if (definition.namespacedKey != null) {
                 String fileName = definition.namespacedKey.value();
@@ -191,15 +199,12 @@ public class DefinitionSerializer {
         return file;
     }
 
-    public ConfigurationSerializable getAnyDefinitionFromFile(String fileName, Class<?> definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        File file = getFile(getConfigDirectory(definitionClass), fileName);
+    public ConfigurationSerializable getAnyDefinitionFromFile(String fileName, String parentDirectory, Class<?> definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        File file = getFile(getConfigDirectory(parentDirectory, definitionClass), fileName);
         FileConfiguration conf = YamlConfiguration.loadConfiguration(file);
         var constructor = definitionClass.getConstructor(Map.class);
         var values = conf.getValues(true);
-        if (values == null) return null;
-        if (constructor == null) return null;
         Object obj = constructor.newInstance(values);
-        if (obj == null) return null;
 
         if (obj instanceof CustomDefinition definition) {
             definition.id = FilenameUtils.removeExtension(fileName);

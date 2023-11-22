@@ -18,7 +18,6 @@ import io.github.btarg.util.items.CooldownManager;
 import io.github.btarg.util.loot.LootTableHelper;
 import io.github.btarg.util.loot.versions.LootTableHelper_1_20_R2;
 import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -27,6 +26,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,10 +42,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     @Getter
     private static LootTableHelper lootTableHelper;
 
-    @Getter
-    @Setter
-    private static boolean isHostingPack;
-
     @Override
     public void onEnable() {
 
@@ -58,7 +54,11 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
             return;
         }
 
-        initConfig();
+        try {
+            initConfig();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         brokenBlocksService = new BrokenBlocksService();
 
         PluginManager pluginManager = this.getServer().getPluginManager();
@@ -75,7 +75,11 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         Objects.requireNonNull(this.getCommand("origami")).setExecutor(new RootCommand());
 
         // Generate resource pack and serve with http
-        ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
+        try {
+            ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -89,7 +93,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         return true;
     }
 
-    private void initConfig() {
+    private void initConfig() throws IOException {
         ConfigurationSerialization.registerClass(CustomBlockDefinition.class);
         ConfigurationSerialization.registerClass(CustomRecipeDefinition.class);
 

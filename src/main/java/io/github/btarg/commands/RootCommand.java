@@ -24,6 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.*;
 
 @SuppressWarnings("deprecation")
@@ -54,26 +55,34 @@ public class RootCommand implements TabExecutor {
             }
         } else if (Objects.equals(args[0], "reload")) {
 
-            if (StringUtils.equalsAny(args[1], "blocks", "all")) {
-                sender.sendMessage("Reloading custom blocks...");
-                CustomBlockRegistry.ClearBlockRegistry();
-                OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomBlockDefinition.class);
-            }
-            if (StringUtils.equalsAny(args[1], "items", "all")) {
-                sender.sendMessage("Reloading custom items...");
-                CustomItemRegistry.ClearItemRegistry();
-                OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomItemDefinition.class);
-            }
-            if (StringUtils.equalsAny(args[1], "recipes", "all")) {
-                sender.sendMessage("Reloading custom recipes...");
-                CustomRecipeRegistry.ClearRecipeRegistry();
-                OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomRecipeDefinition.class);
-            }
-            if (StringUtils.equalsAny(args[1], "resources", "all")) {
-                sender.sendMessage("Reloading resource pack...");
-                // Generate resource pack and serve with http
-                ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
-                Bukkit.getServer().getOnlinePlayers().forEach(ResourcePackListener::sendResourcePack);
+            try {
+                if (StringUtils.equalsAny(args[1], "blocks", "all")) {
+                    sender.sendMessage("Reloading custom blocks...");
+                    CustomBlockRegistry.ClearBlockRegistry();
+                    OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomBlockDefinition.class);
+                }
+                if (StringUtils.equalsAny(args[1], "items", "all")) {
+                    sender.sendMessage("Reloading custom items...");
+                    CustomItemRegistry.ClearItemRegistry();
+                    OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomItemDefinition.class);
+                }
+                if (StringUtils.equalsAny(args[1], "recipes", "all")) {
+                    sender.sendMessage("Reloading custom recipes...");
+                    CustomRecipeRegistry.ClearRecipeRegistry();
+                    OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomRecipeDefinition.class);
+                }
+                if (StringUtils.equalsAny(args[1], "resources", "all")) {
+                    sender.sendMessage("Reloading resource pack...");
+                    // Generate resource pack and serve with http
+                    try {
+                        ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Bukkit.getServer().getOnlinePlayers().forEach(ResourcePackListener::sendResourcePack);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         } else if (Objects.equals(args[0], "listblocks")) {
 
