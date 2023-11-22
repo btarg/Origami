@@ -91,11 +91,7 @@ public class DefinitionSerializer {
 
                     });
             if (fileCount.get() == 0) {
-
-                ConfigurationSerializable saveDef = DefaultDefinitions.getDefaultDefinition(definitionClass);
-                // save to file
-                saveDefinitionToFile(saveDef, "example");
-                registerDefinition(saveDef, sender);
+                registerExamples(definitionClass, sender);
 
             } else if (sender != null) {
                 sender.sendMessage("Registered " + fileCount.get() + " definitions(s)!");
@@ -104,6 +100,12 @@ public class DefinitionSerializer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void registerExamples(Class<?> definitionClass, CommandSender sender) {
+        ConfigurationSerializable saveDef = DefaultDefinitions.getDefaultDefinition(definitionClass);
+        saveDefinitionToFile(saveDef, "example");
+        registerDefinition(saveDef, sender);
     }
 
     public void registerDefinition(Object loadedDefinition, CommandSender sender) {
@@ -131,10 +133,14 @@ public class DefinitionSerializer {
 
     public void loadAndRegister(CommandSender sender, Class<?> definitionClass) throws IOException {
         File[] contentPacksList = ContentPackHelper.getAllContentPacks();
-
-        for (File parentDirectory : contentPacksList) {
-            loadAndRegister(sender, parentDirectory.getName(), definitionClass);
+        if (contentPacksList.length > 0) {
+            for (File parentDirectory : contentPacksList) {
+                loadAndRegister(sender, parentDirectory.getName(), definitionClass);
+            }
+        } else {
+            registerExamples(definitionClass, sender);
         }
+
     }
 
     public void saveDefinitionToFile(ConfigurationSerializable def, String parentDirectory) {

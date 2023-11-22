@@ -24,10 +24,9 @@ public class CustomDefinition implements ConfigurationSerializable {
 
     public CustomDefinition(Map<String, Object> map) {
 
-        String baseMaterialString = map.get("baseBlock") != null ? (String) map.get("baseBlock") : (String) map.get("baseItem");
-        if (baseMaterialString != null) {
-            this.baseMaterial = Material.matchMaterial(baseMaterialString.trim().toUpperCase());
-        }
+        String baseMaterialString = (String) map.getOrDefault("baseMaterial", map.getOrDefault("baseBlock", map.get("baseItem")));
+        this.baseMaterial = (baseMaterialString != null) ? Material.matchMaterial(baseMaterialString.trim().toUpperCase()) : null;
+
         this.model = (String) map.get("model"); // allow null models for default base material instead
         this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Item");
         this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
@@ -53,7 +52,7 @@ public class CustomDefinition implements ConfigurationSerializable {
 
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put("baseMaterial", this.baseMaterial);
+        map.put("baseMaterial", this.baseMaterial.toString());
         map.put("displayName", this.displayName);
         map.put("lore", this.lore);
         map.put("rightClickCommands", this.rightClickCommands);

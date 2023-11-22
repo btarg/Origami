@@ -83,7 +83,8 @@ public class ResourcePackGenerator {
                 resourcePack.model(itemFrameBuilder.build());
 
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                Bukkit.getLogger().warning("Something went wrong while generating the resource pack:");
+                Bukkit.getLogger().warning(e.getMessage());
             }
 
         }
@@ -101,7 +102,7 @@ public class ResourcePackGenerator {
 
     private static void packTextures(ResourcePack resourcePack, Path texturesFolderPath) {
         try {
-            FileUtils.createParentDirectories(texturesFolderPath.toFile());
+            if (!Files.exists(texturesFolderPath)) return;
             AtomicInteger fileCount = new AtomicInteger();
 
             try (Stream<Path> paths = Files.walk(texturesFolderPath, FileVisitOption.FOLLOW_LINKS)) {
