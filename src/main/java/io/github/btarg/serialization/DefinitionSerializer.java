@@ -73,7 +73,7 @@ public class DefinitionSerializer {
                     .forEach(f -> {
                         String cleanName = FilenameUtils.removeExtension(f.getFileName().toString());
 
-                        Object loadedDefinition = null;
+                        Object loadedDefinition;
                         try {
                             loadedDefinition = getAnyDefinitionFromFile(cleanName, parentDirectory, definitionClass);
                         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
@@ -85,23 +85,7 @@ public class DefinitionSerializer {
                         }
 
                         if (loadedDefinition != null) {
-
-                            if (loadedDefinition instanceof CustomBlockDefinition blockDefinition) {
-                                CustomBlockRegistry.RegisterBlock(blockDefinition);
-                                if (sender != null) {
-                                    sender.sendMessage("Registered block: " + blockDefinition.id);
-                                }
-                            } else if (loadedDefinition instanceof CustomRecipeDefinition recipeDefinition) {
-                                CustomRecipeRegistry.RegisterRecipe(recipeDefinition);
-                                if (sender != null) {
-                                    sender.sendMessage("Registered recipe: " + recipeDefinition.namespacedKey.value());
-                                }
-                            } else if (loadedDefinition instanceof CustomItemDefinition itemDefinition) {
-                                CustomItemRegistry.RegisterItem(itemDefinition);
-                                if (sender != null) {
-                                    sender.sendMessage("Registered item: " + itemDefinition.id);
-                                }
-                            }
+                            registerDefinition(loadedDefinition, sender);
                             fileCount.getAndIncrement();
                         }
 
@@ -111,20 +95,33 @@ public class DefinitionSerializer {
                 ConfigurationSerializable saveDef = DefaultDefinitions.getDefaultDefinition(definitionClass);
                 // save to file
                 saveDefinitionToFile(saveDef, "example");
+                registerDefinition(saveDef, sender);
 
-                if (saveDef instanceof CustomBlockDefinition blockDefinition) {
-                    CustomBlockRegistry.RegisterBlock(blockDefinition);
-                } else if (saveDef instanceof CustomRecipeDefinition recipeDefinition) {
-                    CustomRecipeRegistry.RegisterRecipe(recipeDefinition);
-                } else if (saveDef instanceof CustomItemDefinition itemDefinition) {
-                    CustomItemRegistry.RegisterItem(itemDefinition);
-                }
             } else if (sender != null) {
                 sender.sendMessage("Registered " + fileCount.get() + " definitions(s)!");
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void registerDefinition(Object loadedDefinition, CommandSender sender) {
+        if (loadedDefinition instanceof CustomBlockDefinition blockDefinition) {
+            CustomBlockRegistry.RegisterBlock(blockDefinition);
+            if (sender != null) {
+                sender.sendMessage("Registered block: " + blockDefinition.id);
+            }
+        } else if (loadedDefinition instanceof CustomRecipeDefinition recipeDefinition) {
+            CustomRecipeRegistry.RegisterRecipe(recipeDefinition);
+            if (sender != null) {
+                sender.sendMessage("Registered recipe: " + recipeDefinition.namespacedKey.value());
+            }
+        } else if (loadedDefinition instanceof CustomItemDefinition itemDefinition) {
+            CustomItemRegistry.RegisterItem(itemDefinition);
+            if (sender != null) {
+                sender.sendMessage("Registered item: " + itemDefinition.id);
+            }
         }
     }
 
@@ -181,12 +178,7 @@ public class DefinitionSerializer {
     }
 
     private File getFile(String directory, String fileName) {
-        String fullFileName = fileName;
-
-        if (!fileName.endsWith(".yml")) {
-            fullFileName = fileName + ".yml";
-        }
-
+        String fullFileName = !fileName.endsWith(".yml") ? fileName + ".yml" : fileName;
         File file = new File(directory, fullFileName);
         try {
             if (!file.exists()) {
