@@ -58,12 +58,12 @@ public class RootCommand implements TabExecutor {
             try {
                 if (StringUtils.equalsAny(args[1], "blocks", "all")) {
                     sender.sendMessage("Reloading custom blocks...");
-                    CustomBlockRegistry.ClearBlockRegistry();
+                    CustomBlockRegistry.clearBlockRegistry();
                     OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomBlockDefinition.class);
                 }
                 if (StringUtils.equalsAny(args[1], "items", "all")) {
                     sender.sendMessage("Reloading custom items...");
-                    CustomItemRegistry.ClearItemRegistry();
+                    CustomItemRegistry.clearItemRegistry();
                     OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomItemDefinition.class);
                 }
                 if (StringUtils.equalsAny(args[1], "recipes", "all")) {
@@ -75,7 +75,7 @@ public class RootCommand implements TabExecutor {
                     sender.sendMessage("Reloading resource pack...");
                     // Generate resource pack and serve with http
                     try {
-                        JavalinServer.initAndServe(ResourcePackGenerator.generateResourcePack());
+                        JavalinServer.initAndServePack(ResourcePackGenerator.generateResourcePack());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -130,8 +130,8 @@ public class RootCommand implements TabExecutor {
                 }
 
             } else if (args.length == 3 && !args[1].isEmpty()) {
-                tabComplete = CustomBlockRegistry.GetBlockIDs();
-                tabComplete.addAll(CustomItemRegistry.GetItemIds());
+                tabComplete = CustomBlockRegistry.getBlockIds();
+                tabComplete.addAll(CustomItemRegistry.getItemIds());
             } else if (args.length == 4 && !args[2].isEmpty()) {
                 tabComplete = Collections.singletonList("64");
             }

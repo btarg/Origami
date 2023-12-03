@@ -18,6 +18,8 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
     @Getter
     private final Map<String, String> ingredientMap;
     public NamespacedKey namespacedKey;
+    public String contentPack;
+    public String group;
     public List<String> shape;
     public String result;
     public List<String> ingredients;
@@ -37,6 +39,7 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
         this.shape = (List<String>) map.get("shape");
         this.ingredients = Objects.requireNonNullElse((List<String>) map.get("ingredients"), Collections.singletonList("A;AIR"));
         this.type = Objects.requireNonNullElse((String) map.get("type"), "CRAFTING").toUpperCase();
+        this.group = Objects.requireNonNullElse((String) map.get("group"), "");
         this.recipeType = Objects.requireNonNullElse(CustomRecipeType.valueOf(type), CustomRecipeType.CRAFTING);
         // only needed for furnace-like recipes
         this.experience = Objects.requireNonNullElse((Integer) map.get("experience"), 0);

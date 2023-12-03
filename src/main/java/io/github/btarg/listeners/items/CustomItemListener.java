@@ -50,7 +50,7 @@ public class CustomItemListener implements Listener {
             return;
         }
 
-        CustomItemDefinition definition = CustomItemRegistry.GetRegisteredItem(customItemString);
+        CustomItemDefinition definition = CustomItemRegistry.getRegisteredItem(customItemString);
         if (definition == null) return;
 
         if (rightClick) {

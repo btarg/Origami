@@ -103,14 +103,16 @@ public class DefinitionSerializer {
     }
 
     public void registerExamples(Class<?> definitionClass, CommandSender sender) {
-        ConfigurationSerializable saveDef = DefaultDefinitions.getDefaultDefinition(definitionClass);
-        saveDefinitionToFile(saveDef, "example");
-        registerDefinition(saveDef, sender);
+        if (ContentPackHelper.getAllContentPacks().length == 0) {
+            ConfigurationSerializable saveDef = DefaultDefinitions.getDefaultDefinition(definitionClass);
+            saveDefinitionToFile(saveDef, "example");
+            registerDefinition(saveDef, sender);
+        }
     }
 
     public void registerDefinition(Object loadedDefinition, CommandSender sender) {
         if (loadedDefinition instanceof CustomBlockDefinition blockDefinition) {
-            CustomBlockRegistry.RegisterBlock(blockDefinition);
+            CustomBlockRegistry.registerBlock(blockDefinition);
             if (sender != null) {
                 sender.sendMessage("Registered block: " + blockDefinition.id);
             }
@@ -120,7 +122,7 @@ public class DefinitionSerializer {
                 sender.sendMessage("Registered recipe: " + recipeDefinition.namespacedKey.value());
             }
         } else if (loadedDefinition instanceof CustomItemDefinition itemDefinition) {
-            CustomItemRegistry.RegisterItem(itemDefinition);
+            CustomItemRegistry.registerItem(itemDefinition);
             if (sender != null) {
                 sender.sendMessage("Registered item: " + itemDefinition.id);
             }
@@ -206,10 +208,12 @@ public class DefinitionSerializer {
 
         if (obj instanceof CustomDefinition definition) {
             definition.id = FilenameUtils.removeExtension(fileName);
+            definition.contentPack = FilenameUtils.getBaseName(parentDirectory);
             return definition;
         } else if (obj instanceof CustomRecipeDefinition definition) {
             String name = FilenameUtils.removeExtension(fileName);
             definition.namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(name);
+            definition.contentPack = FilenameUtils.getBaseName(parentDirectory);
             return definition;
 
         }

@@ -19,7 +19,7 @@ public class DurabilityListener implements Listener {
         if (meta.isUnbreakable()) return;
         String customItemString = meta.getPersistentDataContainer().get(NamespacedKeyHelper.customItemTag, PersistentDataType.STRING);
         if (customItemString == null || customItemString.isEmpty()) return;
-        CustomItemDefinition definition = CustomItemRegistry.GetRegisteredItem(customItemString);
+        CustomItemDefinition definition = CustomItemRegistry.getRegisteredItem(customItemString);
         if (definition == null) return;
 
         short maxDurability = itemStack.getType().getMaxDurability();

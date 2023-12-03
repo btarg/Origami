@@ -77,7 +77,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         // Generate resource pack and serve with http
         try {
-            JavalinServer.initAndServe(ResourcePackGenerator.generateResourcePack());
+            JavalinServer.initAndServePack(ResourcePackGenerator.generateResourcePack());
         } catch (IOException e) {
             e.printStackTrace();
         }

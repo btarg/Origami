@@ -2,44 +2,50 @@ package io.github.btarg.registry;
 
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CustomBlockRegistry {
 
-    @Getter
-    private static Map<String, CustomBlockDefinition> blockDefinitions = new HashMap<>();
+    private static final Map<String, CustomBlockDefinition> blockDefinitions = new HashMap<>();
 
-    public static List<String> GetBlockIDs() {
+    public static Map<String, CustomBlockDefinition> getBlockDefinitions(String contentPack) {
+        Map<String, CustomBlockDefinition> filteredBlockDefinitions = new HashMap<>();
+
+        blockDefinitions.forEach((key, customBlockDefinition) -> {
+            if (customBlockDefinition.contentPack.equals(contentPack)) {
+                filteredBlockDefinitions.put(key, customBlockDefinition);
+            }
+        });
+
+        return filteredBlockDefinitions;
+    }
+
+    public static List<String> getBlockIds() {
         return new ArrayList<>(blockDefinitions.keySet());
     }
 
-    public static void RegisterBlock(CustomBlockDefinition blockDefinition) {
-        blockDefinitions.put(OrigamiMain.PREFIX + blockDefinition.id, blockDefinition);
-        Bukkit.getLogger().info("Registered block: " + blockDefinition.id);
+    public static void registerBlock(CustomBlockDefinition itemDefinition) {
+        String itemId = OrigamiMain.PREFIX + itemDefinition.id;
+        blockDefinitions.put(itemId, itemDefinition);
+        Bukkit.getLogger().info("Registered block: " + itemDefinition.id);
     }
 
-    public static CustomBlockDefinition GetRegisteredBlock(String blockId) {
-        if (blockId == null) return null;
+    public static CustomBlockDefinition getRegisteredBlock(String itemId) {
+        if (itemId == null) return null;
 
-        if (!blockId.startsWith(OrigamiMain.PREFIX)) {
-            blockId = OrigamiMain.PREFIX + blockId;
+        if (!itemId.startsWith(OrigamiMain.PREFIX)) {
+            itemId = OrigamiMain.PREFIX + itemId;
         }
 
-        CustomBlockDefinition foundBlock = null;
-        for (String registered : blockDefinitions.keySet()) {
-            if (Objects.equals(registered, blockId)) {
-                foundBlock = blockDefinitions.get(registered);
-            }
-        }
-
-        return foundBlock;
+        return blockDefinitions.get(itemId);
     }
 
-    public static void ClearBlockRegistry() {
+    public static void clearBlockRegistry() {
         blockDefinitions.clear();
     }
-
 }

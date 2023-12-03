@@ -11,6 +11,7 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class CustomDefinition implements ConfigurationSerializable {
 
+    public String contentPack;
     public String id;
     public String displayName;
     public List<String> lore;

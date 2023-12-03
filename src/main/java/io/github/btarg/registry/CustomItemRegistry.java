@@ -2,44 +2,50 @@ package io.github.btarg.registry;
 
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomItemDefinition;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CustomItemRegistry {
 
-    @Getter
-    private static Map<String, CustomItemDefinition> itemDefinitions = new HashMap<>();
+    private static final Map<String, CustomItemDefinition> itemDefinitions = new HashMap<>();
 
-    public static List<String> GetItemIds() {
+    public static Map<String, CustomItemDefinition> getItemDefinitions(String contentPack) {
+        Map<String, CustomItemDefinition> filteredItemDefinitions = new HashMap<>();
+
+        itemDefinitions.forEach((key, customItemDefinition) -> {
+            if (customItemDefinition.contentPack.equals(contentPack)) {
+                filteredItemDefinitions.put(key, customItemDefinition);
+            }
+        });
+
+        return filteredItemDefinitions;
+    }
+
+    public static List<String> getItemIds() {
         return new ArrayList<>(itemDefinitions.keySet());
     }
 
-    public static void RegisterItem(CustomItemDefinition itemDefinition) {
-        itemDefinitions.put(OrigamiMain.PREFIX + itemDefinition.id, itemDefinition);
+    public static void registerItem(CustomItemDefinition itemDefinition) {
+        String itemId = OrigamiMain.PREFIX + itemDefinition.id;
+        itemDefinitions.put(itemId, itemDefinition);
         Bukkit.getLogger().info("Registered item: " + itemDefinition.id);
     }
 
-    public static CustomItemDefinition GetRegisteredItem(String itemId) {
+    public static CustomItemDefinition getRegisteredItem(String itemId) {
         if (itemId == null) return null;
 
         if (!itemId.startsWith(OrigamiMain.PREFIX)) {
             itemId = OrigamiMain.PREFIX + itemId;
         }
 
-        CustomItemDefinition foundItem = null;
-        for (String registered : itemDefinitions.keySet()) {
-            if (Objects.equals(registered, itemId)) {
-                foundItem = itemDefinitions.get(registered);
-            }
-        }
-
-        return foundItem;
+        return itemDefinitions.get(itemId);
     }
 
-    public static void ClearItemRegistry() {
+    public static void clearItemRegistry() {
         itemDefinitions.clear();
     }
-
 }

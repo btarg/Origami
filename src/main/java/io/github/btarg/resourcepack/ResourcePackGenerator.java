@@ -20,11 +20,14 @@ import team.unnamed.creative.texture.Texture;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -35,11 +38,11 @@ public class ResourcePackGenerator {
     private static final Map<String, Integer> blockModelOverrideMap = new HashMap<>();
     private static final Map<String, Integer> itemModelOverrideMap = new HashMap<>();
 
-    public static int getOverrideByBlockDefinition(CustomBlockDefinition definition) {
+    public static int getBlockOverride(CustomBlockDefinition definition) {
         return Objects.requireNonNullElse(blockModelOverrideMap.get(definition.model), 1);
     }
 
-    public static int getOverrideByItemDefinition(CustomItemDefinition definition) {
+    public static int getItemOverride(CustomItemDefinition definition) {
         return Objects.requireNonNullElse(itemModelOverrideMap.get(definition.model), 1);
     }
 
@@ -55,7 +58,7 @@ public class ResourcePackGenerator {
         }
         Component descriptionComponent = ComponentHelper.deserializeGenericComponent(description);
         resourcePack.packMeta(15, descriptionComponent);
-        
+
         for (File dir : contentPacksList) {
             // dir is the current content pack folder
             Bukkit.getLogger().info("Found content pack: " + dir.getName());
@@ -118,45 +121,59 @@ public class ResourcePackGenerator {
     }
 
     private static void generateBlockModels(Path parentFolder, ResourcePack pack) throws IOException {
-        var definitions = CustomBlockRegistry.getBlockDefinitions();
+        var definitions = CustomBlockRegistry.getBlockDefinitions(parentFolder.getFileName().toString());
         Model.Builder itemFrameBuilder = Model.model().key(Key.key("minecraft:item/item_frame")).parent(Model.ITEM_GENERATED).textures(ModelTextures.builder().layers(ModelTexture.ofKey(Key.key("minecraft:item/item_frame"))).build());
-        List<ItemOverride> itemOverrides = new ArrayList<>();
 
-        for (int i = 1; i <= definitions.size(); i++) {
-            var entry = definitions.entrySet().iterator().next();
+        int i = 1;
+        for (Map.Entry<String, CustomBlockDefinition> entry : definitions.entrySet()) {
             CustomBlockDefinition definition = entry.getValue();
 
             if (definition.model != null) {
                 Key key = Key.key(entry.getKey());
-                Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, false)), key);
-                itemOverrides.add(ItemOverride.of(key, ItemPredicate.customModelData(i)));
-                blockModelOverrideMap.put((definition.model), i);
-                pack.model(model);
+                Model model;
+                try {
+                    model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, false)), key);
+                    pack.model(model);
+                    blockModelOverrideMap.put(definition.model, i);
+                    // Use a different approach to add overrides to itemFrameBuilder
+                    itemFrameBuilder.addOverride(ItemOverride.of(key, ItemPredicate.customModelData(i)));
+                    i++;
+                } catch (FileNotFoundException fileNotFoundException) {
+                    fileNotFoundException.printStackTrace();
+                }
             }
         }
-
-        itemOverrides.forEach(itemFrameBuilder::addOverride);
+        // The itemFrameBuilder should include all the overrides added in the loop
         pack.model(itemFrameBuilder.build());
     }
 
+
     private static void generateItemModels(Path parentFolder, ResourcePack pack) throws IOException {
-        var definitions = CustomItemRegistry.getItemDefinitions();
+        var definitions = CustomItemRegistry.getItemDefinitions(parentFolder.getFileName().toString());
         Map<Material, Model.Builder> modelBuilders = new HashMap<>();
 
-        for (int i = 1; i <= definitions.size(); i++) {
-            var entry = definitions.entrySet().iterator().next();
+        int i = 1;
+        for (Map.Entry<String, CustomItemDefinition> entry : definitions.entrySet()) {
             CustomItemDefinition definition = entry.getValue();
 
             if (definition.model != null) {
                 Key key = Key.key(entry.getKey());
-                Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, true)), key);
-                itemModelOverrideMap.put((definition.model), i);
-                pack.model(model);
+                try {
+                    Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, true)), key);
+                    pack.model(model);
 
-                Key itemKey = Key.key("minecraft:item/" + definition.baseMaterial.name().toLowerCase());
+                    itemModelOverrideMap.put(definition.model, i);
 
-                Model.Builder itemBuilder = modelBuilders.computeIfAbsent(definition.baseMaterial, k -> Model.model().key(itemKey).parent(Model.ITEM_GENERATED).textures(ModelTextures.builder().layers(ModelTexture.ofKey(itemKey)).build()));
-                itemBuilder.addOverride(ItemOverride.of(key, ItemPredicate.customModelData(i)));
+                    Key itemKey = Key.key("minecraft:item/" + definition.baseMaterial.name().toLowerCase());
+                    modelBuilders.computeIfAbsent(definition.baseMaterial, k ->
+                                    Model.model().key(itemKey).parent(Model.ITEM_GENERATED)
+                                            .textures(ModelTextures.builder().layers(ModelTexture.ofKey(itemKey)).build()))
+                            .addOverride(ItemOverride.of(key, ItemPredicate.customModelData(i)));
+
+                    i++;
+                } catch (FileNotFoundException fileNotFoundException) {
+                    fileNotFoundException.printStackTrace();
+                }
             }
         }
 

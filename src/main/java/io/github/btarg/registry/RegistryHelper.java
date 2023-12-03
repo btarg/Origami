@@ -34,7 +34,7 @@ public class RegistryHelper {
             meta.lore(definition.getLore());
 
             if (definition instanceof CustomItemDefinition customItem) {
-                meta.setCustomModelData(ResourcePackGenerator.getOverrideByItemDefinition(customItem));
+                meta.setCustomModelData(ResourcePackGenerator.getItemOverride(customItem));
 
                 for (Map.Entry<Enchantment, Integer> entry : customItem.enchantments.entrySet()) {
                     Enchantment key = entry.getKey();
@@ -47,7 +47,7 @@ public class RegistryHelper {
                 //TODO: add attributes here
 
             } else if (definition instanceof CustomBlockDefinition customBlock) {
-                meta.setCustomModelData(ResourcePackGenerator.getOverrideByBlockDefinition(customBlock));
+                meta.setCustomModelData(ResourcePackGenerator.getBlockOverride(customBlock));
             }
 
             meta.getPersistentDataContainer().set(
@@ -66,9 +66,9 @@ public class RegistryHelper {
 
     public static ItemStack getAnyItemStack(String itemId, int count) {
         itemId = itemId.substring(OrigamiMain.PREFIX.length());
-        ItemStack stack = createCustomItemStack(CustomBlockRegistry.GetRegisteredBlock(itemId), count);
+        ItemStack stack = createCustomItemStack(CustomBlockRegistry.getRegisteredBlock(itemId), count);
         if (stack == null) {
-            stack = createCustomItemStack(CustomItemRegistry.GetRegisteredItem(itemId), count);
+            stack = createCustomItemStack(CustomItemRegistry.getRegisteredItem(itemId), count);
         }
         return stack;
     }

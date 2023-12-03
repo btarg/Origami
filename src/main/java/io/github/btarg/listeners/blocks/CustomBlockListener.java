@@ -46,7 +46,7 @@ public class CustomBlockListener implements Listener {
         if (meta == null) return;
         String blockName = meta.getPersistentDataContainer().get(NamespacedKeyHelper.customBlockItemTag, PersistentDataType.STRING);
         if (blockName == null) return;
-        CustomBlockDefinition definition = CustomBlockRegistry.GetRegisteredBlock(blockName);
+        CustomBlockDefinition definition = CustomBlockRegistry.getRegisteredBlock(blockName);
         if (definition == null) return;
 
         event.setCancelled(true);

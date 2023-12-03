@@ -31,7 +31,7 @@ public class CustomBlockUtils {
             if (!blockId.startsWith(OrigamiMain.PREFIX)) {
                 blockId = OrigamiMain.PREFIX + blockId;
             }
-            return CustomBlockRegistry.GetRegisteredBlock(blockId);
+            return CustomBlockRegistry.getRegisteredBlock(blockId);
         }
 
         return null;

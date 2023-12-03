@@ -1,7 +1,9 @@
 package io.github.btarg.web;
 
 import io.github.btarg.OrigamiMain;
+import io.github.btarg.util.ContentPackHelper;
 import io.javalin.Javalin;
+import io.javalin.http.HandlerType;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +15,11 @@ import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class JavalinServer {
     private static final File generatedZipFile = new File(OrigamiMain.getInstance().getDataFolder(), "generated/pack.zip");
@@ -23,16 +29,40 @@ public class JavalinServer {
     private static boolean isRunning = false;
     private static Integer port;
 
-    public static void initAndServe(ResourcePack resourcePack) {
+    private static List<JavalinHandler> httpHandlers() {
+        List<JavalinHandler> handlerList = new ArrayList<>();
+        handlerList.add(new JavalinHandler(
+                "/api/helloworld",
+                HandlerType.GET,
+                ctx -> ctx.result("hello world!")
+        ));
+        String filenamesAsString = Arrays.stream(ContentPackHelper.getAllContentPacks())
+                .map(File::getName)
+                .collect(Collectors.joining("\n"));
+        handlerList.add(new JavalinHandler(
+                "/api/contentpacks",
+                HandlerType.GET,
+                ctx -> ctx.result(filenamesAsString)
+        ));
+        return handlerList;
+    }
+
+    public static void initAndServePack(ResourcePack resourcePack) {
         port = Objects.requireNonNullElse((Integer) OrigamiMain.config.get("http-port"), 8008);
 
         Bukkit.getScheduler().runTaskAsynchronously(OrigamiMain.getInstance(), () -> {
+            // Only create new instance if not running
             if (!isRunning) {
                 javalin = Javalin.create(config -> {
                     config.showJavalinBanner = false;
                 }).start(port);
                 isRunning = true;
             }
+
+            // add HTTP handlers
+            httpHandlers().forEach(handler -> {
+                javalin.addHandler(handler.getType(), handler.getPath(), handler.getHandler());
+            });
 
             BuiltResourcePack builtResourcePack = MinecraftResourcePackWriter.minecraft().build(resourcePack);
             resourcePackHash = builtResourcePack.hash();

@@ -131,6 +131,7 @@ public class CustomRecipeRegistry {
             recipeDefinition.getResultItemStacks().forEach(itemStack -> {
                 NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
                 Recipe recipe = new StonecuttingRecipe(namespacedKey, itemStack, choice);
+
                 output.add(recipe);
             });
 
@@ -159,7 +160,9 @@ public class CustomRecipeRegistry {
                 case CAMPFIRE_COOKING ->
                         recipe = new CampfireRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
             }
-
+            if (recipe != null && !recipeDefinition.group.isBlank()) {
+                recipe.setGroup(recipeDefinition.group);
+            }
             output.add(recipe);
         }
         return output;
@@ -184,8 +187,17 @@ public class CustomRecipeRegistry {
             }
         }
 
-        if (isShaped) return shapedRecipe;
-        else return shapelessRecipe;
+        if (isShaped) {
+            if (!recipeDefinition.group.isBlank()) {
+                shapedRecipe.setGroup(recipeDefinition.group);
+            }
+            return shapedRecipe;
+        } else {
+            if (!recipeDefinition.group.isBlank()) {
+                shapedRecipe.setGroup(recipeDefinition.group);
+            }
+            return shapelessRecipe;
+        }
     }
 
     private static void addRecipe(Recipe recipe) {
