@@ -38,8 +38,8 @@ public class CustomBlockRegistry {
     public static CustomBlockDefinition getRegisteredBlock(String itemId) {
         if (itemId == null) return null;
 
-        if (!itemId.startsWith(OrigamiMain.PREFIX)) {
-            itemId = OrigamiMain.PREFIX + itemId;
+        if (!itemId.startsWith(OrigamiMain.PREFIX + "block/")) {
+            itemId = OrigamiMain.PREFIX + "block/" + itemId;
         }
 
         return blockDefinitions.get(itemId);

@@ -38,8 +38,8 @@ public class CustomItemRegistry {
     public static CustomItemDefinition getRegisteredItem(String itemId) {
         if (itemId == null) return null;
 
-        if (!itemId.startsWith(OrigamiMain.PREFIX)) {
-            itemId = OrigamiMain.PREFIX + itemId;
+        if (!itemId.startsWith(OrigamiMain.PREFIX + "item/")) {
+            itemId = OrigamiMain.PREFIX + "item/" + itemId;
         }
 
         return itemDefinitions.get(itemId);
