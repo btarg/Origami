@@ -25,9 +25,7 @@ import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -37,6 +35,8 @@ public class ResourcePackGenerator {
 
     private static final Map<String, Integer> blockModelOverrideMap = new HashMap<>();
     private static final Map<String, Integer> itemModelOverrideMap = new HashMap<>();
+
+    private static final List<ItemOverride> itemFrameOverrides = new ArrayList<>();
 
     public static int getBlockOverride(CustomBlockDefinition definition) {
         return Objects.requireNonNullElse(blockModelOverrideMap.get(definition.model), 1);
@@ -65,12 +65,16 @@ public class ResourcePackGenerator {
             Path currentPackFolder = dir.toPath();
             packTextures(resourcePack, new File(dir, "textures").toPath());
 
-            // Generate item overrides for vanilla item frame
+            // Collect item overrides for vanilla item frame
             generateBlockModels(currentPackFolder, resourcePack);
+
             // Generate item overrides for each base material
             generateItemModels(currentPackFolder, resourcePack);
-
         }
+        // Add item frame overrides
+        Model.Builder itemFrameBuilder = Model.model().key(Key.key("minecraft:item/item_frame")).parent(Model.ITEM_GENERATED).textures(ModelTextures.builder().layers(ModelTexture.ofKey(Key.key("minecraft:item/item_frame"))).build());
+        itemFrameOverrides.forEach(itemFrameBuilder::addOverride);
+        resourcePack.model(itemFrameBuilder.build());
 
         return resourcePack;
     }
@@ -109,12 +113,12 @@ public class ResourcePackGenerator {
         }
     }
 
-    private static File getFile(Path parentFolder, String folderName, String identifier, boolean isItem) throws IOException {
-        File mainFolder = new File(parentFolder.toFile(), folderName);
-        FileUtils.createParentDirectories(mainFolder);
+    private static File getFile(Path parentFolder, String identifier, boolean isItem) throws IOException {
+        File modelsFolder = new File(parentFolder.toFile(), "models");
+        FileUtils.createParentDirectories(modelsFolder);
 
         String subfolder = isItem ? "item" : "block";
-        File thisFolder = new File(mainFolder, subfolder);
+        File thisFolder = new File(modelsFolder, subfolder);
         FileUtils.createParentDirectories(thisFolder);
 
         return new File(thisFolder, identifier + ".json");
@@ -122,7 +126,6 @@ public class ResourcePackGenerator {
 
     private static void generateBlockModels(Path parentFolder, ResourcePack pack) throws IOException {
         var definitions = CustomBlockRegistry.getBlockDefinitions(parentFolder.getFileName().toString());
-        Model.Builder itemFrameBuilder = Model.model().key(Key.key("minecraft:item/item_frame")).parent(Model.ITEM_GENERATED).textures(ModelTextures.builder().layers(ModelTexture.ofKey(Key.key("minecraft:item/item_frame"))).build());
 
         int i = 1;
         for (Map.Entry<String, CustomBlockDefinition> entry : definitions.entrySet()) {
@@ -132,21 +135,17 @@ public class ResourcePackGenerator {
                 Key key = Key.key(entry.getKey());
                 Model model;
                 try {
-                    model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, false)), key);
+                    model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, definition.model, false)), key);
                     pack.model(model);
-                    blockModelOverrideMap.put(definition.model, i);
-                    // Use a different approach to add overrides to itemFrameBuilder
-                    itemFrameBuilder.addOverride(ItemOverride.of(key, ItemPredicate.customModelData(i)));
+                    blockModelOverrideMap.put((definition.model), i);
+                    itemFrameOverrides.add(ItemOverride.of(key, ItemPredicate.customModelData(i)));
                     i++;
                 } catch (FileNotFoundException fileNotFoundException) {
                     fileNotFoundException.printStackTrace();
                 }
             }
         }
-        // The itemFrameBuilder should include all the overrides added in the loop
-        pack.model(itemFrameBuilder.build());
     }
-
 
     private static void generateItemModels(Path parentFolder, ResourcePack pack) throws IOException {
         var definitions = CustomItemRegistry.getItemDefinitions(parentFolder.getFileName().toString());
@@ -159,7 +158,7 @@ public class ResourcePackGenerator {
             if (definition.model != null) {
                 Key key = Key.key(entry.getKey());
                 try {
-                    Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, true)), key);
+                    Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, definition.model, true)), key);
                     pack.model(model);
 
                     itemModelOverrideMap.put(definition.model, i);
