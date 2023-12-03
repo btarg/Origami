@@ -1,6 +1,5 @@
 package io.github.btarg.util.blocks;
 
-import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
@@ -28,9 +27,6 @@ public class CustomBlockUtils {
         String blockId = item.getItemMeta().getPersistentDataContainer().get(NamespacedKeyHelper.customBlockItemTag, PersistentDataType.STRING);
 
         if (blockId != null) {
-            if (!blockId.startsWith(OrigamiMain.PREFIX)) {
-                blockId = OrigamiMain.PREFIX + blockId;
-            }
             return CustomBlockRegistry.getRegisteredBlock(blockId);
         }
 
