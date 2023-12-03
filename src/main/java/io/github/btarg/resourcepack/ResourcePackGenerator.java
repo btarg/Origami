@@ -1,7 +1,8 @@
 package io.github.btarg.resourcepack;
 
 import io.github.btarg.OrigamiMain;
-import io.github.btarg.definitions.CustomDefinition;
+import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.util.ComponentHelper;
@@ -10,6 +11,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import team.unnamed.creative.ResourcePack;
 import team.unnamed.creative.base.Writable;
 import team.unnamed.creative.model.*;
@@ -31,10 +33,15 @@ import java.util.stream.Stream;
 @SuppressWarnings({"PatternValidation", "UnstableApiUsage"})
 public class ResourcePackGenerator {
 
-    private static final Map<String, Integer> modelOverrideMap = new HashMap<>();
+    private static final Map<String, Integer> blockModelOverrideMap = new HashMap<>();
+    private static final Map<String, Integer> itemModelOverrideMap = new HashMap<>();
 
-    public static int getOverrideByModelName(String modelName) {
-        return Objects.requireNonNullElse(modelOverrideMap.get(modelName), 1);
+    public static int getOverrideByBlockDefinition(CustomBlockDefinition definition) {
+        return Objects.requireNonNullElse(blockModelOverrideMap.get(definition.model), 1);
+    }
+
+    public static int getOverrideByItemDefinition(CustomItemDefinition definition) {
+        return Objects.requireNonNullElse(itemModelOverrideMap.get(definition.model), 1);
     }
 
     public static ResourcePack generateResourcePack() throws IOException {
@@ -51,44 +58,24 @@ public class ResourcePackGenerator {
         Component descriptionComponent = ComponentHelper.deserializeGenericComponent(description);
         resourcePack.packMeta(15, descriptionComponent);
 
-        // Overwrite vanilla item frame model
-        Model.Builder itemFrameBuilder = Model.model()
-                .key(Key.key("minecraft:item/item_frame"))
-                .parent(Model.ITEM_GENERATED)
-                .textures(ModelTextures.builder().layers(ModelTexture.ofKey(Key.key("minecraft:item/item_frame"))).build());
 
-        List<ItemOverride> itemFrameOverrides = new ArrayList<>();
-
-        for (File dir : contentPacksList) {
-            // dir is the current content pack folder
-            Bukkit.getLogger().info("Found content pack: " + dir.getName());
-            Path currentPackFolder = dir.toPath();
-
-            try {
+        try {
+            for (File dir : contentPacksList) {
+                // dir is the current content pack folder
+                Bukkit.getLogger().info("Found content pack: " + dir.getName());
+                Path currentPackFolder = dir.toPath();
                 packTextures(resourcePack, new File(dir, "textures").toPath());
 
-                // generate models and collect as overrides for item frame
-                itemFrameOverrides.addAll(generateModels(currentPackFolder, resourcePack, CustomBlockRegistry.getBlockDefinitions(), false));
+                // Generate item overrides for vanilla item frame
+                generateBlockModels(currentPackFolder, resourcePack);
+                // Generate item overrides for each base material
+                generateItemModels(currentPackFolder, resourcePack);
 
-                if (itemFrameOverrides.isEmpty()) {
-                    //TODO: add example block model
-                }
-                itemFrameOverrides.addAll(generateModels(currentPackFolder, resourcePack, CustomItemRegistry.getItemDefinitions(), true));
-                if (itemFrameOverrides.isEmpty()) {
-                    //TODO: add example item model
-                }
-
-                // add the overrides to the item frame and build it
-                itemFrameOverrides.forEach(itemFrameBuilder::addOverride);
-                resourcePack.model(itemFrameBuilder.build());
-
-            } catch (IOException e) {
-                Bukkit.getLogger().warning("Something went wrong while generating the resource pack:");
-                Bukkit.getLogger().warning(e.getMessage());
             }
-
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         }
-
+        
         // save resource pack for debugging
         if (OrigamiMain.config.getBoolean("resource-pack.save-generated-pack")) {
             // create "generated" folder
@@ -134,27 +121,6 @@ public class ResourcePackGenerator {
         }
     }
 
-    private static List<ItemOverride> generateModels(Path parentFolder, ResourcePack pack, Map<String, ? extends CustomDefinition> definitions, boolean isItem) throws IOException {
-        List<ItemOverride> itemOverrides = new ArrayList<>();
-        // Read JSON models from the models folder
-        var iterator = definitions.entrySet().iterator();
-        for (int i = 1; iterator.hasNext(); i++) {
-            Map.Entry<String, ? extends CustomDefinition> entry = iterator.next();
-            if (entry.getValue().model != null) {
-                Key key = Key.key(entry.getKey());
-                // deserialize json
-                Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", entry.getValue().model, isItem)), key);
-                // add to the list of overrides for the vanilla item frame
-                itemOverrides.add(ItemOverride.of(key, ItemPredicate.customModelData(i)));
-                // add to a map so we can get it later
-                modelOverrideMap.put(entry.getValue().model, i);
-                pack.model(model);
-            }
-        }
-        return itemOverrides;
-
-    }
-
     private static File getFile(Path parentFolder, String folderName, String identifier, boolean isItem) throws IOException {
         File mainFolder = new File(parentFolder.toFile(), folderName);
         FileUtils.createParentDirectories(mainFolder);
@@ -166,5 +132,50 @@ public class ResourcePackGenerator {
         return new File(thisFolder, identifier + ".json");
     }
 
+    private static void generateBlockModels(Path parentFolder, ResourcePack pack) throws IOException {
+        var definitions = CustomBlockRegistry.getBlockDefinitions();
+        Model.Builder itemFrameBuilder = Model.model().key(Key.key("minecraft:item/item_frame")).parent(Model.ITEM_GENERATED).textures(ModelTextures.builder().layers(ModelTexture.ofKey(Key.key("minecraft:item/item_frame"))).build());
+        List<ItemOverride> itemOverrides = new ArrayList<>();
+
+        for (int i = 1; i <= definitions.size(); i++) {
+            var entry = definitions.entrySet().iterator().next();
+            CustomBlockDefinition definition = entry.getValue();
+
+            if (definition.model != null) {
+                Key key = Key.key(entry.getKey());
+                Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, false)), key);
+                itemOverrides.add(ItemOverride.of(key, ItemPredicate.customModelData(i)));
+                blockModelOverrideMap.put((definition.model), i);
+                pack.model(model);
+            }
+        }
+
+        itemOverrides.forEach(itemFrameBuilder::addOverride);
+        pack.model(itemFrameBuilder.build());
+    }
+
+    private static void generateItemModels(Path parentFolder, ResourcePack pack) throws IOException {
+        var definitions = CustomItemRegistry.getItemDefinitions();
+        Map<Material, Model.Builder> modelBuilders = new HashMap<>();
+
+        for (int i = 1; i <= definitions.size(); i++) {
+            var entry = definitions.entrySet().iterator().next();
+            CustomItemDefinition definition = entry.getValue();
+
+            if (definition.model != null) {
+                Key key = Key.key(entry.getKey());
+                Model model = ModelSerializer.INSTANCE.deserialize(new FileInputStream(getFile(parentFolder, "models", definition.model, true)), key);
+                itemModelOverrideMap.put((definition.model), i);
+                pack.model(model);
+
+                Key itemKey = Key.key("minecraft:item/" + definition.baseMaterial.name().toLowerCase());
+
+                Model.Builder itemBuilder = modelBuilders.computeIfAbsent(definition.baseMaterial, k -> Model.model().key(itemKey).parent(Model.ITEM_GENERATED).textures(ModelTextures.builder().layers(ModelTexture.ofKey(itemKey)).build()));
+                itemBuilder.addOverride(ItemOverride.of(key, ItemPredicate.customModelData(i)));
+            }
+        }
+
+        modelBuilders.values().forEach(builder -> pack.model(builder.build()));
+    }
 
 }

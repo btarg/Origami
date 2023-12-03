@@ -1,6 +1,7 @@
 package io.github.btarg.registry;
 
 import io.github.btarg.OrigamiMain;
+import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
@@ -31,9 +32,10 @@ public class RegistryHelper {
             Component name = definition.getDisplayName();
             meta.displayName(name);
             meta.lore(definition.getLore());
-            meta.setCustomModelData(ResourcePackGenerator.getOverrideByModelName(definition.model));
 
             if (definition instanceof CustomItemDefinition customItem) {
+                meta.setCustomModelData(ResourcePackGenerator.getOverrideByItemDefinition(customItem));
+
                 for (Map.Entry<Enchantment, Integer> entry : customItem.enchantments.entrySet()) {
                     Enchantment key = entry.getKey();
                     Integer value = entry.getValue();
@@ -42,9 +44,10 @@ public class RegistryHelper {
                     }
                 }
                 meta.addItemFlags(customItem.flags.toArray(new ItemFlag[0]));
-
                 //TODO: add attributes here
 
+            } else if (definition instanceof CustomBlockDefinition customBlock) {
+                meta.setCustomModelData(ResourcePackGenerator.getOverrideByBlockDefinition(customBlock));
             }
 
             meta.getPersistentDataContainer().set(
