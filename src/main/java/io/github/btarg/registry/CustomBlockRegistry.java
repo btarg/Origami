@@ -30,7 +30,7 @@ public class CustomBlockRegistry {
     }
 
     public static void registerBlock(CustomBlockDefinition itemDefinition) {
-        String itemId = OrigamiMain.PREFIX + itemDefinition.id;
+        String itemId = OrigamiMain.PREFIX + "block/" + itemDefinition.id;
         blockDefinitions.put(itemId, itemDefinition);
         Bukkit.getLogger().info("Registered block: " + itemDefinition.id);
     }

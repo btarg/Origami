@@ -30,7 +30,7 @@ public class CustomItemRegistry {
     }
 
     public static void registerItem(CustomItemDefinition itemDefinition) {
-        String itemId = OrigamiMain.PREFIX + itemDefinition.id;
+        String itemId = OrigamiMain.PREFIX + "item/" + itemDefinition.id;
         itemDefinitions.put(itemId, itemDefinition);
         Bukkit.getLogger().info("Registered item: " + itemDefinition.id);
     }
