@@ -17,6 +17,7 @@ import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.items.CooldownManager;
 import io.github.btarg.util.loot.LootTableHelper;
 import io.github.btarg.util.loot.versions.LootTableHelper_1_20_R2;
+import io.github.btarg.web.JavalinServer;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -76,9 +77,9 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         // Generate resource pack and serve with http
         try {
-            ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
+            JavalinServer.initAndServe(ResourcePackGenerator.generateResourcePack());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
 
     }

@@ -15,7 +15,6 @@ import org.bukkit.Material;
 import team.unnamed.creative.ResourcePack;
 import team.unnamed.creative.base.Writable;
 import team.unnamed.creative.model.*;
-import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter;
 import team.unnamed.creative.serialize.minecraft.model.ModelSerializer;
 import team.unnamed.creative.texture.Texture;
 
@@ -46,7 +45,6 @@ public class ResourcePackGenerator {
 
     public static ResourcePack generateResourcePack() throws IOException {
 
-        File generatedFolder = new File(OrigamiMain.getInstance().getDataFolder(), "generated");
         File[] contentPacksList = ContentPackHelper.getAllContentPacks();
 
         ResourcePack resourcePack = ResourcePack.resourcePack();
@@ -57,31 +55,18 @@ public class ResourcePackGenerator {
         }
         Component descriptionComponent = ComponentHelper.deserializeGenericComponent(description);
         resourcePack.packMeta(15, descriptionComponent);
-
-
-        try {
-            for (File dir : contentPacksList) {
-                // dir is the current content pack folder
-                Bukkit.getLogger().info("Found content pack: " + dir.getName());
-                Path currentPackFolder = dir.toPath();
-                packTextures(resourcePack, new File(dir, "textures").toPath());
-
-                // Generate item overrides for vanilla item frame
-                generateBlockModels(currentPackFolder, resourcePack);
-                // Generate item overrides for each base material
-                generateItemModels(currentPackFolder, resourcePack);
-
-            }
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
         
-        // save resource pack for debugging
-        if (OrigamiMain.config.getBoolean("resource-pack.save-generated-pack")) {
-            // create "generated" folder
-            FileUtils.createParentDirectories(generatedFolder);
-            // save pack to folder
-            MinecraftResourcePackWriter.minecraft().writeToDirectory(generatedFolder, resourcePack);
+        for (File dir : contentPacksList) {
+            // dir is the current content pack folder
+            Bukkit.getLogger().info("Found content pack: " + dir.getName());
+            Path currentPackFolder = dir.toPath();
+            packTextures(resourcePack, new File(dir, "textures").toPath());
+
+            // Generate item overrides for vanilla item frame
+            generateBlockModels(currentPackFolder, resourcePack);
+            // Generate item overrides for each base material
+            generateItemModels(currentPackFolder, resourcePack);
+
         }
 
         return resourcePack;

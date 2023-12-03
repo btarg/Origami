@@ -5,13 +5,13 @@ import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
-import io.github.btarg.listeners.ResourcePackListener;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.util.blocks.BlockPos;
+import io.github.btarg.web.JavalinServer;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
@@ -75,11 +75,11 @@ public class RootCommand implements TabExecutor {
                     sender.sendMessage("Reloading resource pack...");
                     // Generate resource pack and serve with http
                     try {
-                        ResourcePackListener.serveResourcePack(ResourcePackGenerator.generateResourcePack());
+                        JavalinServer.initAndServe(ResourcePackGenerator.generateResourcePack());
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
                     }
-                    Bukkit.getServer().getOnlinePlayers().forEach(ResourcePackListener::sendResourcePack);
+                    Bukkit.getServer().getOnlinePlayers().forEach(JavalinServer::sendResourcePack);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

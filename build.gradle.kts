@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
+    id("java")
     id("com.github.johnrengelman.shadow") version "8.+"
     id("io.papermc.paperweight.userdev") version "1.+"
     id("xyz.jpenilla.run-paper") version "2.+" // Adds runServer and runMojangMappedServer tasks for testing
@@ -17,14 +18,12 @@ dependencies {
     paperweight.paperDevBundle("1.20.2-R0.1-SNAPSHOT")
     api("commons-io:commons-io:2.+")
     compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT")
-
     implementation("team.unnamed:creative-api:1.+")
-
     // Serializer for Minecraft format (ZIP / Folder)
     implementation("team.unnamed:creative-serializer-minecraft:1.+")
-
-    // Resource Pack server
-    implementation("team.unnamed:creative-server:1.+")
+    implementation("io.javalin:javalin:5.+")
+    implementation("org.slf4j:slf4j-api:1.+")
+    implementation("ch.qos.logback:logback-classic:1.+")
 
 }
 group = "io.github"
