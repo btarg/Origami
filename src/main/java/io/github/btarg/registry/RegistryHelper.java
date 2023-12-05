@@ -1,6 +1,5 @@
 package io.github.btarg.registry;
 
-import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.base.BaseCustomDefinition;
@@ -65,7 +64,8 @@ public class RegistryHelper {
     }
 
     public static ItemStack getAnyItemStack(String itemId, int count) {
-        itemId = itemId.substring(OrigamiMain.PREFIX.length());
+        // Remove the prefix e.g. "origami:block/" by splitting at slash
+        itemId = itemId.split("/")[1];
         ItemStack stack = createCustomItemStack(CustomBlockRegistry.getRegisteredBlock(itemId), count);
         if (stack == null) {
             stack = createCustomItemStack(CustomItemRegistry.getRegisteredItem(itemId), count);
