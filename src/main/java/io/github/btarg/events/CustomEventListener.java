@@ -26,35 +26,35 @@ public class CustomEventListener implements Listener {
         switch (e.getAction()) {
             case RIGHT_CLICK_AIR:
                 if (!noItem) {
-                    itemDefinition.executeEvent("onRightClick", player);
-                    itemDefinition.executeEvent("onRightClickAir", player);
+                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
+                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK_AIR.toString(), player);
                 }
                 break;
 
             case RIGHT_CLICK_BLOCK:
                 if (!noBlock)
-                    blockDefinition.executeEvent("onRightClick", player);
+                    blockDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
 
                 if (!noItem) {
-                    itemDefinition.executeEvent("onRightClickBlock", player);
-                    itemDefinition.executeEvent("onRightClick", player);
+                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK_BLOCK.toString(), player);
+                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
                 }
                 break;
 
             case LEFT_CLICK_AIR:
                 if (!noItem) {
-                    itemDefinition.executeEvent("onLeftClick", player);
-                    itemDefinition.executeEvent("onLeftClickAir", player);
+                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
+                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK_AIR.toString(), player);
                 }
 
                 break;
 
             case LEFT_CLICK_BLOCK:
                 if (!noBlock)
-                    blockDefinition.executeEvent("onLeftClick", player);
+                    blockDefinition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
                 if (!noItem) {
-                    itemDefinition.executeEvent("onLeftClickBlock", player);
-                    itemDefinition.executeEvent("onLeftClick", player);
+                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK_BLOCK.toString(), player);
+                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
                 }
                 break;
 

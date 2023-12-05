@@ -4,6 +4,7 @@ package io.github.btarg.listeners.blocks;
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockPersistentData;
 import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.events.EventNames;
 import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.util.NamespacedKeyHelper;
 import io.github.btarg.util.blocks.CustomBlockUtils;
@@ -114,7 +115,7 @@ public class CustomBlockListener implements Listener {
             }
 
         }
-        definition.executeEvent("onPlaced", player);
+        definition.executeEvent(EventNames.ON_PLACED.toString(), player);
     }
 
     @EventHandler
@@ -158,7 +159,7 @@ public class CustomBlockListener implements Listener {
         }
 
         // Remove item frame and remove block from database
-        definition.executeEvent("onBroken", e.getPlayer());
+        definition.executeEvent(EventNames.ON_BROKEN.toString(), e.getPlayer());
         CustomBlockFunctions.onCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
         linkedItemDisplay.remove();
 
@@ -211,7 +212,7 @@ public class CustomBlockListener implements Listener {
                 return;
             }
 
-            definition.executeEvent("onPushed", null);
+            definition.executeEvent(EventNames.ON_PUSHED.toString(), null);
 
             // get relative direction from original block of the moved block
             Location newLoc = block.getLocation().add(e.getDirection().getDirection()).toBlockLocation();

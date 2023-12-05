@@ -1,6 +1,7 @@
 package io.github.btarg.listeners.items;
 
 import io.github.btarg.definitions.CustomItemDefinition;
+import io.github.btarg.events.EventNames;
 import io.github.btarg.registry.RegistryHelper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,7 +22,7 @@ public class DurabilityListener implements Listener {
         int damage = (int) Math.ceil((double) maxDurability / definition.durability);
         event.setDamage(damage);
 
-        definition.executeEvent("onDamaged", event.getPlayer());
+        definition.executeEvent(EventNames.ON_DAMAGED.toString(), event.getPlayer());
     }
 
     @EventHandler
@@ -29,6 +30,6 @@ public class DurabilityListener implements Listener {
         ItemStack itemStack = event.getBrokenItem();
         CustomItemDefinition definition = RegistryHelper.getDefinitionFromItemstack(itemStack);
         if (definition == null) return;
-        definition.executeEvent("onBroken", event.getPlayer());
+        definition.executeEvent(EventNames.ON_BROKEN.toString(), event.getPlayer());
     }
 }
