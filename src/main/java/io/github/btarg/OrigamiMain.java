@@ -117,7 +117,6 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         ConfigurationSection resourcePackSection = config.createSection("resource-pack");
         resourcePackSection.addDefault("http-port", 8008);
         resourcePackSection.addDefault("pack-description", "Powered by <color:#f51d5e>Origami</color>");
-        resourcePackSection.addDefault("save-generated-pack", false);
         config.options().copyDefaults(true);
         saveConfig();
     }
