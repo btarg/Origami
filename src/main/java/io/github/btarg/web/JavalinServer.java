@@ -61,7 +61,11 @@ public class JavalinServer {
 
             // add HTTP handlers
             httpHandlers().forEach(handler -> {
-                javalin.addHandler(handler.getType(), handler.getPath(), handler.getHandler());
+                try {
+                    javalin.addHandler(handler.getType(), handler.getPath(), handler.getHandler());
+                } catch (IllegalArgumentException ignored) {
+                    // Probably throwing an error because of reload
+                }
             });
 
             BuiltResourcePack builtResourcePack = MinecraftResourcePackWriter.minecraft().build(resourcePack);
