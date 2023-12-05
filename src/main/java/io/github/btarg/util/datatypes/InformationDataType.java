@@ -1,5 +1,6 @@
-package io.github.btarg.blockdata;
+package io.github.btarg.util.datatypes;
 
+import io.github.btarg.blockdata.ChunkBlockInformation;
 import org.apache.commons.lang.SerializationUtils;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;

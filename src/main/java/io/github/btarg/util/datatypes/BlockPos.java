@@ -1,8 +1,7 @@
-package io.github.btarg.util.blocks;
+package io.github.btarg.util.datatypes;
 
 import lombok.Getter;
 import org.bukkit.Location;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
@@ -22,13 +21,9 @@ public class BlockPos implements Serializable {
     }
 
     public BlockPos(@NotNull Location location) {
-        this.x = location.blockX();
-        this.y = location.blockY();
-        this.z = location.blockZ();
-    }
-
-    public boolean CompareToVector(Vector vector) {
-        return (this.x == vector.getX() && this.y == vector.getY() && this.z == vector.getZ());
+        this.x = location.getBlockX();
+        this.y = location.getBlockY();
+        this.z = location.getBlockZ();
     }
 
     public boolean Compare(BlockPos bpos) {

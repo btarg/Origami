@@ -1,4 +1,4 @@
-package io.github.btarg.definitions;
+package io.github.btarg.util.datatypes;
 
 public enum CustomRecipeType {
     CRAFTING("CRAFTING"),
