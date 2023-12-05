@@ -18,12 +18,14 @@ dependencies {
     paperweight.paperDevBundle("1.20.2-R0.1-SNAPSHOT")
     api("commons-io:commons-io:2.+")
     compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT")
+    // Resource pack API
     implementation("team.unnamed:creative-api:1.+")
     // Serializer for Minecraft format (ZIP / Folder)
     implementation("team.unnamed:creative-serializer-minecraft:1.+")
+    // Javalin backend with JSON to object mapping support
     implementation("io.javalin:javalin:5.+")
-    implementation("org.slf4j:slf4j-api:1.+")
-    implementation("ch.qos.logback:logback-classic:1.+")
+    implementation("org.slf4j:slf4j-simple:2.+")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.+")
 
 }
 group = "io.github"
