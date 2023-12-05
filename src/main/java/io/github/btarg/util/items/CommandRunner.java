@@ -6,12 +6,13 @@ import java.util.List;
 
 public class CommandRunner {
     public static void runCommands(List<String> commands, String playerSelector) {
-        for (String command : commands) {
+        String prefix = playerSelector != null ? "execute as " + playerSelector + " run " : "";
+
+        commands.forEach(command -> {
             if (command.startsWith("/")) {
                 command = command.substring(1);
             }
-
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "execute as " + playerSelector + " run " + command);
-        }
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), prefix + command);
+        });
     }
 }

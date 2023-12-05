@@ -16,6 +16,7 @@ public class ChunkBlockInformation implements Serializable {
     }
 
     public void addBlock(String uuid, Location location) {
+        if (this.blocksMap == null) return;
         this.blocksMap.put(new BlockPos(location), uuid);
     }
 

@@ -19,11 +19,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPistonEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -112,30 +114,7 @@ public class CustomBlockListener implements Listener {
             }
 
         }
-    }
-
-    @EventHandler
-    public void onBlockInteract(PlayerInteractEvent e) {
-
-        Block block = e.getClickedBlock();
-
-        if (block != null && e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (e.getItem() != null && e.getItem().getType() == Material.ITEM_FRAME) {
-                return;
-            }
-
-            CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(block);
-            if (definition == null) return;
-
-            if (block.getType() == Material.SPAWNER && e.getPlayer().getInventory().getItem(Objects.requireNonNull(e.getHand())).getType().name().endsWith("SPAWN_EGG")) {
-                e.setCancelled(true);
-                return;
-            }
-
-            if (!definition.rightClickCommands.isEmpty()) {
-                CustomBlockFunctions.OnCustomBlockClicked(e, definition);
-            }
-        }
+        definition.executeEvent("onPlaced", player);
     }
 
     @EventHandler
@@ -174,12 +153,12 @@ public class CustomBlockListener implements Listener {
                 if (!silkTouch)
                     e.setExpToDrop(definition.dropExperience);
 
-                CustomBlockFunctions.DropBlockItems(e.getPlayer(), definition, e.getBlock());
+                CustomBlockFunctions.dropBlockItems(e.getPlayer(), definition, e.getBlock());
             }
         }
 
         // Remove item frame and remove block from database
-        CustomBlockFunctions.OnCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
+        CustomBlockFunctions.onCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
         linkedItemDisplay.remove();
 
     }
@@ -195,7 +174,7 @@ public class CustomBlockListener implements Listener {
                 CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedItemDisplay);
                 if (definition == null) return;
 
-                CustomBlockFunctions.DropBlockItems(e.getEntity(), definition, block);
+                CustomBlockFunctions.dropBlockItems(e.getEntity(), definition, block);
 
                 CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
                 linkedItemDisplay.remove();

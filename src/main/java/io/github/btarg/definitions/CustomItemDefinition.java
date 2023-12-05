@@ -39,14 +39,6 @@ public class CustomItemDefinition extends BaseCustomDefinition {
         this.potionEffects = deserializePotionEffects(map);
     }
 
-    @Override
-    public void registerDefinition(CommandSender sender) {
-        CustomItemRegistry.registerItem(this);
-        if (sender != null) {
-            sender.sendMessage("Registered item: " + this.id);
-        }
-    }
-
     private List<ItemFlag> deserializeFlags(Map<String, Object> map) {
         List<String> itemFlagNames = (List<String>) map.get("flags");
         if (itemFlagNames == null) return new ArrayList<>();
@@ -75,6 +67,15 @@ public class CustomItemDefinition extends BaseCustomDefinition {
         return potionEffectList;
     }
 
+
+    @Override
+    public void registerDefinition(CommandSender sender) {
+        CustomItemRegistry.registerItem(this);
+        if (sender != null) {
+            sender.sendMessage("Registered item: " + this.id);
+        }
+    }
+
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
@@ -87,6 +88,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
         map.put("potionEffects", this.potionEffects.stream().map(PotionEffectType::getName).toList());
         map.put("flags", this.flags.stream().map(ItemFlag::name).toList());
         map.put("durability", this.durability);
+
         map.putAll(super.serialize());
         return map;
     }

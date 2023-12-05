@@ -134,10 +134,8 @@ public class CustomRecipeRegistry {
 
     private static Recipe registerCraftingRecipe(CustomRecipeDefinition recipeDefinition, boolean isShaped) {
         Recipe recipe = isShaped ? createShapedRecipe(recipeDefinition) : createShapelessRecipe(recipeDefinition);
-        if (recipe != null) {
-            addRecipe(recipe);
-            Bukkit.getLogger().info("Registered crafting recipe: " + recipeDefinition.namespacedKey.value());
-        }
+        addRecipe(recipe);
+        Bukkit.getLogger().info("Registered crafting recipe: " + recipeDefinition.namespacedKey.value());
         return recipe;
     }
 
