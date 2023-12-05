@@ -112,7 +112,7 @@ public class CustomBlockDefinition extends BaseCustomDefinition {
         this.baseMaterial = Material.GLASS;
         this.model = "rainbow";
         this.displayName = "&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk";
-        this.rightClickCommands = Collections.singletonList("tellraw @s {\"text\":\"The block reverberates majestically.\",\"italic\":true,\"color\":\"gray\"}");
+        this.addEvent("onRightClick", Collections.singletonList("tellraw @s {\"text\":\"The block reverberates majestically.\",\"italic\":true,\"color\":\"gray\"}"), 20);
         this.lore = Collections.singletonList("<rainbow>It shimmers beautifully in the sunlight.</rainbow>");
         this.drops = List.of("DIAMOND(1)");
         this.isAffectedByFortune = true;

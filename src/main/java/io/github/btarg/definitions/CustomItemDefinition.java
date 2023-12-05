@@ -29,11 +29,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
             this.baseMaterial = Material.COMMAND_BLOCK;
         }
 
-        this.leftClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("leftClickCooldown"), 0);
-        this.rightClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("rightClickCooldown"), 0);
-
         this.durability = Objects.requireNonNullElse((Integer) map.get("durability"), (int) this.baseMaterial.getMaxDurability());
-
         this.enchantments = EnchantmentParser.parseEnchantments(Objects.requireNonNullElse((List<String>) map.get("enchantments"), new ArrayList<>()));
         this.flags = deserializeFlags(map);
         this.potionEffects = deserializePotionEffects(map);

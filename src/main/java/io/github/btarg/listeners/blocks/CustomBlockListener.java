@@ -158,6 +158,7 @@ public class CustomBlockListener implements Listener {
         }
 
         // Remove item frame and remove block from database
+        definition.executeEvent("onBroken", e.getPlayer());
         CustomBlockFunctions.onCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
         linkedItemDisplay.remove();
 
@@ -202,13 +203,15 @@ public class CustomBlockListener implements Listener {
 
             Display linkedItemDisplay = CustomBlockUtils.getLinkedItemDisplay(block.getLocation());
             if (linkedItemDisplay == null) continue;
-
             CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedItemDisplay);
             if (definition == null) continue;
+
             if (!definition.canBePushed) {
                 e.setCancelled(true);
                 return;
             }
+
+            definition.executeEvent("onPushed", null);
 
             // get relative direction from original block of the moved block
             Location newLoc = block.getLocation().add(e.getDirection().getDirection()).toBlockLocation();

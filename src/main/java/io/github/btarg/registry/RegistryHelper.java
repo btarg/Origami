@@ -5,7 +5,6 @@ import io.github.btarg.definitions.CustomBlockDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.base.BaseCustomDefinition;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
-import io.github.btarg.util.ContentPackHelper;
 import io.github.btarg.util.NamespacedKeyHelper;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -15,11 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RegistryHelper {
 
@@ -69,17 +64,14 @@ public class RegistryHelper {
         return itemStack;
     }
 
-    public static List<BaseCustomDefinition> getBlocksAndItemsWithEvents() {
-        return Arrays.stream(ContentPackHelper.getAllContentPacks())
-                .flatMap(pack -> Stream.concat(
-                        CustomBlockRegistry.getBlockDefinitions(pack.getName()).values().stream(),
-                        CustomItemRegistry.getItemDefinitions(pack.getName()).values().stream()
-                ))
-                // only if it has events
-                .filter(BaseCustomDefinition::hasEvents)
-                .collect(Collectors.toList());
+    public static CustomItemDefinition getDefinitionFromItemstack(ItemStack itemStack) {
+        if (itemStack == null) return null;
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta.isUnbreakable()) return null;
+        String customItemString = meta.getPersistentDataContainer().get(NamespacedKeyHelper.customItemTag, PersistentDataType.STRING);
+        if (customItemString == null || customItemString.isEmpty()) return null;
+        return CustomItemRegistry.getRegisteredItem(customItemString);
     }
-
 
     public static ItemStack getAnyItemStack(String itemId, int count) {
         if (itemId.startsWith(OrigamiMain.PREFIX) && !itemId.contains("/")) {
@@ -89,6 +81,4 @@ public class RegistryHelper {
         ItemStack stack = createCustomItemStack(CustomBlockRegistry.getRegisteredBlock(itemId), count);
         return (stack != null) ? stack : createCustomItemStack(CustomItemRegistry.getRegisteredItem(itemId), count);
     }
-
-
 }

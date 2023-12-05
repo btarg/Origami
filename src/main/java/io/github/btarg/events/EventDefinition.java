@@ -35,11 +35,10 @@ public class EventDefinition {
     }
 
     public void executeCommands(Player player) {
-        if (player == null || CooldownManager.getCooldown(player, eventName + "_cooldown") > 0) {
+        if (CooldownManager.getCooldown(player, eventName + "_cooldown") > 0) {
             return;
         }
-
-        String playerSelector = player.getUniqueId().toString();
+        String playerSelector = (player != null) ? player.getUniqueId().toString() : null;
         CommandRunner.runCommands(commands, playerSelector);
 
         if (eventCooldown > 0) {

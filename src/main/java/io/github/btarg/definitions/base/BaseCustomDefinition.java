@@ -2,6 +2,7 @@ package io.github.btarg.definitions.base;
 
 import io.github.btarg.events.EventDefinition;
 import io.github.btarg.util.ComponentHelper;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -18,14 +19,11 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
     public String id;
     public String displayName;
     public List<String> lore;
-    public List<String> rightClickCommands;
-    public List<String> leftClickCommands;
     public String model;
-    public Integer rightClickCooldownTicks;
-    public Integer leftClickCooldownTicks;
     public Material baseMaterial;
 
-    public List<EventDefinition> events;
+    @Getter
+    private List<EventDefinition> events;
 
     public BaseCustomDefinition(Map<String, Object> map) {
 
@@ -34,12 +32,8 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
 
         this.model = (String) map.get("model"); // allow null models for default base material instead
         this.displayName = Objects.requireNonNullElse((String) map.get("displayName"), "Custom Item");
-        this.rightClickCommands = Objects.requireNonNullElse((List<String>) map.get("rightClickCommands"), new ArrayList<>());
-        this.leftClickCommands = Objects.requireNonNullElse((List<String>) map.get("leftClickCommands"), new ArrayList<>());
-        this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
-        this.leftClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("leftClickCooldown"), 0);
-        this.rightClickCooldownTicks = Objects.requireNonNullElse((Integer) map.get("rightClickCooldown"), 0);
 
+        this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
         // Deserialize events
         this.events = deserializeEvents(map);
     }
@@ -67,10 +61,6 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
                 .collect(Collectors.toList());
     }
 
-    public boolean hasEvents() {
-        return !events.isEmpty();
-    }
-
     public void executeEvent(String eventName, Player player) {
         Optional<EventDefinition> optionalEvent = findEventByName(eventName);
         optionalEvent.ifPresent(eventDefinition -> eventDefinition.executeCommands(player));
@@ -80,6 +70,10 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
         return events.stream()
                 .filter(event -> event.getEventName().equals(eventName))
                 .findFirst();
+    }
+
+    public void addEvent(String eventName, List<String> commands, int cooldown) {
+        events.add(new EventDefinition(eventName, commands, cooldown));
     }
 
     public @NotNull Map<String, Object> serialize() {
@@ -101,7 +95,6 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
 
     @Override
     public void registerDefinition(CommandSender sender) {
-
     }
 
     @Override
