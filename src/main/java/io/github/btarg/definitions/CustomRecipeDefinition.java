@@ -102,7 +102,7 @@ public class CustomRecipeDefinition extends AbstractBaseDefinition {
 
     @Override
     public void registerDefinition(CommandSender sender) {
-        CustomRecipeRegistry.RegisterRecipe(this);
+        CustomRecipeRegistry.registerRecipe(this);
         if (sender != null) {
             sender.sendMessage("Registered recipe: " + this.namespacedKey.value());
         }
@@ -112,7 +112,7 @@ public class CustomRecipeDefinition extends AbstractBaseDefinition {
     public CustomRecipeDefinition getDefaultDefinition() {
         Bukkit.getLogger().warning("No recipe definitions found! Creating a new example recipe definition.");
         this.namespacedKey = new NamespacedKey(OrigamiMain.getInstance(), "rainbow_block_recipe");
-        this.ingredients = List.of("d;DIAMOND", "r;origami:rainbow_block");
+        this.ingredients = List.of("d;DIAMOND", "r;origami:block/rainbow_block");
         this.shape = List.of("ddd", "drd", "ddd");
         this.result = "ACACIA_BOAT(1)";
         return this;

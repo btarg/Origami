@@ -12,32 +12,27 @@ import org.bukkit.inventory.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class CustomRecipeRegistry {
 
     private static final List<Recipe> registeredRecipes = new ArrayList<>();
 
-    public static void RegisterRecipe(CustomRecipeDefinition recipeDefinition) {
+    public static void registerRecipe(CustomRecipeDefinition recipeDefinition) {
         if (recipeDefinition.getResultItemStack() == null) return;
 
         String recipeId = recipeDefinition.namespacedKey.value();
-
         boolean isShaped = !(recipeDefinition.shape == null || recipeDefinition.shape.isEmpty());
 
         try {
-            if (!recipeDefinition.getRecipeType().equals(CustomRecipeType.CRAFTING)) {
+            CustomRecipeType recipeType = recipeDefinition.getRecipeType();
+            if (!recipeType.equals(CustomRecipeType.CRAFTING)) {
 
-                if (recipeDefinition.getRecipeType().equals(CustomRecipeType.SMITHING)) {
+                if (recipeType.equals(CustomRecipeType.SMITHING)) {
                     if (isShaped) {
                         Bukkit.getLogger().warning("Smithing recipes cannot be shaped!");
                         return;
                     }
-                    Recipe recipe = RegisterSmithingRecipe(recipeDefinition);
-                    if (recipe == null) return;
-                    addRecipe(recipe);
-                    Bukkit.getLogger().info("Registered Smithing recipe: " + recipeId);
-
+                    registerSmithingRecipe(recipeDefinition);
 
                 } else {
 
@@ -46,172 +41,159 @@ public class CustomRecipeRegistry {
                         return;
                     }
 
-                    List<Recipe> recipeList;
-                    if (Objects.equals(recipeDefinition.getRecipeType().toString(), CustomRecipeType.STONECUTTING.toString())) {
-                        recipeList = RegisterStonecuttingRecipe(recipeDefinition);
-                    } else {
-                        // is cooking recipe
-                        recipeList = RegisterCookingRecipe(recipeDefinition);
-                    }
+                    List<Recipe> recipeList = switch (recipeType) {
+                        case STONECUTTING -> registerStonecuttingRecipe(recipeDefinition);
+                        default -> registerCookingRecipe(recipeDefinition);
+                    };
 
-                    if (recipeList.isEmpty()) return;
-                    for (Recipe recipe : recipeList) {
-                        if (recipe == null) continue;
-                        addRecipe(recipe);
-                        Bukkit.getLogger().info("Registered recipe: " + recipeId);
-
+                    if (!recipeList.isEmpty()) {
+                        recipeList.forEach(r -> {
+                            addRecipe(r);
+                            Bukkit.getLogger().info("Registered recipe: " + recipeId);
+                        });
                     }
                 }
             } else {
-
-                Recipe recipe = RegisterCraftingRecipe(recipeDefinition, isShaped);
-                if (recipe == null) return;
-                addRecipe(recipe);
-                Bukkit.getLogger().info("Registered crafting recipe: " + recipeId);
-
+                Recipe recipe = registerCraftingRecipe(recipeDefinition, isShaped);
+                if (recipe != null) {
+                    addRecipe(recipe);
+                    Bukkit.getLogger().info("Registered crafting recipe: " + recipeId);
+                }
             }
 
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
         }
-
     }
 
-    private static Recipe RegisterSmithingRecipe(CustomRecipeDefinition recipeDefinition) {
-        SmithingRecipe recipe = null;
+    private static void registerSmithingRecipe(CustomRecipeDefinition recipeDefinition) {
+        SmithingRecipe recipe = createSmithingRecipe(recipeDefinition);
+        if (recipe != null) {
+            addRecipe(recipe);
+            Bukkit.getLogger().info("Registered Smithing recipe: " + recipeDefinition.namespacedKey.value());
+        }
+    }
 
-        RecipeChoice baseChoice;
-        RecipeChoice additionChoice;
-        RecipeChoice templateChoice;
-
-        // Parse ingredients from the key material map
-        // only 3 ingredients allowed for smithing
+    private static SmithingRecipe createSmithingRecipe(CustomRecipeDefinition recipeDefinition) {
         String[] ingredients = recipeDefinition.getIngredientMap().values().toArray(new String[0]);
         if (ingredients.length != 3) {
             Bukkit.getLogger().warning("Error registering recipe " + recipeDefinition.namespacedKey.value() + ": Smithing recipes must have 3 total ingredients!");
             return null;
         }
-        templateChoice = GetRecipeChoice(ingredients[0]);
-        baseChoice = GetRecipeChoice(ingredients[1]);
-        additionChoice = GetRecipeChoice(ingredients[2]);
+        RecipeChoice templateChoice = getRecipeChoice(ingredients[0]);
+        RecipeChoice baseChoice = getRecipeChoice(ingredients[1]);
+        RecipeChoice additionChoice = getRecipeChoice(ingredients[2]);
 
-        if (templateChoice == null || baseChoice == null || additionChoice == null) return null;
+        return new SmithingTransformRecipe(recipeDefinition.namespacedKey, recipeDefinition.getResultItemStack(), templateChoice, baseChoice, additionChoice);
+    }
 
-        recipe = new SmithingTransformRecipe(recipeDefinition.namespacedKey, recipeDefinition.getResultItemStack(), templateChoice, baseChoice, additionChoice);
+    private static List<Recipe> registerStonecuttingRecipe(CustomRecipeDefinition recipeDefinition) {
+        List<Recipe> output = new ArrayList<>();
+        for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
+            RecipeChoice choice = getRecipeChoice(entry.getValue());
+            recipeDefinition.getResultItemStacks().forEach(itemStack -> {
+                NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
+                output.add(new StonecuttingRecipe(namespacedKey, itemStack, choice));
+            });
+        }
+        return output;
+    }
 
+    private static List<Recipe> registerCookingRecipe(CustomRecipeDefinition recipeDefinition) {
+        List<Recipe> output = new ArrayList<>();
+        for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
+            NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
+            RecipeChoice choice = getRecipeChoice(entry.getValue());
+            CookingRecipe<?> recipe = createCookingRecipe(recipeDefinition, namespacedKey, choice);
+            if (recipe != null) {
+                output.add(recipe);
+            }
+        }
+        return output;
+    }
+
+    private static CookingRecipe<?> createCookingRecipe(CustomRecipeDefinition recipeDefinition, NamespacedKey namespacedKey, RecipeChoice choice) {
+        switch (recipeDefinition.getRecipeType()) {
+            case SMELTING -> {
+                return new FurnaceRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+            }
+            case BLASTING -> {
+                return new BlastingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+            }
+            case SMOKING -> {
+                return new SmokingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+            }
+            case CAMPFIRE_COOKING -> {
+                return new CampfireRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
+
+    private static Recipe registerCraftingRecipe(CustomRecipeDefinition recipeDefinition, boolean isShaped) {
+        Recipe recipe = isShaped ? createShapedRecipe(recipeDefinition) : createShapelessRecipe(recipeDefinition);
+        if (recipe != null) {
+            addRecipe(recipe);
+            Bukkit.getLogger().info("Registered crafting recipe: " + recipeDefinition.namespacedKey.value());
+        }
         return recipe;
     }
 
-    private static RecipeChoice GetRecipeChoice(String ingredientString) {
-        Material mat;
-        ItemStack stack;
-        RecipeChoice choice;
-        mat = Material.matchMaterial(ingredientString.toUpperCase());
-
-        if (mat == null || mat.isEmpty()) {
-            stack = ItemParser.parseItemStack(ingredientString);
-            choice = new RecipeChoice.ExactChoice(stack);
-
-        } else {
-            choice = new RecipeChoice.MaterialChoice(mat);
-        }
-        return choice;
-    }
-
-    private static List<Recipe> RegisterStonecuttingRecipe(CustomRecipeDefinition recipeDefinition) {
-        List<Recipe> output = new ArrayList<>();
-        // Parse ingredients from the key material map
-        // here each possible ingredient is treated as a new recipe because there can only be 1 ingredient per smelting recipe
-        for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
-
-            RecipeChoice choice = GetRecipeChoice(entry.getValue());
-
-            // For stonecutting recipes, we can have multiple outputs, create a new recipe for each output
-            // We also generate the namespacedkey here
-            recipeDefinition.getResultItemStacks().forEach(itemStack -> {
-                NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
-                Recipe recipe = new StonecuttingRecipe(namespacedKey, itemStack, choice);
-
-                output.add(recipe);
-            });
-
-        }
-        return output;
-    }
-
-    private static List<Recipe> RegisterCookingRecipe(CustomRecipeDefinition recipeDefinition) {
-        CookingRecipe<?> recipe = null;
-        List<Recipe> output = new ArrayList<>();
-        // Parse ingredients from the key material map
-        // here each possible ingredient is treated as a new recipe because there can only be 1 ingredient per smelting recipe
-        for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
-            // Since we might add one recipe per ingredient, we need unique namespacedkeys for every one of them
-            NamespacedKey namespacedKey = NamespacedKeyHelper.getUniqueNamespacedKey(recipeDefinition.namespacedKey.value());
-
-            RecipeChoice choice = GetRecipeChoice(entry.getValue());
-
-            switch (recipeDefinition.getRecipeType()) {
-                case SMELTING ->
-                        recipe = new FurnaceRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
-                case BLASTING ->
-                        recipe = new BlastingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
-                case SMOKING ->
-                        recipe = new SmokingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
-                case CAMPFIRE_COOKING ->
-                        recipe = new CampfireRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
-            }
-            if (recipe != null && !recipeDefinition.group.isBlank()) {
-                recipe.setGroup(recipeDefinition.group);
-            }
-            output.add(recipe);
-        }
-        return output;
-    }
-
-    private static Recipe RegisterCraftingRecipe(CustomRecipeDefinition recipeDefinition, boolean isShaped) {
+    private static ShapedRecipe createShapedRecipe(CustomRecipeDefinition recipeDefinition) {
         ShapedRecipe shapedRecipe = new ShapedRecipe(recipeDefinition.namespacedKey, recipeDefinition.getResultItemStack());
-        ShapelessRecipe shapelessRecipe = new ShapelessRecipe(recipeDefinition.namespacedKey, recipeDefinition.getResultItemStack());
-
-        if (isShaped) {
-            String[] shapeArray = recipeDefinition.shape.toArray(new String[0]);
-            shapedRecipe.shape(shapeArray);
-        }
-
-        // Parse ingredients from the key material map
+        String[] shapeArray = recipeDefinition.shape.toArray(new String[0]);
+        shapedRecipe.shape(shapeArray);
         for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
-            RecipeChoice choice = GetRecipeChoice(entry.getValue());
-            if (isShaped) {
-                shapedRecipe.setIngredient(entry.getKey().charAt(0), choice);
-            } else {
-                shapelessRecipe.addIngredient(choice);
-            }
+            RecipeChoice choice = getRecipeChoice(entry.getValue());
+            shapedRecipe.setIngredient(entry.getKey().charAt(0), choice);
         }
+        if (!recipeDefinition.group.isBlank()) {
+            shapedRecipe.setGroup(recipeDefinition.group);
+        }
+        return shapedRecipe;
+    }
 
-        if (isShaped) {
-            if (!recipeDefinition.group.isBlank()) {
-                shapedRecipe.setGroup(recipeDefinition.group);
-            }
-            return shapedRecipe;
-        } else {
-            if (!recipeDefinition.group.isBlank()) {
-                shapedRecipe.setGroup(recipeDefinition.group);
-            }
-            return shapelessRecipe;
+    private static ShapelessRecipe createShapelessRecipe(CustomRecipeDefinition recipeDefinition) {
+        ShapelessRecipe shapelessRecipe = new ShapelessRecipe(recipeDefinition.namespacedKey, recipeDefinition.getResultItemStack());
+        for (var entry : recipeDefinition.getIngredientMap().entrySet()) {
+            RecipeChoice choice = getRecipeChoice(entry.getValue());
+            shapelessRecipe.addIngredient(choice);
         }
+        if (!recipeDefinition.group.isBlank()) {
+            shapelessRecipe.setGroup(recipeDefinition.group);
+        }
+        return shapelessRecipe;
     }
 
     private static void addRecipe(Recipe recipe) {
-        Bukkit.addRecipe(recipe, true);
-        registeredRecipes.add(recipe);
+        if (!isRecipeRegistered(recipe)) {
+            Bukkit.addRecipe(recipe, true);
+            registeredRecipes.add(recipe);
+        }
     }
 
-    public static void ClearRecipeRegistry() {
-        for (Recipe recipe : registeredRecipes) {
-            if (recipe instanceof Keyed kr) {
-                Bukkit.removeRecipe(kr.getKey());
-            }
-        }
+    private static boolean isRecipeRegistered(Recipe recipe) {
+        return registeredRecipes.stream().anyMatch(r -> r.getResult().equals(recipe.getResult()));
+    }
+
+    public static void clearRecipeRegistry() {
+        registeredRecipes.stream()
+                .filter(recipe -> recipe instanceof Keyed)
+                .map(recipe -> (Keyed) recipe)
+                .forEach(kr -> Bukkit.removeRecipe(kr.getKey()));
+
         registeredRecipes.clear();
     }
 
+    private static RecipeChoice getRecipeChoice(String ingredientString) {
+        Material mat = Material.matchMaterial(ingredientString.toUpperCase());
+        if (mat == null || mat.isEmpty()) {
+            ItemStack stack = ItemParser.parseItemStack(ingredientString);
+            return new RecipeChoice.ExactChoice(stack);
+        } else {
+            return new RecipeChoice.MaterialChoice(mat);
+        }
+    }
 }

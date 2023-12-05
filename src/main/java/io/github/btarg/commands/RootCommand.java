@@ -68,7 +68,7 @@ public class RootCommand implements TabExecutor {
                 }
                 if (StringUtils.equalsAny(args[1], "recipes", "all")) {
                     sender.sendMessage("Reloading custom recipes...");
-                    CustomRecipeRegistry.ClearRecipeRegistry();
+                    CustomRecipeRegistry.clearRecipeRegistry();
                     OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomRecipeDefinition.class);
                 }
                 if (StringUtils.equalsAny(args[1], "resources", "all")) {
