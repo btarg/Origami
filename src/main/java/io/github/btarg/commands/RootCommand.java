@@ -81,6 +81,7 @@ public class RootCommand implements TabExecutor {
                     }
                     Bukkit.getServer().getOnlinePlayers().forEach(JavalinServer::sendResourcePack);
                 }
+                OrigamiMain.getDefinitionSerializer().registerQueuedExamples();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

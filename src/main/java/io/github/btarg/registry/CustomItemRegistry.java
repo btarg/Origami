@@ -17,7 +17,7 @@ public class CustomItemRegistry {
         Map<String, CustomItemDefinition> filteredItemDefinitions = new HashMap<>();
 
         itemDefinitions.forEach((key, customItemDefinition) -> {
-            if (customItemDefinition.contentPack.equals(contentPack)) {
+            if (customItemDefinition != null && customItemDefinition.contentPack.equals(contentPack)) {
                 filteredItemDefinitions.put(key, customItemDefinition);
             }
         });

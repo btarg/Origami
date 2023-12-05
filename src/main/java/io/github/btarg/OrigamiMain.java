@@ -57,6 +57,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
         try {
             initConfig();
+            initDefinitions();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -94,13 +95,24 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         return true;
     }
 
+    private void initDefinitions() throws IOException {
+        definitionSerializer = new DefinitionSerializer();
+        // load blocks from files (requires config loaded)
+        definitionSerializer.loadAndRegister(null, CustomBlockDefinition.class);
+        // items
+        definitionSerializer.loadAndRegister(null, CustomItemDefinition.class);
+        // recipes
+        definitionSerializer.loadAndRegister(null, CustomRecipeDefinition.class);
+        // if none have been loaded, register the examples
+        definitionSerializer.registerQueuedExamples();
+    }
+
     private void initConfig() throws IOException {
         ConfigurationSerialization.registerClass(CustomBlockDefinition.class);
         ConfigurationSerialization.registerClass(CustomRecipeDefinition.class);
 
         config = getConfig();
         config.options().setHeader(List.of("Remember to set your server's IP address properly in server.properties!"));
-        definitionSerializer = new DefinitionSerializer();
 
         ConfigurationSection resourcePackSection = config.createSection("resource-pack");
         resourcePackSection.addDefault("http-port", 8008);
@@ -108,13 +120,5 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         resourcePackSection.addDefault("save-generated-pack", false);
         config.options().copyDefaults(true);
         saveConfig();
-
-        // load blocks from files (requires config loaded)
-        definitionSerializer.loadAndRegister(CustomBlockDefinition.class);
-        // items
-        definitionSerializer.loadAndRegister(CustomItemDefinition.class);
-        // recipes
-        definitionSerializer.loadAndRegister(CustomRecipeDefinition.class);
-
     }
 }

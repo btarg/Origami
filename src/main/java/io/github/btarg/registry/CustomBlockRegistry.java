@@ -17,7 +17,7 @@ public class CustomBlockRegistry {
         Map<String, CustomBlockDefinition> filteredBlockDefinitions = new HashMap<>();
 
         blockDefinitions.forEach((key, customBlockDefinition) -> {
-            if (customBlockDefinition.contentPack.equals(contentPack)) {
+            if (customBlockDefinition.contentPack != null && customBlockDefinition.contentPack.equals(contentPack)) {
                 filteredBlockDefinitions.put(key, customBlockDefinition);
             }
         });

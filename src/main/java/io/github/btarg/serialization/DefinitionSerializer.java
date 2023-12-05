@@ -13,7 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class DefinitionSerializer {
+
+    private static final Map<Class<?>, CommandSender> exampleRegisterQueue = new HashMap<>();
 
     public static String getConfigDirectory(String parentDirectory, Class<?> clazz) {
         String dirName = null;
@@ -87,25 +88,20 @@ public class DefinitionSerializer {
                         }
 
                         if (loadedDefinition != null) {
-                            registerDefinition(loadedDefinition, sender);
+                            loadedDefinition.registerDefinition(sender);
                             fileCount.getAndIncrement();
                         }
 
                     });
-            if (fileCount.get() == 0) {
-                registerExamples(definitionClass, sender);
-
-            } else if (sender != null) {
+            if (sender != null)
                 sender.sendMessage("Registered " + fileCount.get() + " definitions(s)!");
-            }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void registerExamples(Class<?> definitionClass, CommandSender sender) {
-
+    public void registerExample(Class<?> definitionClass, CommandSender sender) {
         AbstractBaseDefinition saveDef = null;
         try {
             saveDef = getDefaultDefinitionFromClass(definitionClass);
@@ -113,21 +109,10 @@ public class DefinitionSerializer {
             e.printStackTrace();
             return;
         }
-
-        if (ContentPackHelper.getAllContentPacks().length == 0) {
+        if (saveDef != null) {
             saveDefinitionToFile(saveDef, "example");
-            if (saveDef != null)
-                registerDefinition(saveDef, sender);
+            saveDef.registerDefinition(sender);
         }
-
-    }
-
-    public void registerDefinition(AbstractBaseDefinition loadedDefinition, CommandSender sender) {
-        loadedDefinition.registerDefinition(sender);
-    }
-
-    public void loadAndRegister(Class<?> definitionClass) throws IOException {
-        loadAndRegister(null, definitionClass);
     }
 
     public void loadAndRegister(CommandSender sender, Class<?> definitionClass) throws IOException {
@@ -137,15 +122,23 @@ public class DefinitionSerializer {
                 loadAndRegister(sender, parentDirectory.getName(), definitionClass);
             }
         } else {
-            registerExamples(definitionClass, sender);
+            exampleRegisterQueue.put(definitionClass, sender);
         }
 
     }
 
-    public void saveDefinitionToFile(ConfigurationSerializable def, String parentDirectory) {
+    public void registerQueuedExamples() {
+        for (var example : exampleRegisterQueue.entrySet()) {
+            registerExample(example.getKey(), example.getValue());
+        }
+        exampleRegisterQueue.clear();
+    }
+
+    public void saveDefinitionToFile(AbstractBaseDefinition def, String parentDirectory) {
         if (def == null) return;
         String saveDir = getConfigDirectory(parentDirectory, def.getClass());
         if (def instanceof CustomRecipeDefinition definition) {
+            // Recipes
             if (definition.namespacedKey != null) {
                 String fileName = definition.namespacedKey.value();
                 File file = getFile(saveDir, fileName);
@@ -158,6 +151,7 @@ public class DefinitionSerializer {
                 SaveConfig(conf, file);
             }
         } else if (def instanceof BaseCustomDefinition definition) {
+            // Blocks and items
             if (definition.id != null) {
                 String fileName = definition.id;
                 File file = getFile(saveDir, fileName);

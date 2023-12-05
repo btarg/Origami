@@ -139,10 +139,10 @@ public class ResourcePackGenerator {
                     pack.model(model);
                     blockModelOverrideMap.put((definition.model), i);
                     itemFrameOverrides.add(ItemOverride.of(key, ItemPredicate.customModelData(i)));
-                    i++;
                 } catch (FileNotFoundException fileNotFoundException) {
                     fileNotFoundException.printStackTrace();
                 }
+                i++;
             }
         }
     }
@@ -169,10 +169,10 @@ public class ResourcePackGenerator {
                                             .textures(ModelTextures.builder().layers(ModelTexture.ofKey(itemKey)).build()))
                             .addOverride(ItemOverride.of(key, ItemPredicate.customModelData(i)));
 
-                    i++;
                 } catch (FileNotFoundException fileNotFoundException) {
                     fileNotFoundException.printStackTrace();
                 }
+                i++;
             }
         }
 
