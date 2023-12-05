@@ -5,13 +5,28 @@
     <h2>Custom blocks and items for <a href="https://papermc.io">Paper</a></h2>
 </div>
 
-[![Build status](https://github.com/btarg/Origami/actions/workflows/gradle.yml/badge.svg)](https://github.com/btarg/Origami/actions)
-
 Origami is a Minecraft server plugin which allows a server admin to easily add configurable custom
 blocks,
 items and crafting recipes using YAML configuration files.
 
 The plugin generates and hosts resource packs to allow **vanilla** clients to connect and play with your custom content.
+
+[![Build status](https://github.com/btarg/Origami/actions/workflows/gradle.yml/badge.svg)](https://github.com/btarg/Origami/actions)
+
+# Getting Started
+
+> 📖 View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/) for information on how to use the
+> plugin.
+
+## Supported versions
+
+This plugin will only ever support the latest version of Minecraft (Paper) at the time of its release.
+
+## Reporting issues
+
+You can report issues with the plugin or the docs on this GitHub repository's issues page.
+When reporting a bug, send a full log file and walk
+through the steps needed to replicate the bug.
 
 # Current progress
 
@@ -60,15 +75,9 @@ The plugin generates and hosts resource packs to allow **vanilla** clients to co
 - [x] Resource pack generation
     - [x] Resource pack hosting
     - [ ] Resource pack merging / multiple pack support
-    - [ ] Support for adding custom sounds (will probably just do this with pack merging)
 - [ ] Web UI for visual editing *(see preliminary work [here](https://github.com/btarg/vuejava))*
     - [ ] Backend API with Javalin
     - [ ] Vue.js frontend
-- [ ] [Geyser](https://geysermc.org) (Minecraft: Bedrock Edition) support
-
-# Getting Started
-
-View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/) for information on how to use the plugin.
 
 # Credits and special thanks
 
