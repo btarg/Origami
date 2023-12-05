@@ -1,15 +1,15 @@
-package io.github.btarg.definitions;
+package io.github.btarg.definitions.base;
 
 import io.github.btarg.util.ComponentHelper;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 @SuppressWarnings("unchecked")
-public class CustomDefinition implements ConfigurationSerializable {
+public class BaseCustomDefinition extends AbstractBaseDefinition {
 
     public String contentPack;
     public String id;
@@ -22,8 +22,7 @@ public class CustomDefinition implements ConfigurationSerializable {
     public Integer leftClickCooldownTicks;
     public Material baseMaterial;
 
-
-    public CustomDefinition(Map<String, Object> map) {
+    public BaseCustomDefinition(Map<String, Object> map) {
 
         String baseMaterialString = (String) map.getOrDefault("baseMaterial", map.getOrDefault("baseBlock", map.get("baseItem")));
         this.baseMaterial = (baseMaterialString != null) ? Material.matchMaterial(baseMaterialString.trim().toUpperCase()) : null;
@@ -63,4 +62,13 @@ public class CustomDefinition implements ConfigurationSerializable {
         return map;
     }
 
+    @Override
+    public void registerDefinition(CommandSender sender) {
+
+    }
+
+    @Override
+    public AbstractBaseDefinition getDefaultDefinition() {
+        return null;
+    }
 }

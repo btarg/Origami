@@ -1,12 +1,14 @@
 package io.github.btarg.definitions;
 
 import io.github.btarg.OrigamiMain;
+import io.github.btarg.definitions.base.BaseCustomDefinition;
+import io.github.btarg.registry.CustomBlockRegistry;
 import io.github.btarg.util.parsers.ItemParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -15,8 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-@SerializableAs("CustomBlock")
-public class CustomBlockDefinition extends CustomDefinition implements ConfigurationSerializable {
+public class CustomBlockDefinition extends BaseCustomDefinition {
 
     private final Random random = new Random();
     public Integer brightness;
@@ -50,7 +51,14 @@ public class CustomBlockDefinition extends CustomDefinition implements Configura
         this.timeToBreak = Objects.requireNonNullElse((Integer) map.get("timeToBreak"), 40);
         this.breakSound = (String) map.get("breakSound");
         this.placeSound = (String) map.get("placeSound");
+    }
 
+    @Override
+    public void registerDefinition(CommandSender sender) {
+        CustomBlockRegistry.registerBlock(this);
+        if (sender != null) {
+            sender.sendMessage("Registered block: " + this.id);
+        }
     }
 
     public boolean dropBlock() {
@@ -94,6 +102,27 @@ public class CustomBlockDefinition extends CustomDefinition implements Configura
         } else {
             return amount;
         }
+    }
+
+    @Override
+    public CustomBlockDefinition getDefaultDefinition() {
+        Bukkit.getLogger().warning("No block definitions found! Creating a new example block definition.");
+
+        this.id = "rainbow_block";
+        this.baseMaterial = Material.GLASS;
+        this.model = "rainbow";
+        this.displayName = "&cR&6a&ei&an&9b&bo&5w &6B&el&ao&9c&bk";
+        this.rightClickCommands = Collections.singletonList("tellraw @s {\"text\":\"The block reverberates majestically.\",\"italic\":true,\"color\":\"gray\"}");
+        this.lore = Collections.singletonList("<rainbow>It shimmers beautifully in the sunlight.</rainbow>");
+        this.drops = List.of("DIAMOND(1)");
+        this.isAffectedByFortune = true;
+        this.dropExperience = 0;
+        this.toolLevelRequired = 2;
+        this.canBeMinedWith = Collections.singletonList("pickaxes");
+        this.timeToBreak = 40;
+        this.breakSound = Sound.BLOCK_AMETHYST_BLOCK_BREAK.toString();
+        this.placeSound = Sound.BLOCK_AMETHYST_BLOCK_PLACE.toString();
+        return this;
     }
 
     @Override

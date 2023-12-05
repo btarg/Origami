@@ -1,6 +1,6 @@
 package io.github.btarg.blockdata;
 
-import io.github.btarg.util.blocks.BlockPos;
+import io.github.btarg.util.datatypes.BlockPos;
 import lombok.Getter;
 import org.bukkit.Location;
 

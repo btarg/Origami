@@ -1,9 +1,10 @@
 package io.github.btarg.serialization;
 
-import io.github.btarg.definitions.*;
-import io.github.btarg.registry.CustomBlockRegistry;
-import io.github.btarg.registry.CustomItemRegistry;
-import io.github.btarg.registry.CustomRecipeRegistry;
+import io.github.btarg.definitions.CustomBlockDefinition;
+import io.github.btarg.definitions.CustomItemDefinition;
+import io.github.btarg.definitions.CustomRecipeDefinition;
+import io.github.btarg.definitions.base.AbstractBaseDefinition;
+import io.github.btarg.definitions.base.BaseCustomDefinition;
 import io.github.btarg.util.ContentPackHelper;
 import io.github.btarg.util.NamespacedKeyHelper;
 import org.apache.commons.io.FileUtils;
@@ -21,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -73,7 +75,7 @@ public class DefinitionSerializer {
                     .forEach(f -> {
                         String cleanName = FilenameUtils.removeExtension(f.getFileName().toString());
 
-                        Object loadedDefinition;
+                        AbstractBaseDefinition loadedDefinition;
                         try {
                             loadedDefinition = getAnyDefinitionFromFile(cleanName, parentDirectory, definitionClass);
                         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
@@ -103,30 +105,25 @@ public class DefinitionSerializer {
     }
 
     public void registerExamples(Class<?> definitionClass, CommandSender sender) {
-        if (ContentPackHelper.getAllContentPacks().length == 0) {
-            ConfigurationSerializable saveDef = DefaultDefinitions.getDefaultDefinition(definitionClass);
-            saveDefinitionToFile(saveDef, "example");
-            registerDefinition(saveDef, sender);
+
+        AbstractBaseDefinition saveDef = null;
+        try {
+            saveDef = getDefaultDefinitionFromClass(definitionClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
         }
+
+        if (ContentPackHelper.getAllContentPacks().length == 0) {
+            saveDefinitionToFile(saveDef, "example");
+            if (saveDef != null)
+                registerDefinition(saveDef, sender);
+        }
+
     }
 
-    public void registerDefinition(Object loadedDefinition, CommandSender sender) {
-        if (loadedDefinition instanceof CustomBlockDefinition blockDefinition) {
-            CustomBlockRegistry.registerBlock(blockDefinition);
-            if (sender != null) {
-                sender.sendMessage("Registered block: " + blockDefinition.id);
-            }
-        } else if (loadedDefinition instanceof CustomRecipeDefinition recipeDefinition) {
-            CustomRecipeRegistry.RegisterRecipe(recipeDefinition);
-            if (sender != null) {
-                sender.sendMessage("Registered recipe: " + recipeDefinition.namespacedKey.value());
-            }
-        } else if (loadedDefinition instanceof CustomItemDefinition itemDefinition) {
-            CustomItemRegistry.registerItem(itemDefinition);
-            if (sender != null) {
-                sender.sendMessage("Registered item: " + itemDefinition.id);
-            }
-        }
+    public void registerDefinition(AbstractBaseDefinition loadedDefinition, CommandSender sender) {
+        loadedDefinition.registerDefinition(sender);
     }
 
     public void loadAndRegister(Class<?> definitionClass) throws IOException {
@@ -160,7 +157,7 @@ public class DefinitionSerializer {
 
                 SaveConfig(conf, file);
             }
-        } else if (def instanceof CustomDefinition definition) {
+        } else if (def instanceof BaseCustomDefinition definition) {
             if (definition.id != null) {
                 String fileName = definition.id;
                 File file = getFile(saveDir, fileName);
@@ -199,14 +196,15 @@ public class DefinitionSerializer {
         return file;
     }
 
-    public ConfigurationSerializable getAnyDefinitionFromFile(String fileName, String parentDirectory, Class<?> definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public AbstractBaseDefinition getAnyDefinitionFromFile(String fileName, String parentDirectory, Class<?> definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         File file = getFile(getConfigDirectory(parentDirectory, definitionClass), fileName);
         FileConfiguration conf = YamlConfiguration.loadConfiguration(file);
         var constructor = definitionClass.getConstructor(Map.class);
         var values = conf.getValues(true);
+        // Call constructor with the map as the value
         Object obj = constructor.newInstance(values);
 
-        if (obj instanceof CustomDefinition definition) {
+        if (obj instanceof BaseCustomDefinition definition) {
             definition.id = FilenameUtils.removeExtension(fileName);
             definition.contentPack = FilenameUtils.getBaseName(parentDirectory);
             return definition;
@@ -216,6 +214,15 @@ public class DefinitionSerializer {
             definition.contentPack = FilenameUtils.getBaseName(parentDirectory);
             return definition;
 
+        }
+        return null;
+    }
+
+    public AbstractBaseDefinition getDefaultDefinitionFromClass(Class<?> definitionClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        var constructor = definitionClass.getConstructor(Map.class);
+        Object obj = constructor.newInstance(new HashMap<>());
+        if (obj instanceof AbstractBaseDefinition definition) {
+            return definition.getDefaultDefinition();
         }
         return null;
     }

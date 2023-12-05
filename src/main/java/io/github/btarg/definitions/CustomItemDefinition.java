@@ -1,9 +1,11 @@
 package io.github.btarg.definitions;
 
+import io.github.btarg.definitions.base.BaseCustomDefinition;
+import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.util.parsers.EnchantmentParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.potion.PotionEffectType;
@@ -12,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
-public class CustomItemDefinition extends CustomDefinition implements ConfigurationSerializable {
+public class CustomItemDefinition extends BaseCustomDefinition {
     public Map<Enchantment, Integer> enchantments;
     public List<ItemFlag> flags = new ArrayList<>();
     public List<PotionEffectType> potionEffects = new ArrayList<>();
@@ -35,6 +37,14 @@ public class CustomItemDefinition extends CustomDefinition implements Configurat
         this.enchantments = EnchantmentParser.parseEnchantments(Objects.requireNonNullElse((List<String>) map.get("enchantments"), new ArrayList<>()));
         this.flags = deserializeFlags(map);
         this.potionEffects = deserializePotionEffects(map);
+    }
+
+    @Override
+    public void registerDefinition(CommandSender sender) {
+        CustomItemRegistry.registerItem(this);
+        if (sender != null) {
+            sender.sendMessage("Registered item: " + this.id);
+        }
     }
 
     private List<ItemFlag> deserializeFlags(Map<String, Object> map) {

@@ -2,8 +2,8 @@ package io.github.btarg.registry;
 
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.CustomBlockDefinition;
-import io.github.btarg.definitions.CustomDefinition;
 import io.github.btarg.definitions.CustomItemDefinition;
+import io.github.btarg.definitions.base.BaseCustomDefinition;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
 import io.github.btarg.util.NamespacedKeyHelper;
 import net.kyori.adventure.text.Component;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class RegistryHelper {
 
-    public static ItemStack createCustomItemStack(CustomDefinition definition, int count) {
+    public static ItemStack createCustomItemStack(BaseCustomDefinition definition, int count) {
         if (definition == null) {
             return null;
         }

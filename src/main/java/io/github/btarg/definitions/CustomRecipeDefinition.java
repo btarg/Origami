@@ -1,19 +1,21 @@
 package io.github.btarg.definitions;
 
+import io.github.btarg.OrigamiMain;
+import io.github.btarg.definitions.base.AbstractBaseDefinition;
+import io.github.btarg.registry.CustomRecipeRegistry;
+import io.github.btarg.util.datatypes.CustomRecipeType;
 import io.github.btarg.util.parsers.ItemParser;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-@SerializableAs("CustomRecipe")
-public class CustomRecipeDefinition implements ConfigurationSerializable {
+public class CustomRecipeDefinition extends AbstractBaseDefinition {
 
     @Getter
     private final Map<String, String> ingredientMap;
@@ -98,14 +100,29 @@ public class CustomRecipeDefinition implements ConfigurationSerializable {
         this.namespacedKey = null;
     }
 
-    private ItemStack itemStackFromString(String input) {
-        ItemStack result;
-        result = ItemParser.parseItemStack(input);
-        if (result == null) {
-            result = ItemStack.empty();
+    @Override
+    public void registerDefinition(CommandSender sender) {
+        CustomRecipeRegistry.RegisterRecipe(this);
+        if (sender != null) {
+            sender.sendMessage("Registered recipe: " + this.namespacedKey.value());
         }
-        return result;
     }
+
+    @Override
+    public CustomRecipeDefinition getDefaultDefinition() {
+        Bukkit.getLogger().warning("No recipe definitions found! Creating a new example recipe definition.");
+        this.namespacedKey = new NamespacedKey(OrigamiMain.getInstance(), "rainbow_block_recipe");
+        this.ingredients = List.of("d;DIAMOND", "r;origami:rainbow_block");
+        this.shape = List.of("ddd", "drd", "ddd");
+        this.result = "ACACIA_BOAT(1)";
+        return this;
+    }
+
+    private ItemStack itemStackFromString(String input) {
+        ItemStack result = ItemParser.parseItemStack(input);
+        return (result != null) ? result : ItemStack.empty();
+    }
+
 
     @Override
     public @NotNull Map<String, Object> serialize() {

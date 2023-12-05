@@ -10,7 +10,7 @@ import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
-import io.github.btarg.util.blocks.BlockPos;
+import io.github.btarg.util.datatypes.BlockPos;
 import io.github.btarg.web.JavalinServer;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;

@@ -1,8 +1,8 @@
 package io.github.btarg.registry;
 
 import io.github.btarg.definitions.CustomRecipeDefinition;
-import io.github.btarg.definitions.CustomRecipeType;
 import io.github.btarg.util.NamespacedKeyHelper;
+import io.github.btarg.util.datatypes.CustomRecipeType;
 import io.github.btarg.util.parsers.ItemParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
