@@ -70,8 +70,9 @@ through the steps needed to replicate the bug.
     - [ ] Villager trades
     - [ ] Custom item repair recipes (defined in the item's YAML rather than as a separate "recipe")
 - [ ] Custom enchantments
-- [ ] YAML event system: events can be subscribed to such as when a block is broken, when an item is used or consumed
+- [x] YAML event system: events can be subscribed to such as when a block is broken, when an item is used or consumed
   etc. via a string in a YAML file
+    - [ ] TODO: add more events
 - [x] Resource pack generation
     - [x] Resource pack hosting
     - [ ] Resource pack merging / multiple pack support
