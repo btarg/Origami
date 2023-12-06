@@ -2,6 +2,7 @@ package io.github.btarg.definitions;
 
 import io.github.btarg.definitions.base.BaseCustomDefinition;
 import io.github.btarg.registry.CustomItemRegistry;
+import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.parsers.EnchantmentParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -68,7 +69,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
     public void registerDefinition(CommandSender sender) {
         CustomItemRegistry.registerItem(this);
         if (sender != null) {
-            sender.sendMessage("Registered item: " + this.id);
+            ComponentHelper.sendDecoratedChatMessage("Registered item: " + this.id, sender);
         }
     }
 

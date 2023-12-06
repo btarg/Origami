@@ -3,6 +3,7 @@ package io.github.btarg.definitions;
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.base.BaseCustomDefinition;
 import io.github.btarg.registry.CustomBlockRegistry;
+import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.parsers.ItemParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -57,7 +58,7 @@ public class CustomBlockDefinition extends BaseCustomDefinition {
     public void registerDefinition(CommandSender sender) {
         CustomBlockRegistry.registerBlock(this);
         if (sender != null) {
-            sender.sendMessage("Registered block: " + this.id);
+            ComponentHelper.sendDecoratedChatMessage("Registered block: " + this.id, sender);
         }
     }
 

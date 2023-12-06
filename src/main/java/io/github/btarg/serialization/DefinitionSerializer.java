@@ -5,6 +5,7 @@ import io.github.btarg.definitions.CustomItemDefinition;
 import io.github.btarg.definitions.CustomRecipeDefinition;
 import io.github.btarg.definitions.base.AbstractBaseDefinition;
 import io.github.btarg.definitions.base.BaseCustomDefinition;
+import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.ContentPackHelper;
 import io.github.btarg.util.NamespacedKeyHelper;
 import org.apache.commons.io.FileUtils;
@@ -93,8 +94,8 @@ public class DefinitionSerializer {
                         }
 
                     });
-            if (sender != null)
-                sender.sendMessage("Registered " + fileCount.get() + " definitions(s)!");
+
+            ComponentHelper.sendDecoratedChatMessage("Registered " + fileCount.get() + " definitions(s) from " + parentDirectory, sender);
 
         } catch (IOException e) {
             e.printStackTrace();

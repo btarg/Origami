@@ -10,6 +10,7 @@ import io.github.btarg.registry.CustomItemRegistry;
 import io.github.btarg.registry.CustomRecipeRegistry;
 import io.github.btarg.registry.RegistryHelper;
 import io.github.btarg.resourcepack.ResourcePackGenerator;
+import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.datatypes.BlockPos;
 import io.github.btarg.web.JavalinServer;
 import net.kyori.adventure.text.Component;
@@ -57,22 +58,22 @@ public class RootCommand implements TabExecutor {
 
             try {
                 if (StringUtils.equalsAny(args[1], "blocks", "all")) {
-                    sender.sendMessage("Reloading custom blocks...");
+                    ComponentHelper.sendDecoratedChatMessage("Reloading custom blocks...", sender);
                     CustomBlockRegistry.clearBlockRegistry();
                     OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomBlockDefinition.class);
                 }
                 if (StringUtils.equalsAny(args[1], "items", "all")) {
-                    sender.sendMessage("Reloading custom items...");
+                    ComponentHelper.sendDecoratedChatMessage("Reloading custom items...", sender);
                     CustomItemRegistry.clearItemRegistry();
                     OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomItemDefinition.class);
                 }
                 if (StringUtils.equalsAny(args[1], "recipes", "all")) {
-                    sender.sendMessage("Reloading custom recipes...");
+                    ComponentHelper.sendDecoratedChatMessage("Reloading custom recipes...", sender);
                     CustomRecipeRegistry.clearRecipeRegistry();
                     OrigamiMain.getDefinitionSerializer().loadAndRegister(sender, CustomRecipeDefinition.class);
                 }
                 if (StringUtils.equalsAny(args[1], "resources", "all")) {
-                    sender.sendMessage("Reloading resource pack...");
+                    ComponentHelper.sendDecoratedChatMessage("Reloading resource pack...", sender);
                     // Generate resource pack and serve with http
                     try {
                         JavalinServer.initAndServePack(ResourcePackGenerator.generateResourcePack());
@@ -102,7 +103,7 @@ public class RootCommand implements TabExecutor {
                     sender.sendMessage(String.valueOf(count) + finalString);
 
                 } else {
-                    sender.sendMessage("No blocks in this chunk!");
+                    ComponentHelper.sendDecoratedChatMessage("No blocks in this chunk!", sender);
                 }
             }
             return true;

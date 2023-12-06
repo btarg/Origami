@@ -1,12 +1,14 @@
 package io.github.btarg.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 
 @SuppressWarnings("deprecation")
 public class ComponentHelper {
@@ -39,6 +41,22 @@ public class ComponentHelper {
             }
         }
         return textComponent;
+    }
+
+    public static Component getChatPrefix() {
+        return MiniMessage.miniMessage().deserialize("<dark_gray>[</dark_gray><gradient:#ca01ba:#ff1c3c>Origami</gradient><dark_gray>]</dark_gray> ");
+    }
+
+    public static void sendDecoratedChatMessage(String message, CommandSender sender) {
+        if (sender != null) {
+            sender.sendMessage(getChatPrefix().append(MiniMessage.miniMessage().deserialize(message)));
+        }
+    }
+
+    public static void sendDecoratedChatMessage(ComponentLike message, CommandSender sender) {
+        if (sender != null) {
+            sender.sendMessage(getChatPrefix().append(message));
+        }
     }
 
     public static Component removeItalicsIfAbsent(Component input) {

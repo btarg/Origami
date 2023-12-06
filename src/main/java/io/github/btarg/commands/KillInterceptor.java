@@ -2,6 +2,7 @@ package io.github.btarg.commands;
 
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.blockdata.CustomBlockPersistentData;
+import io.github.btarg.util.ComponentHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -22,7 +23,7 @@ public class KillInterceptor implements Listener {
     private static String tempCommand = "";
 
     private static String extractSelector(String command) {
-        String regex = "@[a-zA-Z_]+\\[[^\\]]*\\]";
+        String regex = "@[a-zA-Z_]+(\\[[^]]*])?";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(command);
 
@@ -42,27 +43,26 @@ public class KillInterceptor implements Listener {
             List<Entity> entities = Bukkit.getServer().selectEntities(Bukkit.getServer().getConsoleSender(), selector);
             for (Entity entity : entities) {
 
-                if (!Objects.equals(tempCommand, event.getMessage())) {
-                    tempCommand = event.getMessage();
-                    event.setCancelled(true);
-
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            tempCommand = "";
-                        }
-                    }.runTaskLater(OrigamiMain.getInstance(), 60); // reset last command after a few seconds
-
-                } else {
-                    tempCommand = "";
-                    return;
-                }
-
                 if (CustomBlockPersistentData.getBlockInformation(entity.getChunk()).getBlocksMap().containsValue(entity.getUniqueId().toString())) {
                     Component component = MiniMessage.miniMessage().deserialize(
                             "<dark_red><b>WARNING:</b></dark_red> <red>Killing or teleporting Item Displays will break Origami custom blocks placed in your world. Type the command again only if you understand the implications of this!</red>"
                     );
-                    event.getPlayer().sendMessage(component);
+                    ComponentHelper.sendDecoratedChatMessage(component, event.getPlayer());
+                    if (!Objects.equals(tempCommand, event.getMessage())) {
+                        tempCommand = event.getMessage();
+                        event.setCancelled(true);
+
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                tempCommand = "";
+                            }
+                        }.runTaskLater(OrigamiMain.getInstance(), 60); // reset last command after a few seconds
+
+                    } else {
+                        tempCommand = "";
+                        return;
+                    }
                 }
             }
         }

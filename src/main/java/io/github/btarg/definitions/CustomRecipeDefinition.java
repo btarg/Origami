@@ -3,6 +3,7 @@ package io.github.btarg.definitions;
 import io.github.btarg.OrigamiMain;
 import io.github.btarg.definitions.base.AbstractBaseDefinition;
 import io.github.btarg.registry.CustomRecipeRegistry;
+import io.github.btarg.util.ComponentHelper;
 import io.github.btarg.util.datatypes.CustomRecipeType;
 import io.github.btarg.util.parsers.ItemParser;
 import lombok.Getter;
@@ -104,7 +105,7 @@ public class CustomRecipeDefinition extends AbstractBaseDefinition {
     public void registerDefinition(CommandSender sender) {
         CustomRecipeRegistry.registerRecipe(this);
         if (sender != null) {
-            sender.sendMessage("Registered recipe: " + this.namespacedKey.value());
+            ComponentHelper.sendDecoratedChatMessage("Registered recipe: " + this.namespacedKey.value(), sender);
         }
     }
 
