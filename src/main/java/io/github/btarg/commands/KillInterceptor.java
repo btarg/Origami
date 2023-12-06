@@ -43,26 +43,27 @@ public class KillInterceptor implements Listener {
             List<Entity> entities = Bukkit.getServer().selectEntities(Bukkit.getServer().getConsoleSender(), selector);
             for (Entity entity : entities) {
 
+                if (!Objects.equals(tempCommand, event.getMessage())) {
+                    tempCommand = event.getMessage();
+                    event.setCancelled(true);
+
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            tempCommand = "";
+                        }
+                    }.runTaskLater(OrigamiMain.getInstance(), 60); // reset last command after a few seconds
+
+                } else {
+                    tempCommand = "";
+                    return;
+                }
+
                 if (CustomBlockPersistentData.getBlockInformation(entity.getChunk()).getBlocksMap().containsValue(entity.getUniqueId().toString())) {
                     Component component = MiniMessage.miniMessage().deserialize(
                             "<dark_red><b>WARNING:</b></dark_red> <red>Killing or teleporting Item Displays will break Origami custom blocks placed in your world. Type the command again only if you understand the implications of this!</red>"
                     );
                     ComponentHelper.sendDecoratedChatMessage(component, event.getPlayer());
-                    if (!Objects.equals(tempCommand, event.getMessage())) {
-                        tempCommand = event.getMessage();
-                        event.setCancelled(true);
-
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                tempCommand = "";
-                            }
-                        }.runTaskLater(OrigamiMain.getInstance(), 60); // reset last command after a few seconds
-
-                    } else {
-                        tempCommand = "";
-                        return;
-                    }
                 }
             }
         }

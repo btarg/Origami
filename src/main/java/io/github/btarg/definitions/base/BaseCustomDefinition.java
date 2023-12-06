@@ -68,7 +68,7 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
 
     private Optional<EventDefinition> findEventByName(String eventName) {
         return events.stream()
-                .filter(event -> event.getEventName().equals(eventName))
+                .filter(event -> Optional.ofNullable(event).map(EventDefinition::getEventName).orElse("").equals(eventName))
                 .findFirst();
     }
 

@@ -27,8 +27,9 @@ public class EventDefinition {
     public static EventDefinition deserialize(Map<String, Object> map) {
         String eventName = map.keySet().iterator().next();
         Map<String, Object> eventData = (Map<String, Object>) map.get(eventName);
-
+        if (eventData == null) return null;
         List<String> commands = (List<String>) eventData.get("commands");
+        if (commands == null) return null;
         int cooldown = (Integer) eventData.getOrDefault("cooldown", 0);
 
         return new EventDefinition(eventName, commands, cooldown);
