@@ -134,18 +134,17 @@ public class CustomBlockListener implements Listener {
 
     @EventHandler
     public void onBlockBroken(BlockBreakEvent e) {
-
         Entity linkedItemDisplay = CustomBlockUtils.getLinkedItemDisplay(e.getBlock().getLocation());
-        if (linkedItemDisplay == null) return;
-        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromItemDisplay(linkedItemDisplay);
+        CustomBlockDefinition definition = CustomBlockUtils.getDefinitionFromBlock(e.getBlock());
         if (definition == null) return;
         e.setDropItems(false);
 
-        ItemStack itemUsed = e.getPlayer().getInventory().getItemInMainHand();
+        Player player = e.getPlayer();
+        ItemStack itemUsed = player.getInventory().getItemInMainHand();
 
         if (ToolLevelHelper.getToolLevel(itemUsed, false) >= definition.toolLevelRequired && ToolLevelHelper.checkItemTypeByString(itemUsed, definition.canBeMinedWith)) {
 
-            if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+            if (player.getGameMode() != GameMode.CREATIVE) {
 
                 boolean silkTouch = false;
                 if (itemUsed.hasItemMeta())
@@ -154,14 +153,24 @@ public class CustomBlockListener implements Listener {
                 if (!silkTouch)
                     e.setExpToDrop(definition.dropExperience);
 
-                CustomBlockFunctions.dropBlockItems(e.getPlayer(), definition, e.getBlock());
+                CustomBlockFunctions.dropBlockItems(player, definition, e.getBlock());
             }
         }
 
         // Remove item frame and remove block from database
         definition.executeEvent(EventNames.ON_BROKEN.toString(), e.getPlayer());
-        CustomBlockFunctions.onCustomBlockBroken(e.getBlock().getLocation(), definition.breakSound);
-        linkedItemDisplay.remove();
+        if (linkedItemDisplay != null)
+            linkedItemDisplay.remove();
+
+        if (definition.breakSound != null && !definition.breakSound.isEmpty()) {
+            try {
+                player.getWorld().playSound(e.getBlock().getLocation(), Sound.valueOf(definition.breakSound), 1, 1);
+            } catch (IllegalArgumentException ex) {
+                Bukkit.getLogger().warning("Block being broken does not have a valid sound!");
+            }
+        }
+
+        CustomBlockPersistentData.removeBlockFromStorage(e.getBlock().getLocation());
 
     }
 
