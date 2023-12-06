@@ -61,7 +61,7 @@ through the steps needed to replicate the bug.
     - [ ] Editable attributes (e.g. attack power, armour defense stat)
     - [ ] NBT override via NBT string
     - [ ] Custom food items (function on consume)
-    - [ ] Custom tools and tool levels (may be impossible)
+    - [ ] Custom tool levels and blocks that can only be broken with custom tools
     - [ ] Custom sounds for breaking
 - [x] Custom crafting recipes via YAML
     - [x] Cooking recipes (Furnaces, Campfires etc.)
