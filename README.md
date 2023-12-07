@@ -18,6 +18,8 @@ The plugin generates and hosts resource packs to allow **vanilla** clients to co
 > 📖 View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/) for information on how to use the
 > plugin.
 
+The docs are also open source at [btarg/origami-docs](https://github.com/btarg/origami-docs).
+
 ## Supported versions
 
 This plugin will only ever support the latest version of Minecraft (Paper) at the time of its release.
