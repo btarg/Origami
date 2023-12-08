@@ -5,13 +5,13 @@ import io.github.btarg.origami.blockdata.CustomBlockPersistentData;
 import io.github.btarg.origami.definitions.CustomBlockDefinition;
 import io.github.btarg.origami.definitions.CustomItemDefinition;
 import io.github.btarg.origami.definitions.CustomRecipeDefinition;
-import io.github.btarg.origami.util.ComponentHelper;
-import io.github.btarg.origami.util.datatypes.BlockPos;
 import io.github.btarg.origami.registry.CustomBlockRegistry;
 import io.github.btarg.origami.registry.CustomItemRegistry;
 import io.github.btarg.origami.registry.CustomRecipeRegistry;
 import io.github.btarg.origami.registry.RegistryHelper;
 import io.github.btarg.origami.resourcepack.ResourcePackGenerator;
+import io.github.btarg.origami.util.ComponentHelper;
+import io.github.btarg.origami.util.datatypes.BlockPos;
 import io.github.btarg.origami.web.JavalinServer;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +34,17 @@ public class RootCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
+        if (sender instanceof Player player) {
+            if (Objects.equals(args[0], "menu")) {
+                if (args.length == 3) {
+                    String contentPack = args[2];
+                    OrigamiMain.getCustomBlocksGUI().openCustomBlocksAndItemsGUI(player, 1, contentPack);
+                } else {
+                    sendIncorrectArgumentsMessage(command, sender);
+                }
+            }
+        }
+
         if (Objects.equals(args[0], "give")) {
             int count = 1;
             if (args.length == 4) {
@@ -52,7 +63,7 @@ public class RootCommand implements TabExecutor {
                 }
 
             } else {
-                sender.sendMessage(ChatColor.RED + "Incorrect arguments. Usage:\n" + command.getUsage());
+                sendIncorrectArgumentsMessage(command, sender);
             }
         } else if (Objects.equals(args[0], "reload")) {
 
@@ -109,12 +120,15 @@ public class RootCommand implements TabExecutor {
             return true;
 
         } else {
-            sender.sendMessage(ChatColor.RED + "Incorrect arguments. Usage:\n" + command.getUsage());
+            sendIncorrectArgumentsMessage(command, sender);
         }
 
         return true;
     }
 
+    private void sendIncorrectArgumentsMessage(Command command, CommandSender sender) {
+        sender.sendMessage(ChatColor.RED + "Incorrect arguments. Usage:\n" + command.getUsage());
+    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {

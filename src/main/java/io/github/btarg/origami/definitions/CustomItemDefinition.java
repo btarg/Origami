@@ -1,14 +1,19 @@
 package io.github.btarg.origami.definitions;
 
 import io.github.btarg.origami.definitions.base.BaseCustomDefinition;
-import io.github.btarg.origami.util.ComponentHelper;
-import io.github.btarg.origami.util.parsers.EnchantmentParser;
 import io.github.btarg.origami.registry.CustomItemRegistry;
+import io.github.btarg.origami.resourcepack.ResourcePackGenerator;
+import io.github.btarg.origami.util.ComponentHelper;
+import io.github.btarg.origami.util.NamespacedKeyHelper;
+import io.github.btarg.origami.util.parsers.EnchantmentParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,6 +69,35 @@ public class CustomItemDefinition extends BaseCustomDefinition {
         return potionEffectList;
     }
 
+    @Override
+    protected Integer getCustomModelData() {
+        return ResourcePackGenerator.getItemOverride(this);
+    }
+
+    @Override
+    protected ItemMeta getItemMeta(ItemStack itemStack) {
+        ItemMeta meta = super.getItemMeta(itemStack);
+        meta.getPersistentDataContainer().set(NamespacedKeyHelper.customItemTag, PersistentDataType.STRING, this.id);
+        return meta;
+    }
+
+    @Override
+    public ItemStack createCustomItemStack(int count) {
+        ItemStack itemStack = new ItemStack(Material.ITEM_FRAME, count);
+        ItemMeta meta = getItemMeta(itemStack);
+        for (Map.Entry<Enchantment, Integer> entry : this.enchantments.entrySet()) {
+            Enchantment key = entry.getKey();
+            Integer value = entry.getValue();
+            if (key != null) {
+                meta.addEnchant(key, value, true);
+            }
+        }
+        //TODO: add attributes here
+        meta.addItemFlags(this.flags.toArray(new ItemFlag[0]));
+
+        itemStack.setItemMeta(meta);
+        return itemStack;
+    }
 
     @Override
     public void registerDefinition(CommandSender sender) {

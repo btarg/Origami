@@ -2,9 +2,11 @@ package io.github.btarg.origami.definitions;
 
 import io.github.btarg.origami.OrigamiMain;
 import io.github.btarg.origami.definitions.base.BaseCustomDefinition;
-import io.github.btarg.origami.util.ComponentHelper;
-import io.github.btarg.origami.util.parsers.ItemParser;
 import io.github.btarg.origami.registry.CustomBlockRegistry;
+import io.github.btarg.origami.resourcepack.ResourcePackGenerator;
+import io.github.btarg.origami.util.ComponentHelper;
+import io.github.btarg.origami.util.NamespacedKeyHelper;
+import io.github.btarg.origami.util.parsers.ItemParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,6 +16,8 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -124,6 +128,18 @@ public class CustomBlockDefinition extends BaseCustomDefinition {
         this.breakSound = Sound.BLOCK_AMETHYST_BLOCK_BREAK.toString();
         this.placeSound = Sound.BLOCK_AMETHYST_BLOCK_PLACE.toString();
         return this;
+    }
+
+    @Override
+    public Integer getCustomModelData() {
+        return ResourcePackGenerator.getBlockOverride(this);
+    }
+
+    @Override
+    public ItemMeta getItemMeta(ItemStack itemStack) {
+        ItemMeta meta = super.getItemMeta(itemStack);
+        meta.getPersistentDataContainer().set(NamespacedKeyHelper.customBlockItemTag, PersistentDataType.STRING, this.id);
+        return meta;
     }
 
     @Override

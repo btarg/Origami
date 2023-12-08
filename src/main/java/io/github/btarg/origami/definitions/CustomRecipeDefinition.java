@@ -2,10 +2,10 @@ package io.github.btarg.origami.definitions;
 
 import io.github.btarg.origami.OrigamiMain;
 import io.github.btarg.origami.definitions.base.AbstractBaseDefinition;
-import io.github.btarg.origami.util.ComponentHelper;
-import io.github.btarg.origami.util.parsers.ItemParser;
 import io.github.btarg.origami.registry.CustomRecipeRegistry;
+import io.github.btarg.origami.util.ComponentHelper;
 import io.github.btarg.origami.util.datatypes.CustomRecipeType;
+import io.github.btarg.origami.util.parsers.ItemParser;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;

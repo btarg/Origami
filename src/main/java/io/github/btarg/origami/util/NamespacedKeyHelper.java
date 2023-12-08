@@ -14,11 +14,13 @@ public class NamespacedKeyHelper {
     public static NamespacedKey customItemTag = null;
     public static NamespacedKey customBlockItemTag = null;
     public static NamespacedKey chunkDataKey = null;
+    public static NamespacedKey contentPackKey = null;
 
     public static void init(Plugin plugin) {
         customItemTag = new NamespacedKey(plugin, "custom-item");
         customBlockItemTag = new NamespacedKey(plugin, "custom-block");
         chunkDataKey = new NamespacedKey(plugin, "block-data");
+        contentPackKey = new NamespacedKey(plugin, "content-pack");
     }
 
     public static NamespacedKey getUniqueNamespacedKey(String name) {

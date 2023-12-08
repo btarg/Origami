@@ -1,7 +1,6 @@
 package io.github.btarg.origami.listeners.blocks;
 
 import io.github.btarg.origami.definitions.CustomBlockDefinition;
-import io.github.btarg.origami.registry.RegistryHelper;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -18,7 +17,7 @@ public class CustomBlockFunctions {
             boolean silkTouch = (player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH));
 
             if (silkTouch || definition.dropBlock()) {
-                ItemStack blockItem = RegistryHelper.createCustomItemStack(definition, 1);
+                ItemStack blockItem = definition.createCustomItemStack(1);
                 world.dropItemNaturally(blockBroken.getLocation(), blockItem);
             } else {
 

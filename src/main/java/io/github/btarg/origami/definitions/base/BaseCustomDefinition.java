@@ -5,15 +5,16 @@ import io.github.btarg.origami.util.ComponentHelper;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
-public class BaseCustomDefinition extends AbstractBaseDefinition {
+public abstract class BaseCustomDefinition extends AbstractBaseDefinition {
 
     public String contentPack;
     public String id;
@@ -76,6 +77,24 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
         events.add(new EventDefinition(eventName, commands, cooldown));
     }
 
+    protected abstract Integer getCustomModelData();
+
+    protected ItemMeta getItemMeta(ItemStack itemStack) {
+        ItemMeta meta = itemStack.getItemMeta();
+        Component name = this.getDisplayName();
+        meta.displayName(name);
+        meta.lore(this.getLore());
+        meta.setCustomModelData(getCustomModelData());
+        return meta;
+    }
+
+    public ItemStack createCustomItemStack(int count) {
+        ItemStack itemStack = new ItemStack(this.baseMaterial, count);
+        itemStack.setItemMeta(getItemMeta(itemStack));
+
+        return itemStack;
+    }
+
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put("baseMaterial", this.baseMaterial.toString());
@@ -91,14 +110,5 @@ public class BaseCustomDefinition extends AbstractBaseDefinition {
         map.put("events", eventsData);
 
         return map;
-    }
-
-    @Override
-    public void registerDefinition(CommandSender sender) {
-    }
-
-    @Override
-    public AbstractBaseDefinition getDefaultDefinition() {
-        return null;
     }
 }
