@@ -15,9 +15,9 @@ repositories {
     maven("https://repo.unnamed.team/repository/unnamed-public/")
 }
 dependencies {
-    paperweight.paperDevBundle("1.20.2-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.20.4-R0.1-SNAPSHOT")
     api("commons-io:commons-io:2.+")
-    compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
     // Resource pack API
     implementation("team.unnamed:creative-api:1.+")
     // Serializer for Minecraft format (ZIP / Folder)
@@ -25,7 +25,7 @@ dependencies {
     // Javalin backend with JSON to object mapping support
     implementation("io.javalin:javalin:5.+")
     implementation("org.slf4j:slf4j-simple:2.+")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.+")
+    //implementation("com.fasterxml.jackson.core:jackson-databind:2.+")
 
 }
 group = "io.github"
@@ -39,7 +39,7 @@ tasks {
     }
     runServer {
         dependsOn(assemble)
-        minecraftVersion("1.20.2")
+        minecraftVersion("1.20.4")
     }
     processResources {
         filteringCharset = Charsets.UTF_8.name() // We want UTF-8 for everything
