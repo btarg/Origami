@@ -114,16 +114,16 @@ public class CustomRecipeRegistry {
 
     private static CookingRecipe<?> createCookingRecipe(CustomRecipeDefinition recipeDefinition, NamespacedKey namespacedKey, RecipeChoice choice) {
         switch (recipeDefinition.getRecipeType()) {
-            case CustomRecipeType.SMELTING -> {
+            case SMELTING -> {
                 return new FurnaceRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
             }
-            case CustomRecipeType.BLASTING -> {
+            case BLASTING -> {
                 return new BlastingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
             }
-            case CustomRecipeType.SMOKING -> {
+            case SMOKING -> {
                 return new SmokingRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
             }
-            case CustomRecipeType.CAMPFIRE_COOKING -> {
+            case CAMPFIRE_COOKING -> {
                 return new CampfireRecipe(namespacedKey, recipeDefinition.getResultItemStack(), choice, recipeDefinition.experience, recipeDefinition.cookingTime);
             }
             default -> {

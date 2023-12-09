@@ -1,17 +1,17 @@
 name: Origami
 version: '${version}'
 author: btarg
-main: io.github.btarg.OrigamiMain
+main: io.github.btarg.origami.OrigamiMain
 api-version: '1.20'
-description: The ultimate custom content plugin for Paper servers.
+description: Easily create custom blocks, items and recipes.
 
 commands:
   origami:
     aliases:
       - oc
       - cc
-    description: Give a custom block or item, reload custom blocks and items, reload the resource pack, or list custom blocks currently placed.
-    usage: /oc [give | reload | listblocks]
+    description: Give a custom block or item, reload custom blocks and items, reload the resource pack, open the Origami menu, or list the blocks present in your current chunk.
+    usage: /oc [give | reload | menu | listblocks]
     permission: origami.commands
 
 permissions:
