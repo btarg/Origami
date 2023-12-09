@@ -41,10 +41,14 @@ public class CreativeMenu implements Listener {
         for (int i = startIndex; i < Math.min(startIndex + pageSize, totalItems); i++) {
             gui.setItem(i - startIndex, allCustomItemStacks.get(i));
         }
-
+        // previous page
         if (page > 1) gui.setItem(45, createNavigationButton(-1, contentPack));
+        // close button
         gui.setItem(49, createCloseButton(totalPages(totalItems, pageSize) + 1));
-        if (startIndex < totalItems) gui.setItem(53, createNavigationButton(1, contentPack));
+        // next page
+        if (page < totalPages(totalItems, pageSize)) {
+            gui.setItem(53, createNavigationButton(1, contentPack));
+        }
 
         currentPage = page;
         player.openInventory(gui);
@@ -61,26 +65,24 @@ public class CreativeMenu implements Listener {
 
                 int pageChange = getButtonPageChange(clickedItem);
                 String contentPack = getContentPackFromItem(clickedItem);
-                if (pageChange != 0) {
-                    if (contentPack != null) {
-                        int maxPages = totalPages(getAllCustomItemStacks(contentPack).size(), Math.min(getAllCustomItemStacks(contentPack).size(), 45));
-                        if (Math.abs(pageChange) <= maxPages) {
-                            openCreativeMenu(player, contentPack, currentPage + pageChange);
-                        } else {
-                            player.closeInventory();
-                        }
-                    }
-                } else if (clickedItem.getType() == Material.BARRIER) {
-                    int maxPages = totalPages(getAllCustomItemStacks(contentPack).size(), Math.min(getAllCustomItemStacks(contentPack).size(), 45));
-                    if (pageChange > maxPages) {
+                int maxPages = totalPages(getAllCustomItemStacks(contentPack).size(), Math.min(getAllCustomItemStacks(contentPack).size(), 45));
+                int newPage = currentPage + pageChange;
+
+                if (pageChange != 0 && contentPack != null) {
+                    if (newPage > 0 && newPage <= maxPages) {
+                        openCreativeMenu(player, contentPack, newPage);
+                    } else {
                         player.closeInventory();
                     }
-                } else {
+                } else if (clickedItem.getType() == Material.BARRIER && pageChange > maxPages) {
+                    player.closeInventory();
+                } else if (pageChange == 0) {
                     giveMaxStack(player, clickedItem.clone());
                 }
             }
         }
     }
+
 
     private void giveMaxStack(Player player, ItemStack item) {
         ItemStack maxStack = item.clone();
@@ -130,10 +132,8 @@ public class CreativeMenu implements Listener {
 
     private List<ItemStack> getAllCustomItemStacks(String contentPack) {
         List<ItemStack> allCustomItemStacks = new ArrayList<>();
-
         CustomBlockRegistry.getBlockDefinitions(contentPack).values().forEach(blockDef -> allCustomItemStacks.add(blockDef.createCustomItemStack(1)));
         CustomItemRegistry.getItemDefinitions(contentPack).values().forEach(itemDef -> allCustomItemStacks.add(itemDef.createCustomItemStack(1)));
-
         return allCustomItemStacks;
     }
 

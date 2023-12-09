@@ -78,7 +78,7 @@ through the steps needed to replicate the bug.
 - [x] Resource pack generation
     - [x] Resource pack hosting
     - [ ] Resource pack merging / multiple pack support
-- [ ] In-game UI for obtaining items (AKA "creative mode")
+- [X] In-game UI for obtaining items (AKA "creative mode")
 - [ ] Web UI for visual editing *(see preliminary work [here](https://github.com/btarg/vuejava))*
     - [ ] Backend API with Javalin
     - [ ] Vue.js frontend
