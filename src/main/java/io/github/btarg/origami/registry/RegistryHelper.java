@@ -1,6 +1,7 @@
 package io.github.btarg.origami.registry;
 
 import io.github.btarg.origami.OrigamiMain;
+import io.github.btarg.origami.definitions.CustomBlockDefinition;
 import io.github.btarg.origami.definitions.CustomItemDefinition;
 import io.github.btarg.origami.util.NamespacedKeyHelper;
 import org.bukkit.inventory.ItemStack;
@@ -23,7 +24,11 @@ public class RegistryHelper {
             itemId = itemId.replace(OrigamiMain.PREFIX, "");
         }
 
-        ItemStack stack = CustomBlockRegistry.getRegisteredBlock(itemId).createCustomItemStack(count);
-        return (stack != null) ? stack : CustomItemRegistry.getRegisteredItem(itemId).createCustomItemStack(count);
+        CustomBlockDefinition blockDefinition = CustomBlockRegistry.getRegisteredBlock(itemId);
+        if (blockDefinition != null) return blockDefinition.createCustomItemStack(count);
+
+        CustomItemDefinition itemDefinition = CustomItemRegistry.getRegisteredItem(itemId);
+        return (itemDefinition != null) ? itemDefinition.createCustomItemStack(count) : null;
     }
+
 }

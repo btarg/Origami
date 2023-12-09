@@ -143,6 +143,13 @@ public class CustomBlockDefinition extends BaseCustomDefinition {
     }
 
     @Override
+    public ItemStack createCustomItemStack(int count) {
+        ItemStack itemStack = new ItemStack(Material.ITEM_FRAME, count);
+        itemStack.setItemMeta(getItemMeta(itemStack));
+        return itemStack;
+    }
+
+    @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put("brightness", this.brightness);
