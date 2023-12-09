@@ -5,7 +5,6 @@ import io.github.btarg.origami.registry.CustomBlockRegistry;
 import io.github.btarg.origami.registry.CustomItemRegistry;
 import io.github.btarg.origami.util.NamespacedKeyHelper;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -30,6 +29,7 @@ public class CreativeMenu implements Listener {
     private int currentPage = 1;
 
     public void openCreativeMenu(Player player, String contentPack, int page) {
+        if (contentPack == null) return;
         List<ItemStack> allCustomItemStacks = getAllCustomItemStacks(contentPack);
         int totalItems = allCustomItemStacks.size();
 
@@ -41,10 +41,11 @@ public class CreativeMenu implements Listener {
         for (int i = startIndex; i < Math.min(startIndex + pageSize, totalItems); i++) {
             gui.setItem(i - startIndex, allCustomItemStacks.get(i));
         }
+
         // previous page
         if (page > 1) gui.setItem(45, createNavigationButton(-1, contentPack));
         // close button
-        gui.setItem(49, createCloseButton(totalPages(totalItems, pageSize) + 1));
+        gui.setItem(49, createButton(Material.BARRIER, Component.text("Close", TextColor.color(Color.RED.getRGB())), totalPages(totalItems, pageSize) + 1, contentPack));
         // next page
         if (page < totalPages(totalItems, pageSize)) {
             gui.setItem(53, createNavigationButton(1, contentPack));
@@ -68,12 +69,8 @@ public class CreativeMenu implements Listener {
                 int maxPages = totalPages(getAllCustomItemStacks(contentPack).size(), Math.min(getAllCustomItemStacks(contentPack).size(), 45));
                 int newPage = currentPage + pageChange;
 
-                if (pageChange != 0 && contentPack != null) {
-                    if (newPage > 0 && newPage <= maxPages) {
-                        openCreativeMenu(player, contentPack, newPage);
-                    } else {
-                        player.closeInventory();
-                    }
+                if (pageChange != 0 && contentPack != null && newPage > 0 && newPage <= maxPages) {
+                    openCreativeMenu(player, contentPack, newPage);
                 } else if (clickedItem.getType() == Material.BARRIER && pageChange > maxPages) {
                     player.closeInventory();
                 } else if (pageChange == 0) {
@@ -82,7 +79,6 @@ public class CreativeMenu implements Listener {
             }
         }
     }
-
 
     private void giveMaxStack(Player player, ItemStack item) {
         ItemStack maxStack = item.clone();
@@ -94,7 +90,7 @@ public class CreativeMenu implements Listener {
     private String getContentPackFromItem(ItemStack item) {
         if (item != null && item.hasItemMeta()) {
             PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
-            return (pdc.has(NamespacedKeyHelper.contentPackKey, PersistentDataType.STRING))
+            return pdc.has(NamespacedKeyHelper.contentPackKey, PersistentDataType.STRING)
                     ? pdc.get(NamespacedKeyHelper.contentPackKey, PersistentDataType.STRING)
                     : null;
         }
@@ -104,7 +100,7 @@ public class CreativeMenu implements Listener {
     private int getButtonPageChange(ItemStack item) {
         if (item != null && item.hasItemMeta()) {
             PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
-            return (pdc.has(pageChangeKey, PersistentDataType.INTEGER))
+            return pdc.has(pageChangeKey, PersistentDataType.INTEGER)
                     ? pdc.get(pageChangeKey, PersistentDataType.INTEGER)
                     : 0;
         }
@@ -112,20 +108,15 @@ public class CreativeMenu implements Listener {
     }
 
     private ItemStack createNavigationButton(int pageChange, String contentPack) {
-        ItemStack item = new ItemStack(Material.ARROW);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text(pageChange > 0 ? "Next Page" : "Previous Page").style(Style.empty()));
-        meta.getPersistentDataContainer().set(pageChangeKey, PersistentDataType.INTEGER, pageChange);
-        meta.getPersistentDataContainer().set(NamespacedKeyHelper.contentPackKey, PersistentDataType.STRING, contentPack);
-        item.setItemMeta(meta);
-        return item;
+        return createButton(Material.ARROW, Component.text(pageChange > 0 ? "Next Page" : "Previous Page", TextColor.color(Color.WHITE.getRGB())), pageChange, contentPack);
     }
 
-    private ItemStack createCloseButton(int pageChange) {
-        ItemStack item = new ItemStack(Material.BARRIER);
+    private ItemStack createButton(Material material, Component buttonName, int pageChange, String contentPack) {
+        ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text("Close").color(TextColor.color(Color.RED.getRGB())));
+        meta.displayName(buttonName);
         meta.getPersistentDataContainer().set(pageChangeKey, PersistentDataType.INTEGER, pageChange);
+        meta.getPersistentDataContainer().set(NamespacedKeyHelper.contentPackKey, PersistentDataType.STRING, contentPack);
         item.setItemMeta(meta);
         return item;
     }

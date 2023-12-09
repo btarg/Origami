@@ -16,10 +16,8 @@ import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class JavalinServer {
     private static final File generatedZipFile = new File(OrigamiMain.getInstance().getDataFolder(), "generated/pack.zip");
@@ -36,9 +34,7 @@ public class JavalinServer {
                 HandlerType.GET,
                 ctx -> ctx.result("hello world!")
         ));
-        String filenamesAsString = Arrays.stream(ContentPackHelper.getAllContentPacks())
-                .map(File::getName)
-                .collect(Collectors.joining("\n"));
+        String filenamesAsString = String.join("\n", ContentPackHelper.getAllContentPackNames());
         handlerList.add(new JavalinHandler(
                 "/api/contentpacks",
                 HandlerType.GET,

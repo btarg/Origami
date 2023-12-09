@@ -26,10 +26,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("deprecation")
 public class RootCommand implements TabExecutor {
@@ -44,7 +42,8 @@ public class RootCommand implements TabExecutor {
                     OrigamiMain.getCreativeMenu().openCreativeMenu(player, contentPack, 1);
                     return true;
                 } else {
-                    sendIncorrectArgumentsMessage(command, sender);
+                    // default to first content pack in list
+                    OrigamiMain.getCreativeMenu().openCreativeMenu(player, ContentPackHelper.getAllContentPackNames().get(0), 1);
                 }
             }
         }
@@ -159,9 +158,7 @@ public class RootCommand implements TabExecutor {
         } else if (Objects.equals(args[0], "reload")) {
             tabComplete = Arrays.asList("all", "blocks", "items", "recipes", "resources");
         } else if (Objects.equals(args[0], "menu")) {
-            tabComplete = Arrays.stream(ContentPackHelper.getAllContentPacks())
-                    .map(File::getName)
-                    .collect(Collectors.toList());
+            tabComplete = ContentPackHelper.getAllContentPackNames();
         }
 
         return tabComplete;

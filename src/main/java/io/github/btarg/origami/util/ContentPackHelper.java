@@ -6,7 +6,9 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ContentPackHelper {
 
@@ -25,9 +27,14 @@ public class ContentPackHelper {
         return folder;
     }
 
-
     public static File[] getAllContentPacks() {
         return Arrays.stream(Objects.requireNonNull(getContentPacksFolder().listFiles(File::isDirectory))).toArray(File[]::new);
+    }
+
+    public static List<String> getAllContentPackNames() {
+        return Arrays.stream(getAllContentPacks())
+                .map(File::getName)
+                .collect(Collectors.toList());
     }
 }
 
