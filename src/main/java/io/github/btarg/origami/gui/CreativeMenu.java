@@ -22,7 +22,6 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CreativeMenu implements Listener {
@@ -134,7 +133,6 @@ public class CreativeMenu implements Listener {
 
         CustomBlockRegistry.getBlockDefinitions(contentPack).values().forEach(blockDef -> allCustomItemStacks.add(blockDef.createCustomItemStack(1)));
         CustomItemRegistry.getItemDefinitions(contentPack).values().forEach(itemDef -> allCustomItemStacks.add(itemDef.createCustomItemStack(1)));
-        Arrays.asList(Material.values()).forEach(material -> allCustomItemStacks.add(new ItemStack(material, 1)));
 
         return allCustomItemStacks;
     }
