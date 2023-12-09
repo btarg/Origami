@@ -6,17 +6,18 @@ import io.github.btarg.origami.definitions.CustomBlockDefinition;
 import io.github.btarg.origami.definitions.CustomItemDefinition;
 import io.github.btarg.origami.definitions.CustomRecipeDefinition;
 import io.github.btarg.origami.events.CustomEventListener;
+import io.github.btarg.origami.gui.CustomBlocksGUI;
 import io.github.btarg.origami.listeners.ResourcePackListener;
 import io.github.btarg.origami.listeners.blocks.BlockDamageListener;
 import io.github.btarg.origami.listeners.blocks.CustomBlockListener;
 import io.github.btarg.origami.listeners.items.DurabilityListener;
-import io.github.btarg.origami.serialization.DefinitionSerializer;
-import io.github.btarg.origami.util.NamespacedKeyHelper;
 import io.github.btarg.origami.rendering.BrokenBlocksService;
 import io.github.btarg.origami.resourcepack.ResourcePackGenerator;
+import io.github.btarg.origami.serialization.DefinitionSerializer;
+import io.github.btarg.origami.util.NamespacedKeyHelper;
 import io.github.btarg.origami.util.items.CooldownManager;
 import io.github.btarg.origami.util.loot.LootTableHelper;
-import io.github.btarg.origami.util.loot.versions.LootTableHelper_1_20_R2;
+import io.github.btarg.origami.util.loot.versions.LootTableHelper_1_20_R3;
 import io.github.btarg.origami.web.JavalinServer;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -42,6 +43,9 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     private static OrigamiMain Instance;
     @Getter
     private static LootTableHelper lootTableHelper;
+
+    @Getter
+    private static CustomBlocksGUI customBlocksGUI;
 
     @Override
     public void onEnable() {
@@ -72,6 +76,8 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         pluginManager.registerEvents(new CooldownManager(), this);
         pluginManager.registerEvents(new KillInterceptor(), this);
         pluginManager.registerEvents(new CustomEventListener(), this);
+        customBlocksGUI = new CustomBlocksGUI();
+        pluginManager.registerEvents(customBlocksGUI, this);
         pluginManager.registerEvents(this, this);
         Objects.requireNonNull(this.getCommand("origami")).setExecutor(new RootCommand());
 
@@ -86,8 +92,8 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
 
     private boolean setupNMS() {
 
-        if (Bukkit.getServer().getMinecraftVersion().equals("1.20.2")) {
-            lootTableHelper = new LootTableHelper_1_20_R2();
+        if (Bukkit.getServer().getMinecraftVersion().equals("1.20.4")) {
+            lootTableHelper = new LootTableHelper_1_20_R3();
         } else {
             return false;
         }
