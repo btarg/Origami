@@ -2,12 +2,14 @@ package io.github.btarg.origami.definitions.base;
 
 import io.github.btarg.origami.events.EventDefinition;
 import io.github.btarg.origami.util.ComponentHelper;
+import io.github.btarg.origami.util.NamespacedKeyHelper;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -85,6 +87,7 @@ public abstract class BaseCustomDefinition extends AbstractBaseDefinition {
         meta.displayName(name);
         meta.lore(this.getLore());
         meta.setCustomModelData(getCustomModelData());
+        meta.getPersistentDataContainer().set(NamespacedKeyHelper.contentPackKey, PersistentDataType.STRING, this.contentPack);
         return meta;
     }
 

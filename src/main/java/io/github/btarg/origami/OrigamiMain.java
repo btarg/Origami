@@ -6,7 +6,7 @@ import io.github.btarg.origami.definitions.CustomBlockDefinition;
 import io.github.btarg.origami.definitions.CustomItemDefinition;
 import io.github.btarg.origami.definitions.CustomRecipeDefinition;
 import io.github.btarg.origami.events.CustomEventListener;
-import io.github.btarg.origami.gui.CustomBlocksGUI;
+import io.github.btarg.origami.gui.CreativeMenu;
 import io.github.btarg.origami.listeners.ResourcePackListener;
 import io.github.btarg.origami.listeners.blocks.BlockDamageListener;
 import io.github.btarg.origami.listeners.blocks.CustomBlockListener;
@@ -45,7 +45,7 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
     private static LootTableHelper lootTableHelper;
 
     @Getter
-    private static CustomBlocksGUI customBlocksGUI;
+    private static CreativeMenu creativeMenu;
 
     @Override
     public void onEnable() {
@@ -76,8 +76,8 @@ public final class OrigamiMain extends JavaPlugin implements Listener {
         pluginManager.registerEvents(new CooldownManager(), this);
         pluginManager.registerEvents(new KillInterceptor(), this);
         pluginManager.registerEvents(new CustomEventListener(), this);
-        customBlocksGUI = new CustomBlocksGUI();
-        pluginManager.registerEvents(customBlocksGUI, this);
+        creativeMenu = new CreativeMenu();
+        pluginManager.registerEvents(creativeMenu, this);
         pluginManager.registerEvents(this, this);
         Objects.requireNonNull(this.getCommand("origami")).setExecutor(new RootCommand());
 

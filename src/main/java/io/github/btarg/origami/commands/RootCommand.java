@@ -11,6 +11,7 @@ import io.github.btarg.origami.registry.CustomRecipeRegistry;
 import io.github.btarg.origami.registry.RegistryHelper;
 import io.github.btarg.origami.resourcepack.ResourcePackGenerator;
 import io.github.btarg.origami.util.ComponentHelper;
+import io.github.btarg.origami.util.ContentPackHelper;
 import io.github.btarg.origami.util.datatypes.BlockPos;
 import io.github.btarg.origami.web.JavalinServer;
 import net.kyori.adventure.text.Component;
@@ -25,8 +26,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("deprecation")
 public class RootCommand implements TabExecutor {
@@ -36,9 +39,10 @@ public class RootCommand implements TabExecutor {
 
         if (sender instanceof Player player) {
             if (Objects.equals(args[0], "menu")) {
-                if (args.length == 3) {
-                    String contentPack = args[2];
-                    OrigamiMain.getCustomBlocksGUI().openCustomBlocksAndItemsGUI(player, 1, contentPack);
+                if (args.length == 2) {
+                    String contentPack = args[1];
+                    OrigamiMain.getCreativeMenu().openCreativeMenu(player, contentPack, 1);
+                    return true;
                 } else {
                     sendIncorrectArgumentsMessage(command, sender);
                 }
@@ -133,7 +137,7 @@ public class RootCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         List<String> tabComplete = new ArrayList<>();
-        if (args.length == 1) return Arrays.asList("give", "reload", "listblocks");
+        if (args.length == 1) return Arrays.asList("give", "reload", "menu", "listblocks");
 
         if (Objects.equals(args[0], "give")) {
 
@@ -154,6 +158,10 @@ public class RootCommand implements TabExecutor {
 
         } else if (Objects.equals(args[0], "reload")) {
             tabComplete = Arrays.asList("all", "blocks", "items", "recipes", "resources");
+        } else if (Objects.equals(args[0], "menu")) {
+            tabComplete = Arrays.stream(ContentPackHelper.getAllContentPacks())
+                    .map(File::getName)
+                    .collect(Collectors.toList());
         }
 
         return tabComplete;
