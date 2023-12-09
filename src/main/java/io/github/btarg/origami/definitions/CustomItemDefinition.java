@@ -100,6 +100,11 @@ public class CustomItemDefinition extends BaseCustomDefinition {
     }
 
     @Override
+    public CustomItemDefinition getDefaultDefinition() {
+        return null;
+    }
+
+    @Override
     public void registerDefinition(CommandSender sender) {
         CustomItemRegistry.registerItem(this);
         if (sender != null) {
