@@ -33,8 +33,8 @@ public class InformationDataType implements PersistentDataType<byte[], ChunkBloc
             InputStream inputStream = new ByteArrayInputStream(primitive);
             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
             return (ChunkBlockInformation) objectInputStream.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException ignored) {
+            // prevent console spam by ignoring
         }
         return new ChunkBlockInformation(null);
     }
