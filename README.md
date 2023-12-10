@@ -13,6 +13,14 @@ The plugin generates and hosts resource packs to allow **vanilla** clients to co
 
 [![Build status](https://github.com/btarg/Origami/actions/workflows/gradle.yml/badge.svg)](https://github.com/btarg/Origami/actions)
 
+# What makes this different from other plugins
+
+Origami is designed to be as simple as possible for a Minecraft server owner to create custom content quickly.
+It is **NOT** an advanced custom block/item API for other developers to use, and it does not require any coding
+knowledge to
+use by design.
+Other plugins tend to be more developer-focused rather than being as human-friendly as possible for the average user.
+
 # Getting Started
 
 > 📖 View the official docs on [GitBook](https://btarg.gitbook.io/origami-docs/) for information on how to use the
