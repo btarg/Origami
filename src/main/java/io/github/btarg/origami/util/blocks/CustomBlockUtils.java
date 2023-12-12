@@ -2,9 +2,8 @@ package io.github.btarg.origami.util.blocks;
 
 import io.github.btarg.origami.blockdata.CustomBlockPersistentData;
 import io.github.btarg.origami.definitions.CustomBlockDefinition;
-import io.github.btarg.origami.util.NamespacedKeyHelper;
 import io.github.btarg.origami.registry.CustomBlockRegistry;
-import net.minecraft.world.level.block.Blocks;
+import io.github.btarg.origami.util.NamespacedKeyHelper;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Display;
@@ -17,7 +16,7 @@ import org.bukkit.util.Transformation;
 public class CustomBlockUtils {
 
     public static CustomBlockDefinition getDefinitionFromBlock(Block block) {
-        if (block == null || block.equals(Blocks.AIR)) return null;
+        if (block == null || block.isEmpty()) return null;
         if (!CustomBlockPersistentData.blockIsInStorage(block.getLocation())) return null;
         Entity linkedItemDisplay = getLinkedItemDisplay(block.getLocation());
         if (linkedItemDisplay == null) return null;

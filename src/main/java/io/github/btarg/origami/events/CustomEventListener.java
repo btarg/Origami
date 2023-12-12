@@ -22,6 +22,8 @@ public class CustomEventListener implements Listener {
         boolean noBlock = blockDefinition == null;
         CustomItemDefinition itemDefinition = RegistryHelper.getDefinitionFromItemstack(e.getItem());
         boolean noItem = itemDefinition == null;
+        if (noBlock && noItem) return;
+        e.setCancelled(true);
 
         switch (e.getAction()) {
             case RIGHT_CLICK_AIR:
