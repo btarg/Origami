@@ -29,13 +29,11 @@ public class CustomBlockPersistentData {
     }
 
     public static ChunkBlockInformation getBlockInformation(Chunk chunk) {
-        ChunkBlockInformation information = new ChunkBlockInformation(new HashMap<>());
-        // ignoring the exception will stop console spam for corrupted chunks
-        try {
-            information = chunk.getPersistentDataContainer().get(NamespacedKeyHelper.chunkDataKey, new InformationDataType());
-        } catch (Exception ignored) {
+        ChunkBlockInformation information = chunk.getPersistentDataContainer().get(NamespacedKeyHelper.chunkDataKey, new InformationDataType());
+        // initialise map if empty
+        if (information == null) {
+            information = new ChunkBlockInformation(new HashMap<>());
         }
-
         return information;
     }
 
