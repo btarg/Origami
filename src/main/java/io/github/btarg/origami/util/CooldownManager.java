@@ -1,4 +1,4 @@
-package io.github.btarg.origami.util.items;
+package io.github.btarg.origami.util;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import org.bukkit.entity.Player;

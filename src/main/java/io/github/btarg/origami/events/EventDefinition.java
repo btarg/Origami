@@ -1,7 +1,7 @@
 package io.github.btarg.origami.events;
 
+import io.github.btarg.origami.util.CooldownManager;
 import io.github.btarg.origami.util.items.CommandRunner;
-import io.github.btarg.origami.util.items.CooldownManager;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 
