@@ -12,8 +12,8 @@ public enum EventNames {
     ON_PLACED("onPlaced"),
     ON_BROKEN("onBroken"),
     ON_DAMAGED("onDamaged"),
-    ON_PUSHED("onPushed");
-
+    ON_PUSHED("onPushed"),
+    ON_CONSUMED("onConsumed");
     private final String eventName;
 
     EventNames(String eventName) {

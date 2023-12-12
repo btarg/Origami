@@ -1,5 +1,6 @@
 package io.github.btarg.origami.events;
 
+import io.github.btarg.origami.OrigamiMain;
 import io.github.btarg.origami.definitions.CustomBlockDefinition;
 import io.github.btarg.origami.definitions.CustomItemDefinition;
 import io.github.btarg.origami.registry.RegistryHelper;
@@ -9,6 +10,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.Objects;
 
 public class CustomEventListener implements Listener {
 
@@ -23,7 +29,6 @@ public class CustomEventListener implements Listener {
         CustomItemDefinition itemDefinition = RegistryHelper.getDefinitionFromItemstack(e.getItem());
         boolean noItem = itemDefinition == null;
         if (noBlock && noItem) return;
-        e.setCancelled(true);
 
         switch (e.getAction()) {
             case RIGHT_CLICK_AIR:
@@ -34,8 +39,10 @@ public class CustomEventListener implements Listener {
                 break;
 
             case RIGHT_CLICK_BLOCK:
-                if (!noBlock)
+                if (!noBlock) {
                     blockDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
+                    e.setCancelled(true);
+                }
 
                 if (!noItem) {
                     itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK_BLOCK.toString(), player);
@@ -64,6 +71,27 @@ public class CustomEventListener implements Listener {
                 // Handle other cases if necessary
                 break;
         }
+    }
+
+    @EventHandler
+    public void onCustomFoodEaten(PlayerItemConsumeEvent e) {
+        Player player = e.getPlayer();
+        CustomItemDefinition itemDefinition = RegistryHelper.getDefinitionFromItemstack(e.getItem());
+        if (itemDefinition == null) return;
+        e.setCancelled(true);
+        itemDefinition.executeEvent(EventNames.ON_CONSUMED.toString(), player);
+        //TODO: food saturation level
+        for (PotionEffect effect : itemDefinition.potionEffects) {
+            player.addPotionEffect(effect);
+        }
+        int amount = Math.max(e.getItem().getAmount() - 1, 0);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                player.getInventory().getItem(Objects.requireNonNull(e.getHand())).setAmount(amount);
+                player.updateInventory();
+            }
+        }.runTaskLater(OrigamiMain.getInstance(), 1);
     }
 
 }

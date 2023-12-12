@@ -7,6 +7,7 @@ import io.github.btarg.origami.util.ComponentHelper;
 import io.github.btarg.origami.util.NamespacedKeyHelper;
 import io.github.btarg.origami.util.parsers.AttributeParser;
 import io.github.btarg.origami.util.parsers.EnchantmentParser;
+import io.github.btarg.origami.util.parsers.PotionEffectParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -17,7 +18,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -27,7 +28,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
     public Map<Enchantment, Integer> enchantments;
     public Map<Attribute, Map<UUID, AttributeModifier>> attributes;
     public List<ItemFlag> flags = new ArrayList<>();
-    public List<PotionEffectType> potionEffects = new ArrayList<>();
+    public List<PotionEffect> potionEffects = new ArrayList<>();
     public Integer durability;
 
     public CustomItemDefinition(Map<String, Object> map) {
@@ -42,7 +43,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
         this.durability = Objects.requireNonNullElse((Integer) map.get("durability"), (int) this.baseMaterial.getMaxDurability());
         this.enchantments = EnchantmentParser.parseEnchantments(Objects.requireNonNullElse((List<String>) map.get("enchantments"), new ArrayList<>()));
         this.flags = deserializeFlags(map);
-        this.potionEffects = deserializePotionEffects(map);
+        this.potionEffects = PotionEffectParser.parsePotionEffects(Objects.requireNonNullElse((List<String>) map.get("potionEffects"), new ArrayList<>()));
     }
 
     private List<ItemFlag> deserializeFlags(Map<String, Object> map) {
@@ -56,21 +57,6 @@ public class CustomItemDefinition extends BaseCustomDefinition {
                     return ItemFlag.valueOf(flagName);
                 })
                 .toList());
-    }
-
-    private List<PotionEffectType> deserializePotionEffects(Map<String, Object> map) {
-        List<String> potionEffectNames = (List<String>) map.get("potionEffects");
-        List<PotionEffectType> potionEffectList = new ArrayList<>();
-
-        if (potionEffectNames != null) {
-            for (String potionEffectName : potionEffectNames) {
-                PotionEffectType potionEffectType = PotionEffectType.getByName(potionEffectName);
-                if (potionEffectType != null) {
-                    potionEffectList.add(potionEffectType);
-                }
-            }
-        }
-        return potionEffectList;
     }
 
     @Override
@@ -119,18 +105,21 @@ public class CustomItemDefinition extends BaseCustomDefinition {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = super.serialize();
 
-        List<String> enchantmentStrings = new ArrayList<>();
-        for (var entry : this.enchantments.entrySet()) {
-            enchantmentStrings.add(entry.getKey().getKey().value() + ";" + entry.getValue().toString());
-        }
+        List<String> enchantmentStrings = this.enchantments.entrySet().stream()
+                .map(entry -> entry.getKey() + "(" + entry.getValue() + ")")
+                .toList();
+        List<String> potionEffectStrings = this.potionEffects.stream()
+                .map(effect -> effect.getType() + "(" + effect.getDuration() + ", " + effect.getAmplifier() + ")")
+                .toList();
+
         map.put("enchantments", enchantmentStrings);
-        map.put("potionEffects", this.potionEffects.stream().map(PotionEffectType::getName).toList());
+        map.put("potionEffects", potionEffectStrings);
         map.put("flags", this.flags.stream().map(ItemFlag::name).toList());
         map.put("durability", this.durability);
 
-        map.putAll(super.serialize());
         return map;
     }
+
 }
