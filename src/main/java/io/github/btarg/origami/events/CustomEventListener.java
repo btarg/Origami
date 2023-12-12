@@ -29,7 +29,7 @@ public class CustomEventListener implements Listener {
         CustomItemDefinition itemDefinition = RegistryHelper.getDefinitionFromItemstack(e.getItem());
         boolean noItem = itemDefinition == null;
         if (noBlock && noItem) return;
-
+        e.setCancelled(true);
         switch (e.getAction()) {
             case RIGHT_CLICK_AIR:
                 if (!noItem) {
@@ -41,7 +41,6 @@ public class CustomEventListener implements Listener {
             case RIGHT_CLICK_BLOCK:
                 if (!noBlock) {
                     blockDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
-                    e.setCancelled(true);
                 }
 
                 if (!noItem) {
@@ -68,7 +67,7 @@ public class CustomEventListener implements Listener {
                 break;
 
             default:
-                // Handle other cases if necessary
+                e.setCancelled(false);
                 break;
         }
     }
