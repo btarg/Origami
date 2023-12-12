@@ -22,52 +22,62 @@ public class CustomEventListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent e) {
 
         Block block = e.getClickedBlock();
-        Player player = e.getPlayer();
 
         CustomBlockDefinition blockDefinition = CustomBlockUtils.getDefinitionFromBlock(block);
-        boolean noBlock = blockDefinition == null;
+        if (blockDefinition != null) {
+            handleBlockClicked(e, blockDefinition);
+        }
         CustomItemDefinition itemDefinition = RegistryHelper.getDefinitionFromItemstack(e.getItem());
-        boolean noItem = itemDefinition == null;
-        if (noBlock && noItem) return;
-        e.setCancelled(true);
+        if (itemDefinition != null) {
+            handleItemClicked(e, itemDefinition);
+        }
+
+    }
+
+    private void handleBlockClicked(PlayerInteractEvent e, CustomBlockDefinition definition) {
+        Player player = e.getPlayer();
+        e.setCancelled(definition.cancelBaseEvents);
         switch (e.getAction()) {
-            case RIGHT_CLICK_AIR:
-                if (!noItem) {
-                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
-                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK_AIR.toString(), player);
-                }
+            case LEFT_CLICK_BLOCK:
+                definition.executeEvent(EventNames.ON_LEFT_CLICK_BLOCK.toString(), player);
+                definition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
                 break;
 
             case RIGHT_CLICK_BLOCK:
-                if (!noBlock) {
-                    blockDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
-                }
-
-                if (!noItem) {
-                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK_BLOCK.toString(), player);
-                    itemDefinition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
-                }
-                break;
-
-            case LEFT_CLICK_AIR:
-                if (!noItem) {
-                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
-                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK_AIR.toString(), player);
-                }
-
-                break;
-
-            case LEFT_CLICK_BLOCK:
-                if (!noBlock)
-                    blockDefinition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
-                if (!noItem) {
-                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK_BLOCK.toString(), player);
-                    itemDefinition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
-                }
+                definition.executeEvent(EventNames.ON_RIGHT_CLICK_BLOCK.toString(), player);
+                definition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
                 break;
 
             default:
-                e.setCancelled(false);
+                break;
+        }
+    }
+
+    private void handleItemClicked(PlayerInteractEvent e, CustomItemDefinition definition) {
+        Player player = e.getPlayer();
+        e.setCancelled(definition.cancelBaseEvents);
+        switch (e.getAction()) {
+            case LEFT_CLICK_AIR:
+                definition.executeEvent(EventNames.ON_LEFT_CLICK_AIR.toString(), player);
+                definition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
+                break;
+
+            case RIGHT_CLICK_AIR:
+                definition.executeEvent(EventNames.ON_RIGHT_CLICK_AIR.toString(), player);
+                definition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
+                break;
+
+            case LEFT_CLICK_BLOCK:
+                definition.executeEvent(EventNames.ON_LEFT_CLICK_BLOCK.toString(), player);
+                definition.executeEvent(EventNames.ON_LEFT_CLICK.toString(), player);
+                break;
+
+            case RIGHT_CLICK_BLOCK:
+                definition.executeEvent(EventNames.ON_RIGHT_CLICK_BLOCK.toString(), player);
+                definition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
+                break;
+
+            default:
                 break;
         }
     }

@@ -24,6 +24,7 @@ public abstract class BaseCustomDefinition extends AbstractBaseDefinition {
     public List<String> lore;
     public String model;
     public Material baseMaterial;
+    public Boolean cancelBaseEvents;
 
     @Getter
     private List<EventDefinition> events;
@@ -39,6 +40,7 @@ public abstract class BaseCustomDefinition extends AbstractBaseDefinition {
         this.lore = Objects.requireNonNullElse((List<String>) map.get("lore"), new ArrayList<>());
         // Deserialize events
         this.events = deserializeEvents(map);
+        this.cancelBaseEvents = (Boolean) map.getOrDefault("cancelBaseEvents", true);
     }
 
     public Component getDisplayName() {
@@ -111,6 +113,7 @@ public abstract class BaseCustomDefinition extends AbstractBaseDefinition {
             eventsData.add(event.serialize());
         }
         map.put("events", eventsData);
+        map.put("cancelBaseEvents", this.cancelBaseEvents);
 
         return map;
     }
