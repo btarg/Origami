@@ -5,9 +5,12 @@ import io.github.btarg.origami.registry.CustomItemRegistry;
 import io.github.btarg.origami.resourcepack.ResourcePackGenerator;
 import io.github.btarg.origami.util.ComponentHelper;
 import io.github.btarg.origami.util.NamespacedKeyHelper;
+import io.github.btarg.origami.util.parsers.AttributeParser;
 import io.github.btarg.origami.util.parsers.EnchantmentParser;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -22,6 +25,7 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class CustomItemDefinition extends BaseCustomDefinition {
     public Map<Enchantment, Integer> enchantments;
+    public Map<Attribute, Map<UUID, AttributeModifier>> attributes;
     public List<ItemFlag> flags = new ArrayList<>();
     public List<PotionEffectType> potionEffects = new ArrayList<>();
     public Integer durability;
@@ -34,7 +38,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
             Bukkit.getLogger().severe("Custom Items need a base material! Defaulting to a Command Block...");
             this.baseMaterial = Material.COMMAND_BLOCK;
         }
-
+        this.attributes = AttributeParser.parseAttributes(Objects.requireNonNullElse((List<String>) map.get("attributes"), new ArrayList<>()));
         this.durability = Objects.requireNonNullElse((Integer) map.get("durability"), (int) this.baseMaterial.getMaxDurability());
         this.enchantments = EnchantmentParser.parseEnchantments(Objects.requireNonNullElse((List<String>) map.get("enchantments"), new ArrayList<>()));
         this.flags = deserializeFlags(map);
@@ -86,8 +90,16 @@ public class CustomItemDefinition extends BaseCustomDefinition {
                 meta.addEnchant(key, value, true);
             }
         }
-        //TODO: add attributes here
         meta.addItemFlags(this.flags.toArray(new ItemFlag[0]));
+        //TODO: add attributes here
+        for (var entry : this.attributes.entrySet()) {
+            Attribute attribute = entry.getKey();
+            Map<UUID, AttributeModifier> attributeModifiers = entry.getValue();
+
+            for (AttributeModifier modifier : attributeModifiers.values()) {
+                meta.addAttributeModifier(attribute, modifier);
+            }
+        }
 
         return meta;
     }

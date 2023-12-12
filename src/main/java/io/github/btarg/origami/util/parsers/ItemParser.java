@@ -6,7 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemParser {
-    public static ItemStack parseItemStack(String input) {
+    public static ItemStack parseItemStack(String input) throws IllegalArgumentException {
         // Split the input string by "(" and ")"
         String[] parts = input.trim().split("\\(");
 
