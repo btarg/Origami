@@ -39,8 +39,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
             Bukkit.getLogger().severe("Custom Items need a base material! Defaulting to a Command Block...");
             this.baseMaterial = Material.COMMAND_BLOCK;
         }
-        this.attributes = AttributeParser.parseAttributes(Objects.requireNonNullElse((List<String>) map.get("attributes"), new ArrayList<>()));
-        this.durability = Objects.requireNonNullElse((Integer) map.get("durability"), (int) this.baseMaterial.getMaxDurability());
+        this.attributes = AttributeParser.parseAttributes(Objects.requireNonNullElse((List<Map<String, Map<String, Object>>>) map.get("attributes"), new ArrayList<>()));        this.durability = Objects.requireNonNullElse((Integer) map.get("durability"), (int) this.baseMaterial.getMaxDurability());
         this.enchantments = EnchantmentParser.parseEnchantments(Objects.requireNonNullElse((List<String>) map.get("enchantments"), new ArrayList<>()));
         this.flags = deserializeFlags(map);
         this.potionEffects = PotionEffectParser.parsePotionEffects(Objects.requireNonNullElse((List<String>) map.get("potionEffects"), new ArrayList<>()));
