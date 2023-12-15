@@ -16,17 +16,36 @@ public class AttributeParser {
                 Attribute attribute = Attribute.valueOf(entry.getKey());
                 Map<String, Object> attributeParams = entry.getValue();
 
-                String modifierName = (String) attributeParams.get("name");
-                double value = Double.parseDouble(String.valueOf(attributeParams.get("value")));
-                EquipmentSlot equipmentSlot = Objects.requireNonNullElse(EquipmentSlot.valueOf(((String) attributeParams.get("equipmentSlot")).toUpperCase()), EquipmentSlot.HAND);
-                String operationStr = (String) attributeParams.getOrDefault("operation", "ADD_NUMBER");
-                AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(operationStr.toUpperCase());
-                
+                String modifierName = Optional.ofNullable((String) attributeParams.get("name")).filter(s -> !s.isBlank()).orElse(UUID.randomUUID().toString());
+                double value = Optional.ofNullable(attributeParams.get("value")).map(Object::toString).map(Double::parseDouble).orElse(0.0);
+                EquipmentSlot equipmentSlot = EquipmentSlot.valueOf(Optional.ofNullable((String) attributeParams.get("equipmentSlot")).orElse("HAND").toUpperCase());
+                AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(Optional.ofNullable((String) attributeParams.get("operation")).orElse("ADD_NUMBER").toUpperCase());
+
                 AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), modifierName, value, operation, equipmentSlot);
                 attributes.put(attribute, Map.of(modifier.getUniqueId(), modifier));
             }
         }
 
         return attributes;
+    }
+
+    public static List<Map<String, Map<String, Object>>> serializeAttributes(Map<Attribute, Map<UUID, AttributeModifier>> attributes) {
+        List<Map<String, Map<String, Object>>> attributeList = new ArrayList<>();
+
+        for (Map.Entry<Attribute, Map<UUID, AttributeModifier>> attributeEntry : attributes.entrySet()) {
+            for (Map.Entry<UUID, AttributeModifier> modifierEntry : attributeEntry.getValue().entrySet()) {
+                AttributeModifier modifier = modifierEntry.getValue();
+
+                Map<String, Object> attributeParams = new HashMap<>();
+                attributeParams.put("name", modifier.getName());
+                attributeParams.put("value", modifier.getAmount());
+                attributeParams.put("equipmentSlot", modifier.getSlot().name());
+                attributeParams.put("operation", modifier.getOperation().name());
+
+                attributeList.add(Map.of(attributeEntry.getKey().name(), attributeParams));
+            }
+        }
+
+        return attributeList;
     }
 }

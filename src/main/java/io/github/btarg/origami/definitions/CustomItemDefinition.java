@@ -76,7 +76,6 @@ public class CustomItemDefinition extends BaseCustomDefinition {
             }
         }
         meta.addItemFlags(this.flags.toArray(new ItemFlag[0]));
-        //TODO: add attributes here
         for (var entry : this.attributes.entrySet()) {
             Attribute attribute = entry.getKey();
             Map<UUID, AttributeModifier> attributeModifiers = entry.getValue();
@@ -112,6 +111,7 @@ public class CustomItemDefinition extends BaseCustomDefinition {
         List<String> potionEffectStrings = this.potionEffects.stream()
                 .map(effect -> effect.getType() + "(" + effect.getDuration() + ", " + effect.getAmplifier() + ")")
                 .toList();
+        map.put("attributes", AttributeParser.serializeAttributes(this.attributes));
 
         map.put("enchantments", enchantmentStrings);
         map.put("potionEffects", potionEffectStrings);
