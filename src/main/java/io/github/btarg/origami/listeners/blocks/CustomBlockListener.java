@@ -158,7 +158,6 @@ public class CustomBlockListener implements Listener {
         }
 
         // Remove item frame and remove block from database
-        definition.executeEvent(EventNames.ON_BROKEN.toString(), e.getPlayer());
         if (linkedItemDisplay != null)
             linkedItemDisplay.remove();
 
@@ -169,8 +168,9 @@ public class CustomBlockListener implements Listener {
                 Bukkit.getLogger().warning("Block being broken does not have a valid sound!");
             }
         }
-
         CustomBlockPersistentData.removeBlockFromStorage(e.getBlock().getLocation());
+
+        definition.executeEvent(EventNames.ON_BROKEN.toString(), e.getPlayer());
 
     }
 
@@ -189,6 +189,8 @@ public class CustomBlockListener implements Listener {
 
                 CustomBlockPersistentData.removeBlockFromStorage(block.getLocation());
                 linkedItemDisplay.remove();
+
+                definition.executeEvent(EventNames.ON_BROKEN.toString(), null);
 
             }
         }
