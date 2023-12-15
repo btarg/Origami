@@ -48,7 +48,12 @@ public class CustomEventListener implements Listener {
                 definition.executeEvent(EventNames.ON_RIGHT_CLICK.toString(), player);
                 break;
 
+            case PHYSICAL:
+                definition.executeEvent(EventNames.ON_PHYSICAL.toString(), player);
+                break;
+
             default:
+                e.setCancelled(false);
                 break;
         }
     }
@@ -78,6 +83,7 @@ public class CustomEventListener implements Listener {
                 break;
 
             default:
+                e.setCancelled(false);
                 break;
         }
     }

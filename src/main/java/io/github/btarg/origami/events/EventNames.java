@@ -13,6 +13,7 @@ public enum EventNames {
     ON_BROKEN("onBroken"),
     ON_DAMAGED("onDamaged"),
     ON_PUSHED("onPushed"),
+    ON_PHYSICAL("onPhysical"),
     ON_CONSUMED("onConsumed");
     private final String eventName;
 
